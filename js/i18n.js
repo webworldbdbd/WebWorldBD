@@ -112,7 +112,7 @@ const translations = {
     brandBD: 'বিডি',
     mainMenu: 'মূল মেনু',
     home: 'হোম',
-    services: 'সার্ভিসসমূহ',
+    services: 'সার্ভিস',
     startProject: 'প্রজেক্ট শুরু করুন',
     liveChat: 'লাইভ চ্যাট',
     livePreview: 'লাইভ প্রিভিউ',
