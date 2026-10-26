@@ -138,12 +138,22 @@
 
         if (user.photoURL) {
           photoEl.src = user.photoURL;
+          photoEl.alt = displayName;
           photoEl.classList.remove('hidden');
           initialEl.classList.add('hidden');
         } else {
-          initialEl.textContent = displayName.charAt(0).toUpperCase();
-          initialEl.classList.remove('hidden');
-          photoEl.classList.add('hidden');
+          photoEl.src = './assets/profile.jpg';
+          photoEl.alt = displayName;
+          photoEl.width = 96;
+          photoEl.height = 96;
+          photoEl.className = 'w-full h-full object-cover object-top';
+          photoEl.onerror = () => {
+            photoEl.classList.add('hidden');
+            initialEl.textContent = 'W';
+            initialEl.classList.remove('hidden');
+          };
+          photoEl.classList.remove('hidden');
+          initialEl.classList.add('hidden');
         }
       });
 
