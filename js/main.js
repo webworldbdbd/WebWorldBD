@@ -83,14 +83,14 @@ function injectHeader() {
           <button
             id="btn-open-sidebar"
             aria-label="Open Navigation Menu"
-            class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs cursor-pointer"
+            class="btn-3d-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <i class="fa-solid fa-bars text-lg"></i>
           </button>
 
-          <a href="./index.html" class="flex items-center gap-2 group">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-xl shadow-md group-hover:scale-105 transition-transform">
-              W
+          <a href="./index.html" class="flex items-center gap-2.5 group">
+            <div class="w-9 h-9 rounded-xl header-logo-tile flex items-center justify-center p-1.5 shadow-md group-hover:scale-105 transition-transform">
+              <img src="./assets/favicon.svg" alt="WebWorldBD Logo" class="w-full h-full object-contain filter drop-shadow-xs" />
             </div>
             <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
               <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
@@ -103,7 +103,7 @@ function injectHeader() {
           <button
             id="btn-toggle-theme"
             aria-label="Toggle Light/Dark Theme"
-            class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs cursor-pointer"
+            class="btn-3d-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <i class="fa-solid fa-sun text-amber-500 theme-icon-sun" style="display:${isDark ? 'none' : 'inline-block'};"></i>
             <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:${isDark ? 'inline-block' : 'none'};"></i>
@@ -112,7 +112,7 @@ function injectHeader() {
           <button
             id="btn-toggle-lang"
             aria-label="Toggle Language"
-            class="px-3.5 py-2 rounded-full flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-xs transition-colors shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700"
+            class="btn-3d-header-pill px-3.5 py-2 rounded-full flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
           >
             <i class="fa-solid fa-globe text-sky-500"></i>
             <span class="lang-toggle-text">${getLanguage() === 'en' ? 'BN' : 'EN'}</span>
@@ -133,18 +133,24 @@ function injectSidebar() {
 
   const drawer = document.createElement('div');
   drawer.id = 'sidebar-drawer';
-  drawer.className = 'fixed inset-0 z-50 flex hidden';
+  drawer.className = 'fixed inset-0 z-50 flex sidebar-drawer-container';
   drawer.innerHTML = `
     <!-- Blurred Dark Backdrop -->
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 sidebar-backdrop"></div>
 
-    <!-- Drawer Container -->
-    <div class="relative w-80 max-w-[85vw] bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
+    <!-- Drawer Panel Container -->
+    <div class="relative w-80 max-w-[85vw] h-full flex flex-col z-10 sidebar-panel-3d">
+      <!-- Ambient Glow Behind Panel -->
+      <div class="sidebar-ambient-glow"></div>
+
+      <!-- Subtle top-to-bottom light reflection -->
+      <div class="sidebar-top-reflection"></div>
+
       <!-- Top Header -->
-      <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 sticky top-0 z-10">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-lg shadow-xs">
-            W
+      <div class="p-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 sticky top-0 z-20 sidebar-header-glass">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl logo-3d-tile flex items-center justify-center p-1.5 shadow-md">
+            <img src="./assets/favicon.svg" alt="WebWorldBD" class="w-full h-full object-contain filter drop-shadow-xs" />
           </div>
           <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
             <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black" data-i18n="brandBD">${t('brandBD')}</span>
@@ -154,136 +160,143 @@ function injectSidebar() {
         <button
           id="btn-close-sidebar"
           aria-label="Close Navigation"
-          class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+          class="btn-3d-close w-9 h-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 cursor-pointer"
         >
-          <i class="fa-solid fa-xmark"></i>
+          <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- Content Body -->
-      <div class="p-4 space-y-6">
+      <div class="p-4 space-y-6 overflow-y-auto flex-1 sidebar-content-scroll z-10">
         <!-- User Card -->
-        <div id="sidebar-user-card" class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex items-center gap-3">
+        <div id="sidebar-user-card" class="sidebar-user-card-3d p-3.5 rounded-2xl flex items-center gap-3">
           <!-- Dynamically populated -->
         </div>
 
         <!-- MAIN MENU SECTION -->
-        <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="mainMenu">
+        <div class="sidebar-section-block">
+          <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="mainMenu">
             ${t('mainMenu')}
           </h3>
-          <div class="space-y-2">
+          <div class="space-y-2.5">
             <!-- Home -->
             <a
               href="./index.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="index.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-house"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="home">${t('home')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="home">${t('home')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Services -->
             <a
               href="./services.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="services.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-briefcase"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="services">${t('services')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="services">${t('services')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Start Project -->
             <a
               href="./start-project.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="start-project.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-project w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-rocket"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="startProject">${t('startProject')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="startProject">${t('startProject')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Live Chat -->
             <button
               id="sidebar-live-chat"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer relative"
+              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer relative"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0 relative">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-chat w-10 h-10 rounded-xl flex items-center justify-center text-emerald-500 shrink-0 relative">
                   <i class="fa-solid fa-comments"></i>
-                  <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></span>
+                  <span class="live-chat-red-dot"></span>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="liveChat">${t('liveChat')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="liveChat">${t('liveChat')}</span>
               </div>
             </button>
 
             <!-- Connect -->
             <a
               href="./contact.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="contact.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-paper-plane"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="connect">${t('connect')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="connect">${t('connect')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Settings -->
             <a
               href="./settings.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="settings.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-gear"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="settings">${t('settings')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="settings">${t('settings')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Admin Panel (Conditional) -->
             <a
               id="sidebar-admin-link"
               href="./admin.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all hidden"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl items-center justify-between text-left transition-all hidden"
+              data-path="admin.html"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="adminPanel">${t('adminPanel')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="adminPanel">${t('adminPanel')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Theme Switcher Card -->
             <div
               id="sidebar-toggle-theme"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
-                  <i class="fa-solid fa-sun text-amber-500 theme-icon-sun"></i>
-                  <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:none;"></i>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-sun text-amber-300 theme-icon-sun"></i>
+                  <i class="fa-solid fa-moon text-sky-300 theme-icon-moon" style="display:none;"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="theme">${t('theme')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="theme">${t('theme')}</span>
               </div>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 theme-label-text">
+              <span class="badge-3d-pill theme-label-text">
                 ${document.body.classList.contains('dark') ? 'Dark' : 'Light'}
               </span>
             </div>
@@ -291,15 +304,15 @@ function injectSidebar() {
             <!-- Language Switcher Card -->
             <div
               id="sidebar-toggle-lang"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all"
             >
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
                   <i class="fa-solid fa-globe"></i>
                 </div>
-                <span class="text-sm font-semibold" data-i18n="language">${t('language')}</span>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="language">${t('language')}</span>
               </div>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 lang-toggle-text">
+              <span class="badge-3d-pill lang-toggle-text">
                 ${getLanguage() === 'en' ? 'EN' : 'BN'}
               </span>
             </div>
@@ -307,79 +320,103 @@ function injectSidebar() {
         </div>
 
         <!-- LIVE PREVIEW SECTION -->
-        <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1">
+        <div class="sidebar-section-block">
+          <h3 class="sidebar-section-title mb-2.5 px-1">
             LIVE PREVIEW
           </h3>
           <div class="space-y-2">
-            ${['Market Koro', "Student's Tool's & AI", 'Birthday Website', 'Animated Heart', 'RunZone'].map(projectName => `
+            ${[
+              { name: 'Market Koro', icon: 'fa-store' },
+              { name: "Student's Tool's & AI", icon: 'fa-graduation-cap' },
+              { name: 'Birthday Website', icon: 'fa-cake-candles' },
+              { name: 'Animated Heart', icon: 'fa-heart' },
+              { name: 'RunZone', icon: 'fa-person-running' }
+            ].map(proj => `
               <a
                 href="./index.html#live-projects"
-                class="sidebar-live-link w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all text-sm font-semibold"
+                class="sidebar-live-link card-3d compact-live-card w-full p-2.5 rounded-xl flex items-center justify-between transition-all text-sm font-semibold text-slate-800 dark:text-slate-100"
               >
-                <span>${projectName}</span>
-                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+                <div class="flex items-center gap-2.5">
+                  <div class="icon-tile-mini icon-tile-preview w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs shrink-0">
+                    <i class="fa-solid ${proj.icon}"></i>
+                  </div>
+                  <span class="text-xs font-semibold">${proj.name}</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-sky-400/80"></i>
               </a>
             `).join('')}
           </div>
         </div>
 
         <!-- OTHERS SECTION -->
-        <div>
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="others">
+        <div class="sidebar-section-block">
+          <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="others">
             ${t('others')}
           </h3>
-          <div class="space-y-2">
+          <div class="space-y-2.5">
             <button
               id="sidebar-my-profile"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
             >
-              <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-user text-sky-500"></i>
-                <span class="text-sm font-semibold" data-i18n="myProfile">${t('myProfile')}</span>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="myProfile">${t('myProfile')}</span>
               </div>
             </button>
 
             <a
               href="./why-choose-me.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="why-choose-me.html"
             >
-              <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-circle-check text-sky-500"></i>
-                <span class="text-sm font-semibold" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <a
               href="./process.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="process.html"
             >
-              <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-list-check text-sky-500"></i>
-                <span class="text-sm font-semibold" data-i18n="workProcess">${t('workProcess')}</span>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-list-check"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="workProcess">${t('workProcess')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <a
               href="./faq.html"
-              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
               data-path="faq.html"
             >
-              <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-circle-question text-sky-500"></i>
-                <span class="text-sm font-semibold" data-i18n="faq">${t('faq')}</span>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-circle-question"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="faq">${t('faq')}</span>
               </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <button
               id="sidebar-modal-privacy"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
             >
-              <div class="flex items-center gap-2.5">
-                <i class="fa-solid fa-file-contract text-sky-500"></i>
-                <span class="text-sm font-semibold" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
               </div>
               <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
             </button>
@@ -387,7 +424,7 @@ function injectSidebar() {
         </div>
 
         <!-- CREATE ACCOUNT / LOG OUT SECTION -->
-        <div id="sidebar-auth-section">
+        <div id="sidebar-auth-section" class="sidebar-section-block">
           <!-- Dynamically updated -->
         </div>
       </div>
@@ -440,7 +477,19 @@ function highlightActiveSidebarNav() {
   document.querySelectorAll('.sidebar-nav-item').forEach(el => {
     const targetPath = el.getAttribute('data-path');
     if (targetPath === currentPath || (currentPath === '' && targetPath === 'index.html')) {
-      el.className = "sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-gradient-to-r from-sky-50 to-purple-50 dark:from-sky-950/50 dark:to-purple-950/50 border-l-4 border-sky-500 text-sky-700 dark:text-sky-300 font-bold shadow-xs";
+      el.classList.add('active');
+      const chevron = el.querySelector('.active-chevron');
+      if (chevron) {
+        chevron.classList.remove('opacity-0');
+        chevron.classList.add('opacity-100');
+      }
+    } else {
+      el.classList.remove('active');
+      const chevron = el.querySelector('.active-chevron');
+      if (chevron) {
+        chevron.classList.add('opacity-0');
+        chevron.classList.remove('opacity-100');
+      }
     }
   });
 }
@@ -448,14 +497,14 @@ function highlightActiveSidebarNav() {
 export function openSidebar() {
   const drawer = document.getElementById('sidebar-drawer');
   if (drawer) {
-    drawer.classList.remove('hidden');
+    drawer.classList.add('is-open');
   }
 }
 
 export function closeSidebar() {
   const drawer = document.getElementById('sidebar-drawer');
   if (drawer) {
-    drawer.classList.add('hidden');
+    drawer.classList.remove('is-open');
   }
 }
 
@@ -473,11 +522,12 @@ function updateAuthDependentUI() {
 
       const avatarSrc = photoURL || './assets/profile.jpg';
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 border-2 border-sky-400 flex items-center justify-center text-white font-bold text-lg shrink-0 overflow-hidden relative">
+        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
           <span>W</span>
           <img src="${avatarSrc}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.style.display='none';">
+          <span class="online-status-dot"></span>
         </div>
-        <div class="overflow-hidden">
+        <div class="overflow-hidden flex-1">
           <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
           <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
             ${email}
@@ -486,10 +536,11 @@ function updateAuthDependentUI() {
       `;
     } else {
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full bg-sky-100 dark:bg-sky-950/80 border-2 border-sky-400 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0">
+        <div class="w-11 h-11 rounded-full avatar-double-ring bg-sky-100 dark:bg-sky-950/80 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0 relative">
           <i class="fa-solid fa-user"></i>
+          <span class="online-status-dot"></span>
         </div>
-        <div class="overflow-hidden">
+        <div class="overflow-hidden flex-1">
           <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate" data-i18n="guest">${t('guest')}</h4>
           <a href="./login.html" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate" data-i18n="logIn">
             ${t('logIn')}
@@ -502,15 +553,17 @@ function updateAuthDependentUI() {
   if (authSection) {
     if (currentUser) {
       authSection.innerHTML = `
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="createAccount">
+        <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="createAccount">
           ACCOUNT
         </h3>
         <button
           id="btn-sidebar-logout"
-          class="w-full p-3 rounded-xl flex items-center justify-between bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 transition-all cursor-pointer"
+          class="btn-3d-logout w-full p-3 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
         >
-          <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-right-from-bracket text-sm"></i>
+          <div class="flex items-center gap-3">
+            <div class="icon-tile-3d icon-tile-logout w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </div>
             <span class="text-sm font-bold" data-i18n="logOut">${t('logOut')}</span>
           </div>
         </button>
@@ -524,20 +577,20 @@ function updateAuthDependentUI() {
       });
     } else {
       authSection.innerHTML = `
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="createAccount">
+        <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="createAccount">
           ${t('createAccount')}
         </h3>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-2.5">
           <a
             href="./login.html"
-            class="p-2.5 rounded-xl text-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold transition-all"
+            class="btn-3d-outlined p-2.5 rounded-2xl text-center text-xs font-bold transition-all block"
             data-i18n="logIn"
           >
             ${t('logIn')}
           </a>
           <a
             href="./signup.html"
-            class="p-2.5 rounded-xl text-center btn-primary-gradient text-xs font-bold transition-all"
+            class="btn-3d-gradient-shine p-2.5 rounded-2xl text-center text-xs font-bold transition-all block"
             data-i18n="signUp"
           >
             ${t('signUp')}
