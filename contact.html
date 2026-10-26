@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect & Contact | WebWorldBD</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen flex flex-col justify-between relative">
+
+  <!-- Shared Header -->
+  <div id="header-root"></div>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-10 animate-fade-in-up">
+    <!-- Header -->
+    <div class="text-center space-y-3">
+      <span class="inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-sky-100 text-sky-600 dark:bg-sky-900/60 dark:text-sky-300" data-i18n="getInTouchBadge">
+        Get In Touch
+      </span>
+
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="contactHeading">
+        Let's Build Something Great Together!
+      </h1>
+
+      <p class="text-xs md:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto font-medium" data-i18n="contactText">
+        Ready to take your business online or start a new project? Contact me today for a free consultation.
+      </p>
+    </div>
+
+    <!-- Contact List -->
+    <div class="space-y-3.5">
+      <!-- Email Support -->
+      <a
+        href="mailto:saripofficialsupport@gmail.com"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-solid fa-envelope text-lg"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="emailSupport">
+              EMAIL SUPPORT
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              saripofficialsupport@gmail.com
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Phone Number -->
+      <a
+        href="tel:+8801342697743"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-solid fa-phone text-lg"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="phoneNumber">
+              PHONE NUMBER
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              +8801342697743
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- WhatsApp Message -->
+      <a
+        href="https://wa.me/8801342697743"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-green-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-brands fa-whatsapp text-xl"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="whatsappMessage">
+              WHATSAPP MESSAGE
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              +8801342697743
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Support Hotline -->
+      <a
+        href="tel:+8809658183506"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-solid fa-headset text-lg"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="supportHotline">
+              SUPPORT HOTLINE
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              +8809658183506
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Telegram Support -->
+      <a
+        href="https://t.me/saripsupportBD"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-sky-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-brands fa-telegram text-xl"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="telegramSupport">
+              TELEGRAM SUPPORT
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              @saripsupportBD
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- LinkedIn Profile -->
+      <a
+        href="https://www.linkedin.com/in/sh-sarip-4066b2431"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-blue-700 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
+            <i class="fa-brands fa-linkedin text-xl"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="linkedinProfile">
+              LINKEDIN PROFILE
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              https://www.linkedin.com/in/sh-sarip-4066b2431
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Fiverr Profile -->
+      <a
+        href="https://www.fiverr.com/s/0DbA3ok"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+            fi
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="fiverrProfile">
+              FIVERR PROFILE
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              https://www.fiverr.com/s/0DbA3ok
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Web Development Fiverr Gig -->
+      <a
+        href="https://www.fiverr.com/s/8xzaXEp"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+            fi
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="webDevelopment">
+              WEB DEVELOPMENT
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              https://www.fiverr.com/s/8xzaXEp
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+
+      <!-- Android App Dev Fiverr Gig -->
+      <a
+        href="https://www.fiverr.com/s/vbvDpkL"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+      >
+        <div class="flex items-center gap-4 overflow-hidden">
+          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+            fi
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="androidAppDev">
+              ANDROID APP DEVELOPMENT
+            </p>
+            <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
+              https://www.fiverr.com/s/vbvDpkL
+            </p>
+          </div>
+        </div>
+        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+      </a>
+    </div>
+
+    <!-- SOCIAL NETWORKS Section -->
+    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 text-center space-y-4">
+      <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500" data-i18n="socialNetworks">
+        SOCIAL NETWORKS
+      </h3>
+
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="https://facebook.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Facebook"
+          class="w-11 h-11 rounded-full bg-blue-600 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-brands fa-facebook-f text-lg"></i>
+        </a>
+        <a
+          href="https://tiktok.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="TikTok"
+          class="w-11 h-11 rounded-full bg-slate-900 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-brands fa-tiktok text-lg"></i>
+        </a>
+        <a
+          href="https://t.me/saripsupportBD"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Telegram"
+          class="w-11 h-11 rounded-full bg-sky-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-brands fa-telegram text-lg"></i>
+        </a>
+        <a
+          href="https://www.linkedin.com/in/sh-sarip-4066b2431"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="LinkedIn"
+          class="w-11 h-11 rounded-full bg-blue-700 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-brands fa-linkedin-in text-lg"></i>
+        </a>
+        <a
+          href="mailto:saripofficialsupport@gmail.com"
+          title="Gmail"
+          class="w-11 h-11 rounded-full bg-red-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-solid fa-envelope text-lg"></i>
+        </a>
+        <a
+          href="https://wa.me/8801342697743"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="WhatsApp"
+          class="w-11 h-11 rounded-full bg-emerald-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          <i class="fa-brands fa-whatsapp text-xl"></i>
+        </a>
+        <a
+          href="https://www.fiverr.com/s/0DbA3ok"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Fiverr"
+          class="w-11 h-11 rounded-full bg-emerald-600 hover:opacity-90 flex items-center justify-center text-white font-extrabold text-xs shadow-md hover:scale-110 transition-all cursor-pointer"
+        >
+          fi
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <div id="footer-root"></div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
