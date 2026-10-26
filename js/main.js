@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectFloatingButtons();
   injectModals();
   injectToastContainer();
+  injectBottomNav();
   applyTranslations();
 
   // Subscribe to Auth State Changes
@@ -678,6 +679,105 @@ function injectFooter() {
       const modalType = e.currentTarget.getAttribute('data-modal');
       if (modalType) openModal(modalType);
     });
+  });
+}
+
+/* ================= BOTTOM NAVIGATION BAR INJECTION ================= */
+function injectBottomNav() {
+  if (document.getElementById('bottom-nav-bar')) return;
+
+  const currentPath = window.location.pathname.split('/').pop().toLowerCase() || 'index.html';
+  const isHomeActive = currentPath === 'index.html' || currentPath === '';
+  const isServicesActive = currentPath === 'services.html';
+  const isConnectActive = currentPath === 'contact.html';
+
+  const nav = document.createElement('nav');
+  nav.id = 'bottom-nav-bar';
+  nav.className = 'bottom-nav-container';
+  nav.setAttribute('aria-label', 'Mobile Bottom Navigation');
+
+  nav.innerHTML = `
+    <div class="bottom-nav-pill">
+      <!-- 1. Home -->
+      <a
+        href="./index.html"
+        class="bottom-nav-btn ${isHomeActive ? 'active' : ''}"
+      >
+        <div class="bottom-nav-icon-wrapper">
+          <i class="fa-solid fa-house text-lg"></i>
+        </div>
+        <span class="bottom-nav-label" data-i18n="home">${t('home')}</span>
+      </a>
+
+      <!-- 2. Services -->
+      <a
+        href="./services.html"
+        class="bottom-nav-btn ${isServicesActive ? 'active' : ''}"
+      >
+        <div class="bottom-nav-icon-wrapper">
+          <i class="fa-solid fa-layer-group text-lg"></i>
+        </div>
+        <span class="bottom-nav-label" data-i18n="services">${t('services')}</span>
+      </a>
+
+      <!-- 3. Start Project (CENTER) -->
+      <div class="bottom-nav-center-item">
+        <button
+          id="btn-bottom-start-project"
+          class="bottom-nav-center-btn"
+          aria-label="Start Project"
+        >
+          <div class="bottom-nav-center-circle">
+            <i class="fa-solid fa-rocket text-xl text-white"></i>
+          </div>
+        </button>
+        <span class="bottom-nav-label font-bold" data-i18n="startProject">${t('startProject')}</span>
+      </div>
+
+      <!-- 4. Live Chat -->
+      <button
+        id="btn-bottom-live-chat"
+        class="bottom-nav-btn"
+        aria-label="Live Chat"
+      >
+        <div class="bottom-nav-icon-wrapper">
+          <i class="fa-solid fa-comments text-lg"></i>
+        </div>
+        <span class="bottom-nav-label" data-i18n="liveChat">${t('liveChat')}</span>
+      </button>
+
+      <!-- 5. Connect -->
+      <a
+        href="./contact.html"
+        class="bottom-nav-btn ${isConnectActive ? 'active' : ''}"
+      >
+        <div class="bottom-nav-icon-wrapper">
+          <i class="fa-solid fa-link text-lg"></i>
+        </div>
+        <span class="bottom-nav-label" data-i18n="connect">${t('connect')}</span>
+      </a>
+    </div>
+  `;
+
+  document.body.appendChild(nav);
+
+  // Attach event handlers for buttons requiring auth check
+  document.getElementById('btn-bottom-start-project')?.addEventListener('click', () => {
+    if (!currentUser) {
+      showToast(getLanguage() === 'en' ? "Please log in first to start a project." : "প্রজেক্ট শুরু করতে প্রথমে লগ ইন করুন।", "info");
+      window.location.href = './login.html';
+    } else {
+      window.location.href = './contact.html';
+    }
+  });
+
+  document.getElementById('btn-bottom-live-chat')?.addEventListener('click', () => {
+    if (!currentUser) {
+      showToast(getLanguage() === 'en' ? "Please log in first for live chat." : "লাইভ চ্যাটের জন্য প্রথমে লগ ইন করুন।", "info");
+      window.location.href = './login.html';
+    } else {
+      openModal('liveChat');
+    }
   });
 }
 
