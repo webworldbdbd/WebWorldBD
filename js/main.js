@@ -479,9 +479,11 @@ function updateAuthDependentUI() {
       const email = currentUser.email || '';
       const photoURL = currentUser.photoURL;
 
+      const avatarSrc = photoURL || './assets/profile.jpg';
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full bg-sky-100 dark:bg-sky-950/80 border-2 border-sky-400 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0 overflow-hidden">
-          ${photoURL ? `<img src="${photoURL}" alt="${name}" class="w-full h-full object-cover">` : name.charAt(0).toUpperCase()}
+        <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 border-2 border-sky-400 flex items-center justify-center text-white font-bold text-lg shrink-0 overflow-hidden relative">
+          <span>W</span>
+          <img src="${avatarSrc}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.style.display='none';">
         </div>
         <div class="overflow-hidden">
           <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
