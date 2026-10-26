@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Settings | WebWorldBD</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen flex flex-col justify-between relative">
+
+  <!-- Shared Header -->
+  <div id="header-root"></div>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+    <!-- Top Row Navigation & Badge -->
+    <div class="flex items-center justify-between">
+      <a
+        href="./index.html"
+        class="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs border border-slate-200 dark:border-slate-700"
+        data-i18n="backToHome"
+      >
+        ← Back to Home
+      </a>
+
+      <div class="px-4 py-2 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-xs font-bold flex items-center gap-2 border border-sky-200 dark:border-sky-900">
+        <i class="fa-solid fa-sliders"></i>
+        <span data-i18n="preferencesPill">WebWorldBD Preferences</span>
+      </div>
+    </div>
+
+    <!-- Heading & Subtitle -->
+    <div class="space-y-2">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="settingsHeading">
+        System Settings
+      </h1>
+      <p class="text-xs md:text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="settingsSubtitle">
+        Manage your site preferences, account details, notifications, and privacy options.
+      </p>
+    </div>
+
+    <!-- Stack of White Rounded Cards -->
+    <div class="space-y-5">
+
+      <!-- 1. Appearance Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-palette"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="appearance">
+            Appearance
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Theme Mode Segmented Control -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="themeMode">
+              THEME MODE
+            </label>
+            <div class="grid grid-cols-3 gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+              <button
+                type="button"
+                id="btn-theme-light"
+                class="theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
+                data-i18n="lightMode"
+              >
+                Light Mode
+              </button>
+              <button
+                type="button"
+                id="btn-theme-dark"
+                class="theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
+                data-i18n="darkMode"
+              >
+                Dark Mode
+              </button>
+              <button
+                type="button"
+                id="btn-theme-system"
+                class="theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
+                data-i18n="systemDefault"
+              >
+                System Default
+              </button>
+            </div>
+          </div>
+
+          <!-- Language Segmented Control -->
+          <div class="space-y-2 pt-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="languageLabel">
+              LANGUAGE
+            </label>
+            <div class="grid grid-cols-2 gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+              <button
+                type="button"
+                id="btn-lang-bn"
+                class="lang-segment-btn py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
+              >
+                বাংলা (Bangla)
+              </button>
+              <button
+                type="button"
+                id="btn-lang-en"
+                class="lang-segment-btn py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
+              >
+                English
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Account Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-950/80 text-sky-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-user-gear"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="accountSection">
+            Account
+          </h2>
+        </div>
+
+        <div id="settings-account-content">
+          <!-- Dynamically populated based on login state -->
+        </div>
+      </div>
+
+      <!-- 3. Notifications Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-bell"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="notificationsSection">
+            Notifications
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Toggle 1: Project Update Notifications -->
+          <div class="flex items-center justify-between gap-4">
+            <div class="space-y-0.5">
+              <h4 class="text-xs md:text-sm font-bold text-slate-900 dark:text-white" data-i18n="projUpdateNotif">
+                Project Update Notifications
+              </h4>
+              <p class="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="projUpdateNotifDesc">
+                Receive instant status alerts about your active web & app development projects.
+              </p>
+            </div>
+            <button
+              type="button"
+              id="toggle-project-notif"
+              class="w-12 h-6 rounded-full p-1 bg-gradient-to-r from-sky-400 to-indigo-500 transition-colors cursor-pointer shrink-0 flex items-center"
+            >
+              <div class="w-4 h-4 rounded-full bg-white shadow-md transform translate-x-6 transition-transform id-toggle-dot-1"></div>
+            </button>
+          </div>
+
+          <div class="border-t border-slate-100 dark:border-slate-800"></div>
+
+          <!-- Toggle 2: Promotional & News Emails -->
+          <div class="flex items-center justify-between gap-4">
+            <div class="space-y-0.5">
+              <h4 class="text-xs md:text-sm font-bold text-slate-900 dark:text-white" data-i18n="promoEmails">
+                Promotional & News Emails
+              </h4>
+              <p class="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="promoEmailsDesc">
+                Get updates on special discounts, newly launched web services, and tech articles.
+              </p>
+            </div>
+            <button
+              type="button"
+              id="toggle-promo-emails"
+              class="w-12 h-6 rounded-full p-1 bg-slate-300 dark:bg-slate-700 transition-colors cursor-pointer shrink-0 flex items-center"
+            >
+              <div class="w-4 h-4 rounded-full bg-white shadow-md transform translate-x-0 transition-transform id-toggle-dot-2"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Quick Links Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-compass"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="quickLinksSection">
+            Quick Links
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <a href="./index.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-house text-sky-500"></i>
+            <span data-i18n="home">Home</span>
+          </a>
+          <a href="./index.html#about-me" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-user text-sky-500"></i>
+            <span data-i18n="aboutMeTitle">About Me</span>
+          </a>
+          <a href="./services.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-briefcase text-sky-500"></i>
+            <span data-i18n="services">Services</span>
+          </a>
+          <a href="./index.html#live-projects" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-laptop-code text-sky-500"></i>
+            <span>Projects</span>
+          </a>
+          <a href="./why-choose-me.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-circle-check text-sky-500"></i>
+            <span data-i18n="whyChooseMe">Why Choose Me</span>
+          </a>
+          <a href="./process.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-list-check text-sky-500"></i>
+            <span data-i18n="workProcess">Work Process</span>
+          </a>
+          <a href="./faq.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-circle-question text-sky-500"></i>
+            <span data-i18n="faq">FAQ</span>
+          </a>
+          <a href="./contact.html" class="p-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/50 border border-slate-200 dark:border-slate-700/60 flex items-center gap-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 transition-all cursor-pointer">
+            <i class="fa-solid fa-paper-plane text-sky-500"></i>
+            <span data-i18n="connect">Contact</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 5. Support & Contact Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="supportContactBtn">
+            Support & Contact
+          </h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <a
+            href="https://wa.me/8801342697743"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-4 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            <span data-i18n="whatsappBtn">Message on WhatsApp</span>
+          </a>
+
+          <a
+            href="mailto:saripofficialsupport@gmail.com"
+            class="px-4 py-2.5 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            <i class="fa-solid fa-envelope text-red-500 text-sm"></i>
+            <span data-i18n="emailSupport">Email Support</span>
+          </a>
+
+          <a
+            href="https://www.linkedin.com/in/sh-sarip-4066b2431"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-4 py-2.5 rounded-full border border-blue-500 text-blue-600 dark:text-blue-400 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs hover:bg-blue-50 dark:hover:bg-blue-950/40"
+          >
+            <i class="fa-brands fa-linkedin text-sm"></i>
+            <span data-i18n="linkedinProfile">LinkedIn Profile</span>
+          </a>
+        </div>
+
+        <div class="pt-2">
+          <a
+            href="./start-project.html"
+            class="w-full py-3.5 rounded-2xl btn-primary-gradient font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>Request Support</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 6. About Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/80 text-purple-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-circle-info"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="aboutSection">
+            About
+          </h2>
+        </div>
+
+        <div class="space-y-3 text-xs md:text-sm">
+          <div class="flex items-center justify-between border-b border-dashed border-slate-200 dark:border-slate-800 pb-2.5">
+            <span class="font-bold text-slate-900 dark:text-white">WebWorldBD</span>
+            <span class="font-semibold text-slate-500 dark:text-slate-400" data-i18n="versionLabel">Version 2.4.0</span>
+          </div>
+
+          <div class="flex items-center justify-between border-b border-dashed border-slate-200 dark:border-slate-800 pb-2.5">
+            <span class="font-bold text-slate-900 dark:text-white">SHAFAET HOSSEN SARIP</span>
+            <span class="font-semibold text-slate-500 dark:text-slate-400" data-i18n="buildLabel">Build 2026.03</span>
+          </div>
+
+          <div class="pt-1">
+            <a href="./services.html" class="inline-flex items-center gap-2 text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs">
+              <i class="fa-solid fa-shield"></i>
+              <span data-i18n="ourEthicsPolicy">Our Ethics & Policy</span>
+            </a>
+          </div>
+
+          <p class="text-[11px] text-slate-400 dark:text-slate-500 pt-2 leading-relaxed" data-i18n="copyright">
+            © 2026 WebWorldBD. Created with passion by SHAFAET HOSSEN SARIP. All rights reserved.
+          </p>
+        </div>
+      </div>
+
+      <!-- 7. Data & Privacy Card -->
+      <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+          <div class="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950/80 text-red-500 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="dataPrivacySection">
+            Data & Privacy
+          </h2>
+        </div>
+
+        <p class="text-xs text-slate-600 dark:text-slate-400" data-i18n="dataPrivacyText">
+          Reset locally stored theme, language, and notification settings.
+        </p>
+
+        <div>
+          <button
+            type="button"
+            id="btn-clear-cache"
+            class="px-4 py-2.5 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-950/60 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 font-bold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-xs"
+          >
+            <i class="fa-solid fa-trash"></i>
+            <span data-i18n="clearCacheBtn">Clear Cache & Preferences</span>
+          </button>
+        </div>
+
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+          <a href="./contact.html" class="inline-flex items-center gap-2 text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs">
+            <i class="fa-solid fa-file-lines"></i>
+            <span data-i18n="privacyTermsLink">Privacy Policy & Terms of Service</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <div id="footer-root"></div>
+
+  <script type="module" src="./js/main.js"></script>
+  <script type="module">
+    import { getLanguage, setLanguage } from './js/i18n.js';
+    import { subscribeAuthState, logOut } from './js/auth.js';
+    import { toggleTheme, showToast } from './js/main.js';
+    import { db } from './js/firebase-config.js';
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    let currentUser = null;
+    let currentUserData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Appearance Controls
+      updateThemeSegmentUI();
+      updateLangSegmentUI();
+
+      document.getElementById('btn-theme-light')?.addEventListener('click', () => setThemeMode('light'));
+      document.getElementById('btn-theme-dark')?.addEventListener('click', () => setThemeMode('dark'));
+      document.getElementById('btn-theme-system')?.addEventListener('click', () => setThemeMode('system'));
+
+      document.getElementById('btn-lang-bn')?.addEventListener('click', () => {
+        setLanguage('bn');
+        updateLangSegmentUI();
+      });
+
+      document.getElementById('btn-lang-en')?.addEventListener('click', () => {
+        setLanguage('en');
+        updateLangSegmentUI();
+      });
+
+      // 2. Account Status
+      subscribeAuthState((user, userData) => {
+        currentUser = user;
+        currentUserData = userData;
+        renderAccountCard();
+      });
+
+      // 3. Notification Toggles
+      initNotificationToggles();
+
+      // 7. Clear Cache & Preferences
+      document.getElementById('btn-clear-cache')?.addEventListener('click', () => {
+        const confirmMsg = getLanguage() === 'en'
+          ? "Are you sure you want to clear locally stored preferences?"
+          : "আপনি কি নিশ্চিত যে আপনি লোকাল প্রেফারেন্স মুছে ফেলতে চান?";
+
+        if (confirm(confirmMsg)) {
+          localStorage.removeItem('webworldbd_theme');
+          localStorage.removeItem('webworldbd_lang');
+          localStorage.removeItem('webworldbd_notif_project');
+          localStorage.removeItem('webworldbd_notif_promo');
+          location.reload();
+        }
+      });
+    });
+
+    function setThemeMode(mode) {
+      if (mode === 'light') {
+        document.body.classList.remove('dark');
+        localStorage.setItem('webworldbd_theme', 'light');
+      } else if (mode === 'dark') {
+        document.body.classList.add('dark');
+        localStorage.setItem('webworldbd_theme', 'dark');
+      } else if (mode === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
+        }
+        localStorage.setItem('webworldbd_theme', 'system');
+      }
+      updateThemeSegmentUI();
+    }
+
+    function updateThemeSegmentUI() {
+      const saved = localStorage.getItem('webworldbd_theme') || 'light';
+      const activeClass = "btn-primary-gradient text-white shadow-xs";
+      const inactiveClass = "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+
+      const btnLight = document.getElementById('btn-theme-light');
+      const btnDark = document.getElementById('btn-theme-dark');
+      const btnSystem = document.getElementById('btn-theme-system');
+
+      if (btnLight) btnLight.className = `theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${saved === 'light' ? activeClass : inactiveClass}`;
+      if (btnDark) btnDark.className = `theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${saved === 'dark' ? activeClass : inactiveClass}`;
+      if (btnSystem) btnSystem.className = `theme-segment-btn py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${saved === 'system' ? activeClass : inactiveClass}`;
+    }
+
+    function updateLangSegmentUI() {
+      const lang = getLanguage();
+      const activeClass = "btn-primary-gradient text-white shadow-xs";
+      const inactiveClass = "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+
+      const btnBn = document.getElementById('btn-lang-bn');
+      const btnEn = document.getElementById('btn-lang-en');
+
+      if (btnBn) btnBn.className = `lang-segment-btn py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${lang === 'bn' ? activeClass : inactiveClass}`;
+      if (btnEn) btnEn.className = `lang-segment-btn py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${lang === 'en' ? activeClass : inactiveClass}`;
+    }
+
+    function renderAccountCard() {
+      const container = document.getElementById('settings-account-content');
+      if (!container) return;
+
+      if (!currentUser) {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-lg shrink-0">
+                <i class="fa-solid fa-user-slash"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm" data-i18n="notLoggedIn">Not Logged In</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" data-i18n="notLoggedInDesc">
+                  Sign in or register to access project tracking, invoice management, and profile features.
+                </p>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <a
+                href="./login.html"
+                class="px-5 py-2.5 rounded-full btn-primary-gradient font-bold text-xs inline-flex items-center gap-2 shadow-xs cursor-pointer"
+              >
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span data-i18n="logIn">Log In / Register</span>
+              </a>
+            </div>
+          </div>
+        `;
+      } else {
+        const name = currentUserData?.name || currentUser.displayName || 'WebWorldBD User';
+        const email = currentUser.email || '';
+        const avatarSrc = currentUser.photoURL || './assets/profile.jpg';
+
+        container.innerHTML = `
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5 overflow-hidden">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 border-2 border-sky-400 flex items-center justify-center text-white font-bold text-xl shrink-0 overflow-hidden relative">
+                <span>W</span>
+                <img src="${avatarSrc}" alt="${name}" width="48" height="48" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.style.display='none';">
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h3>
+                <p class="text-xs text-sky-500 dark:text-sky-400 font-medium truncate">${email}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="btn-settings-logout"
+              class="px-4 py-2 rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-red-200 dark:border-red-900/60"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span data-i18n="logOut">Log Out</span>
+            </button>
+          </div>
+        `;
+
+        document.getElementById('btn-settings-logout')?.addEventListener('click', async () => {
+          await logOut();
+          showToast(getLanguage() === 'en' ? "Logged out successfully." : "সফলভাবে লগ আউট করা হয়েছে।", "success");
+          renderAccountCard();
+        });
+      }
+    }
+
+    function initNotificationToggles() {
+      let projNotifVal = localStorage.getItem('webworldbd_notif_project') !== 'false'; // ON by default
+      let promoEmailVal = localStorage.getItem('webworldbd_notif_promo') === 'true'; // OFF by default
+
+      updateToggleUI('toggle-project-notif', '.id-toggle-dot-1', projNotifVal);
+      updateToggleUI('toggle-promo-emails', '.id-toggle-dot-2', promoEmailVal);
+
+      document.getElementById('toggle-project-notif')?.addEventListener('click', () => {
+        projNotifVal = !projNotifVal;
+        localStorage.setItem('webworldbd_notif_project', projNotifVal ? 'true' : 'false');
+        updateToggleUI('toggle-project-notif', '.id-toggle-dot-1', projNotifVal);
+        syncNotificationsToFirestore();
+      });
+
+      document.getElementById('toggle-promo-emails')?.addEventListener('click', () => {
+        promoEmailVal = !promoEmailVal;
+        localStorage.setItem('webworldbd_notif_promo', promoEmailVal ? 'true' : 'false');
+        updateToggleUI('toggle-promo-emails', '.id-toggle-dot-2', promoEmailVal);
+        syncNotificationsToFirestore();
+      });
+    }
+
+    function updateToggleUI(btnId, dotSelector, isOn) {
+      const btn = document.getElementById(btnId);
+      const dot = btn?.querySelector(dotSelector);
+
+      if (!btn || !dot) return;
+
+      if (isOn) {
+        btn.className = "w-12 h-6 rounded-full p-1 bg-gradient-to-r from-sky-400 to-indigo-500 transition-colors cursor-pointer shrink-0 flex items-center";
+        dot.style.transform = "translateX(24px)";
+      } else {
+        btn.className = "w-12 h-6 rounded-full p-1 bg-slate-300 dark:bg-slate-700 transition-colors cursor-pointer shrink-0 flex items-center";
+        dot.style.transform = "translateX(0px)";
+      }
+    }
+
+    async function syncNotificationsToFirestore() {
+      if (currentUser) {
+        try {
+          const userRef = doc(db, "users", currentUser.uid);
+          await setDoc(userRef, {
+            notifications: {
+              projectUpdates: localStorage.getItem('webworldbd_notif_project') !== 'false',
+              promotionalEmails: localStorage.getItem('webworldbd_notif_promo') === 'true'
+            }
+          }, { merge: true });
+        } catch (err) {
+          console.warn("Firestore notification sync warning:", err);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start Project | WebWorldBD</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen flex flex-col justify-between relative">
+
+  <!-- Shared Header -->
+  <div id="header-root"></div>
+
+  <!-- Main Content -->
+  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+    <!-- Header Badge & Title -->
+    <div class="text-center space-y-3">
+      <span class="inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-sky-100 text-sky-600 dark:bg-sky-900/60 dark:text-sky-300" data-i18n="startProject">
+        Start Project
+      </span>
+
+      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="startProjectTitle">
+        Let's Build Something Great Together!
+      </h1>
+
+      <p class="text-xs md:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto font-medium" data-i18n="startProjectSubtitle">
+        Describe your custom project requirements, desired features, or ideas in free-text...
+      </p>
+    </div>
+
+    <!-- Project Form Card -->
+    <div class="glass-card p-6 md:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
+      <form id="start-project-form" class="space-y-5" novalidate>
+        <!-- Full Name -->
+        <div class="space-y-1.5">
+          <label for="input-full-name" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="fullName">
+            Your Full Name
+          </label>
+          <input
+            id="input-full-name"
+            type="text"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="Full Name"
+            data-i18n="fullNamePlaceholder"
+          />
+        </div>
+
+        <!-- Mobile Number -->
+        <div class="space-y-1.5">
+          <label for="input-mobile-number" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="mobileNumber">
+            Mobile Number *
+          </label>
+          <input
+            id="input-mobile-number"
+            type="tel"
+            required
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="01XXXXXXXXX"
+            data-i18n="mobileNumberPlaceholder"
+          />
+        </div>
+
+        <!-- Email Address -->
+        <div class="space-y-1.5">
+          <label for="input-email-address" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="emailOptional">
+            Email Address (Optional)
+          </label>
+          <input
+            id="input-email-address"
+            type="email"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="example@mail.com"
+            data-i18n="emailPlaceholder"
+          />
+        </div>
+
+        <!-- Budget -->
+        <div class="space-y-1.5">
+          <label for="input-budget" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="budgetLabel">
+            আনুমানিক বাজেট (ঐচ্ছিক) / Estimated Budget
+          </label>
+          <input
+            id="input-budget"
+            type="text"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="e.g. ৳15,000 - ৳30,000 or $200"
+            data-i18n="budgetPlaceholder"
+          />
+        </div>
+
+        <!-- Project Category -->
+        <div class="space-y-1.5">
+          <label for="select-category" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="projectCategory">
+            Project Category
+          </label>
+          <select
+            id="select-category"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all cursor-pointer"
+          >
+            <option value="" data-i18n="selectCategory">-- Select category --</option>
+            <option value="Business Website">Business Website</option>
+            <option value="E-commerce Website">E-commerce Website</option>
+            <option value="Portfolio Website">Portfolio Website</option>
+            <option value="Blog Website">Blog Website</option>
+            <option value="News Website">News Website</option>
+            <option value="Educational Website">Educational Website</option>
+            <option value="Social Media Website">Social Media Website</option>
+            <option value="Web App / SaaS">Web App / SaaS</option>
+            <option value="Booking Website">Booking Website</option>
+            <option value="Marketplace Website">Marketplace Website</option>
+            <option value="Forum / Community Website">Forum / Community Website</option>
+            <option value="Entertainment Website">Entertainment Website</option>
+            <option value="Landing Page">Landing Page</option>
+            <option value="Government / NGO Website">Government / NGO Website</option>
+            <option value="AI Website / Tools">AI Website / Tools</option>
+            <option value="Others (Custom Project)">Others (Custom Project)</option>
+          </select>
+        </div>
+
+        <!-- Custom Project Requirements Textarea -->
+        <div class="space-y-1.5">
+          <label for="textarea-requirements" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="requirementsLabel">
+            Custom Project Requirements
+          </label>
+          <textarea
+            id="textarea-requirements"
+            rows="4"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="Describe your custom project requirements in detail..."
+            data-i18n="requirementsPlaceholder"
+          ></textarea>
+        </div>
+
+        <!-- Attachment Field -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="attachFileLabel">
+            Attach Reference File / Requirements Document
+          </label>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium" data-i18n="attachFileNote">
+            (Optional - JPG, PNG, WEBP, PDF, DOCX, ZIP up to 5MB)
+          </p>
+
+          <input type="file" id="input-attachment" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.docx,.zip">
+
+          <div class="flex items-center gap-3 pt-1">
+            <button
+              type="button"
+              id="btn-choose-file"
+              class="px-4 py-2.5 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+            >
+              <i class="fa-solid fa-paperclip"></i>
+              <span data-i18n="chooseAttachment">Choose Attachment</span>
+            </button>
+
+            <div id="selected-file-pill" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-xs font-semibold">
+              <span id="selected-file-name" class="truncate max-w-[200px]"></span>
+              <button type="button" id="btn-remove-file" class="hover:text-red-500 transition-colors ml-1 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Grid -->
+        <div class="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <button
+            type="submit"
+            id="btn-send-message"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-full btn-primary-gradient font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-paper-plane"></i>
+            <span id="btn-send-text" data-i18n="sendMessageBtn">Send Message</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-whatsapp-message"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-full btn-whatsapp-gradient font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span data-i18n="whatsappBtn">Message on WhatsApp</span>
+          </button>
+
+          <a
+            href="./contact.html"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-full border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs md:text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-headset text-sky-500"></i>
+            <span data-i18n="supportContactBtn">Support & Contact</span>
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Shared Footer -->
+  <div id="footer-root"></div>
+
+  <script type="module" src="./js/main.js"></script>
+  <script type="module">
+    import { db, storage } from './js/firebase-config.js';
+    import { subscribeAuthState } from './js/auth.js';
+    import { showToast } from './js/main.js';
+    import { getLanguage } from './js/i18n.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    let currentUser = null;
+    let selectedFile = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      subscribeAuthState((user, userData) => {
+        currentUser = user;
+        if (user) {
+          const nameInput = document.getElementById('input-full-name');
+          const emailInput = document.getElementById('input-email-address');
+          if (nameInput && !nameInput.value) {
+            nameInput.value = userData?.name || user.displayName || '';
+          }
+          if (emailInput && !emailInput.value) {
+            emailInput.value = user.email || '';
+          }
+        }
+      });
+
+      const fileInput = document.getElementById('input-attachment');
+      const chooseFileBtn = document.getElementById('btn-choose-file');
+      const filePill = document.getElementById('selected-file-pill');
+      const fileNameSpan = document.getElementById('selected-file-name');
+      const removeFileBtn = document.getElementById('btn-remove-file');
+
+      chooseFileBtn?.addEventListener('click', () => fileInput?.click());
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const allowedTypes = [
+          'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+          'application/pdf',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/zip', 'application/x-zip-compressed'
+        ];
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        const validExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'docx', 'zip'];
+
+        if (!allowedTypes.includes(file.type) && !validExts.includes(ext)) {
+          showToast(getLanguage() === 'en' ? 'Invalid file type. Please upload JPG, PNG, WEBP, PDF, DOCX, or ZIP.' : 'অকার্যকর ফাইল ফরম্যাট। JPG, PNG, WEBP, PDF, DOCX, বা ZIP ফাইল আপলোড করুন।', 'error');
+          fileInput.value = '';
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          showToast(getLanguage() === 'en' ? 'File size exceeds 5MB limit.' : 'ফাইল সাইজ সর্বোচ্চ 5MB এর বেশি হতে পারবে না।', 'error');
+          fileInput.value = '';
+          return;
+        }
+
+        selectedFile = file;
+        if (fileNameSpan) fileNameSpan.textContent = file.name;
+        filePill?.classList.remove('hidden');
+        filePill?.classList.add('flex');
+      });
+
+      removeFileBtn?.addEventListener('click', () => {
+        selectedFile = null;
+        if (fileInput) fileInput.value = '';
+        filePill?.classList.add('hidden');
+        filePill?.classList.remove('flex');
+      });
+
+      const form = document.getElementById('start-project-form');
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('input-full-name')?.value.trim() || '';
+        const mobile = document.getElementById('input-mobile-number')?.value.trim() || '';
+        const email = document.getElementById('input-email-address')?.value.trim() || '';
+        const budget = document.getElementById('input-budget')?.value.trim() || '';
+        const category = document.getElementById('select-category')?.value || '';
+        const requirements = document.getElementById('textarea-requirements')?.value.trim() || '';
+
+        // Validate Bangladesh mobile number format: 013-019 followed by 8 digits (11 digits total)
+        const bdPhoneRegex = /^01[3-9]\d{8}$/;
+        if (!mobile || !bdPhoneRegex.test(mobile)) {
+          showToast(getLanguage() === 'en' ? 'Please enter a valid Bangladesh mobile number (e.g. 01XXXXXXXXX).' : 'দয়া করে সঠিক বাংলাদেশী মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)।', 'error');
+          return;
+        }
+
+        const sendBtn = document.getElementById('btn-send-message');
+        const sendText = document.getElementById('btn-send-text');
+
+        try {
+          if (sendBtn) sendBtn.disabled = true;
+          if (sendText) sendText.innerHTML = `<span class="spinner"></span> ${getLanguage() === 'en' ? 'Sending...' : 'পাঠানো হচ্ছে...'}`;
+
+          let attachmentURL = '';
+          if (selectedFile) {
+            const fileRef = ref(storage, `projectAttachments/${Date.now()}_${selectedFile.name}`);
+            const uploadRes = await uploadBytes(fileRef, selectedFile);
+            attachmentURL = await getDownloadURL(uploadRes.ref);
+          }
+
+          const requestData = {
+            name,
+            mobile,
+            email,
+            budget,
+            category,
+            requirements,
+            attachmentURL,
+            userId: currentUser ? currentUser.uid : null,
+            createdAt: new Date().toISOString(),
+            status: 'new'
+          };
+
+          await addDoc(collection(db, 'projectRequests'), requestData);
+
+          showToast(getLanguage() === 'en' ? 'Your project request has been submitted successfully!' : 'আপনার প্রজেক্টের অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!', 'success');
+
+          form.reset();
+          selectedFile = null;
+          filePill?.classList.add('hidden');
+          filePill?.classList.remove('flex');
+
+        } catch (err) {
+          console.error('Submission error:', err);
+          showToast(getLanguage() === 'en' ? 'Failed to submit request. Please try again.' : 'অনুরোধ জমা দেওয়া সম্ভব হয়নি। আবার চেষ্টা করুন।', 'error');
+        } finally {
+          if (sendBtn) sendBtn.disabled = false;
+          if (sendText) sendText.textContent = getLanguage() === 'en' ? 'Send Message' : 'মেসেজ পাঠান';
+        }
+      });
+
+      document.getElementById('btn-whatsapp-message')?.addEventListener('click', () => {
+        const name = document.getElementById('input-full-name')?.value.trim() || 'N/A';
+        const mobile = document.getElementById('input-mobile-number')?.value.trim() || 'N/A';
+        const email = document.getElementById('input-email-address')?.value.trim() || 'N/A';
+        const budget = document.getElementById('input-budget')?.value.trim() || 'N/A';
+        const category = document.getElementById('select-category')?.value || 'N/A';
+        const requirements = document.getElementById('textarea-requirements')?.value.trim() || 'N/A';
+
+        const messageText = `*New Project Request via WebWorldBD*\n\n` +
+          `• *Name:* ${name}\n` +
+          `• *Mobile:* ${mobile}\n` +
+          `• *Email:* ${email}\n` +
+          `• *Budget:* ${budget}\n` +
+          `• *Category:* ${category}\n` +
+          `• *Requirements:* ${requirements}`;
+
+        const waUrl = `https://wa.me/8801342697743?text=${encodeURIComponent(messageText)}`;
+        window.open(waUrl, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>

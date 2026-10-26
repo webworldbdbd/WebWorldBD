@@ -202,9 +202,10 @@ function injectSidebar() {
             </a>
 
             <!-- Start Project -->
-            <button
-              id="sidebar-start-project"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            <a
+              href="./start-project.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="start-project.html"
             >
               <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
@@ -212,7 +213,7 @@ function injectSidebar() {
                 </div>
                 <span class="text-sm font-semibold" data-i18n="startProject">${t('startProject')}</span>
               </div>
-            </button>
+            </a>
 
             <!-- Live Chat -->
             <button
@@ -243,9 +244,10 @@ function injectSidebar() {
             </a>
 
             <!-- Settings -->
-            <button
-              id="sidebar-open-settings"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            <a
+              href="./settings.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="settings.html"
             >
               <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
@@ -253,7 +255,7 @@ function injectSidebar() {
                 </div>
                 <span class="text-sm font-semibold" data-i18n="settings">${t('settings')}</span>
               </div>
-            </button>
+            </a>
 
             <!-- Admin Panel (Conditional) -->
             <a
@@ -338,35 +340,38 @@ function injectSidebar() {
               </div>
             </button>
 
-            <button
-              id="sidebar-modal-whychoose"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            <a
+              href="./why-choose-me.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="why-choose-me.html"
             >
               <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-circle-check text-sky-500"></i>
                 <span class="text-sm font-semibold" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
               </div>
-            </button>
+            </a>
 
-            <button
-              id="sidebar-modal-workprocess"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            <a
+              href="./process.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="process.html"
             >
               <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-list-check text-sky-500"></i>
                 <span class="text-sm font-semibold" data-i18n="workProcess">${t('workProcess')}</span>
               </div>
-            </button>
+            </a>
 
-            <button
-              id="sidebar-modal-faq"
-              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            <a
+              href="./faq.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="faq.html"
             >
               <div class="flex items-center gap-2.5">
                 <i class="fa-solid fa-circle-question text-sky-500"></i>
                 <span class="text-sm font-semibold" data-i18n="faq">${t('faq')}</span>
               </div>
-            </button>
+            </a>
 
             <button
               id="sidebar-modal-privacy"
@@ -402,14 +407,8 @@ function injectSidebar() {
   document.getElementById('sidebar-toggle-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('sidebar-toggle-lang')?.addEventListener('click', toggleLanguage);
 
-  document.getElementById('sidebar-start-project')?.addEventListener('click', () => {
-    closeSidebar();
-    if (!currentUser) {
-      showToast(getLanguage() === 'en' ? "Please log in first to start a project." : "প্রজেক্ট শুরু করতে প্রথমে লগ ইন করুন।", "info");
-      window.location.href = './login.html';
-    } else {
-      window.location.href = './contact.html';
-    }
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+    el.addEventListener('click', closeSidebar);
   });
 
   document.getElementById('sidebar-live-chat')?.addEventListener('click', () => {
@@ -422,11 +421,6 @@ function injectSidebar() {
     }
   });
 
-  document.getElementById('sidebar-open-settings')?.addEventListener('click', () => {
-    closeSidebar();
-    openModal('settings');
-  });
-
   document.getElementById('sidebar-my-profile')?.addEventListener('click', () => {
     closeSidebar();
     if (!currentUser) {
@@ -436,9 +430,6 @@ function injectSidebar() {
     }
   });
 
-  document.getElementById('sidebar-modal-whychoose')?.addEventListener('click', () => { closeSidebar(); openModal('whyChooseMe'); });
-  document.getElementById('sidebar-modal-workprocess')?.addEventListener('click', () => { closeSidebar(); openModal('workProcess'); });
-  document.getElementById('sidebar-modal-faq')?.addEventListener('click', () => { closeSidebar(); openModal('faq'); });
   document.getElementById('sidebar-modal-privacy')?.addEventListener('click', () => { closeSidebar(); openModal('privacyPolicy'); });
 
   highlightActiveSidebarNav();
@@ -614,9 +605,9 @@ function injectFooter() {
               <li><a href="./index.html#about-me" class="hover:text-sky-500 transition-colors" data-i18n="aboutMeTitle">${t('aboutMeTitle')}</a></li>
               <li><a href="./services.html" class="hover:text-sky-500 transition-colors" data-i18n="services">${t('services')}</a></li>
               <li><a href="./index.html#live-projects" class="hover:text-sky-500 transition-colors">Projects</a></li>
-              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="whyChooseMe" data-i18n="whyChooseMe">${t('whyChooseMe')}</button></li>
-              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="workProcess" data-i18n="workProcess">${t('workProcess')}</button></li>
-              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="faq" data-i18n="faq">${t('faq')}</button></li>
+              <li><a href="./why-choose-me.html" class="hover:text-sky-500 transition-colors" data-i18n="whyChooseMe">${t('whyChooseMe')}</a></li>
+              <li><a href="./process.html" class="hover:text-sky-500 transition-colors" data-i18n="workProcess">${t('workProcess')}</a></li>
+              <li><a href="./faq.html" class="hover:text-sky-500 transition-colors" data-i18n="faq">${t('faq')}</a></li>
               <li><a href="./profile.html" class="hover:text-sky-500 transition-colors" data-i18n="myProfile">${t('myProfile')}</a></li>
               <li><a href="./contact.html" class="hover:text-sky-500 transition-colors" data-i18n="connect">${t('connect')}</a></li>
             </ul>
@@ -689,6 +680,7 @@ function injectBottomNav() {
   const currentPath = window.location.pathname.split('/').pop().toLowerCase() || 'index.html';
   const isHomeActive = currentPath === 'index.html' || currentPath === '';
   const isServicesActive = currentPath === 'services.html';
+  const isStartProjectActive = currentPath === 'start-project.html';
   const isConnectActive = currentPath === 'contact.html';
 
   const nav = document.createElement('nav');
@@ -722,15 +714,16 @@ function injectBottomNav() {
 
       <!-- 3. Start Project (CENTER) -->
       <div class="bottom-nav-center-item">
-        <button
+        <a
+          href="./start-project.html"
           id="btn-bottom-start-project"
-          class="bottom-nav-center-btn"
+          class="bottom-nav-center-btn ${isStartProjectActive ? 'active' : ''}"
           aria-label="Start Project"
         >
           <div class="bottom-nav-center-circle">
             <i class="fa-solid fa-rocket text-xl text-white"></i>
           </div>
-        </button>
+        </a>
         <span class="bottom-nav-label font-bold" data-i18n="startProject">${t('startProject')}</span>
       </div>
 
@@ -762,15 +755,6 @@ function injectBottomNav() {
   document.body.appendChild(nav);
 
   // Attach event handlers for buttons requiring auth check
-  document.getElementById('btn-bottom-start-project')?.addEventListener('click', () => {
-    if (!currentUser) {
-      showToast(getLanguage() === 'en' ? "Please log in first to start a project." : "প্রজেক্ট শুরু করতে প্রথমে লগ ইন করুন।", "info");
-      window.location.href = './login.html';
-    } else {
-      window.location.href = './contact.html';
-    }
-  });
-
   document.getElementById('btn-bottom-live-chat')?.addEventListener('click', () => {
     if (!currentUser) {
       showToast(getLanguage() === 'en' ? "Please log in first for live chat." : "লাইভ চ্যাটের জন্য প্রথমে লগ ইন করুন।", "info");
