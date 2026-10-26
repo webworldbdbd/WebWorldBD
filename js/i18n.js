@@ -1,14 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+// i18n Translation Dictionary and State Management
 
-export type Language = 'en' | 'bn';
-
-interface LanguageContextType {
-  language: Language;
-  toggleLanguage: () => void;
-  t: (key: string) => string;
-}
-
-const translations: Record<Language, Record<string, string>> = {
+const translations = {
   en: {
     // Header & Sidebar
     brandName: 'WebWorld',
@@ -32,6 +24,7 @@ const translations: Record<Language, Record<string, string>> = {
     privacyPolicy: 'Privacy Policy',
     createAccount: 'CREATE ACCOUNT',
     logOut: 'Log Out',
+    guest: 'Guest',
 
     // Home Page Hero
     heroGreeting: "Hello! I am SHAFAET HOSSEN SARIP. Our work starts right from your ideas. We transform your preferences, needs, and vision into modern, attractive websites, web apps, and mobile apps. Your ideas, our technology—together we build your desired website & website applications.",
@@ -93,6 +86,25 @@ const translations: Record<Language, Record<string, string>> = {
     contactInfo: "Contact Info",
     location: "Kushtia, Bangladesh",
     copyright: "© 2026 WebWorldBD. Created with passion by SHAFAET HOSSEN SARIP. All rights reserved.",
+
+    // Auth & Extra Pages
+    logIn: "Log In",
+    signUp: "Sign Up",
+    emailLabel: "Email Address",
+    passwordLabel: "Password",
+    confirmPasswordLabel: "Confirm Password",
+    fullNameLabel: "Full Name",
+    sendResetLink: "Send Reset Link",
+    googleContinue: "Continue with Google",
+    forgotPasswordLink: "Forgot password?",
+    dontHaveAccount: "Don't have an account?",
+    alreadyHaveAccount: "Already have an account?",
+    backToLogin: "Back to Log In",
+    resetPasswordTitle: "Reset Password",
+    resetPasswordDesc: "Enter your email address and we will send you a link to reset your password.",
+    profileTitle: "User Profile",
+    adminTitle: "Admin Management Dashboard",
+    accessDenied: "Access Denied. Admin privilege required."
   },
   bn: {
     // Header & Sidebar
@@ -117,6 +129,7 @@ const translations: Record<Language, Record<string, string>> = {
     privacyPolicy: 'প্রাইভেসি পলিসি',
     createAccount: 'অ্যাকাউন্ট তৈরি করুন',
     logOut: 'লগ আউট',
+    guest: 'গেস্ট (অতিথি)',
 
     // Home Page Hero
     heroGreeting: "হ্যালো! আমি শাফায়েত হোসেন সারিপ। আপনার চিন্তা থেকেই আমাদের কাজ শুরু হয়। আমরা আপনার পছন্দ, চাহিদা এবং দৃষ্টিভঙ্গিকে আধুনিক, আকর্ষণীয় ওয়েবসাইট, ওয়েব অ্যাপ এবং মোবাইল অ্যাপে রূপান্তরিত করি। আপনার আইডিয়া, আমাদের প্রযুক্তি—একত্রে আমরা তৈরি করি আপনার স্বপ্নের ওয়েবসাইট ও অ্যাপ্লিকেশন।",
@@ -178,33 +191,67 @@ const translations: Record<Language, Record<string, string>> = {
     contactInfo: "যোগাযোগের তথ্য",
     location: "কুষ্টিয়া, বাংলাদেশ",
     copyright: "© ২০২৬ ওয়েবওয়ার্ল্ডবিডি। শাফায়েত হোসেন সারিপ কর্তৃক নিবেদিতভাবে নির্মিত। সর্বস্বত্ব সংরক্ষিত।",
+
+    // Auth & Extra Pages
+    logIn: "লগ ইন",
+    signUp: "সাইন আপ",
+    emailLabel: "ইমেইল অ্যাড্রেস",
+    passwordLabel: "পাসওয়ার্ড",
+    confirmPasswordLabel: "পাসওয়ার্ড নিশ্চিত করুন",
+    fullNameLabel: "পুরো নাম",
+    sendResetLink: "রিসেট লিঙ্ক পাঠান",
+    googleContinue: "Google দিয়ে এগিয়ে যান",
+    forgotPasswordLink: "পাসওয়ার্ড ভুলে গেছেন?",
+    dontHaveAccount: "অ্যাকাউন্ট নেই?",
+    alreadyHaveAccount: "আগে থেকেই অ্যাকাউন্ট আছে?",
+    backToLogin: "লগ ইন পৃষ্ঠায় ফিরে যান",
+    resetPasswordTitle: "পাসওয়ার্ড রিসেট",
+    resetPasswordDesc: "আপনার ইমেইল অ্যাড্রেস দিন, আমরা একটি রিসেট লিঙ্ক পাঠাবো।",
+    profileTitle: "ব্যবহারকারী প্রোফাইল",
+    adminTitle: "এডমিন ম্যানেজমেন্ট ড্যাশবোর্ড",
+    accessDenied: "প্রবেশাধিকার সংরক্ষিত। এডমিন অনুমতি প্রয়োজন।"
   }
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+let currentLang = localStorage.getItem('webworldbd_lang') || 'en';
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+export function getLanguage() {
+  return currentLang;
+}
 
-  const toggleLanguage = () => {
-    setLanguage((prev) => (prev === 'en' ? 'bn' : 'en'));
-  };
+export function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('webworldbd_lang', lang);
+  applyTranslations();
+  document.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+}
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
-  };
+export function toggleLanguage() {
+  setLanguage(currentLang === 'en' ? 'bn' : 'en');
+}
 
-  return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
+export function t(key) {
+  return (translations[currentLang] && translations[currentLang][key]) || (translations.en[key] || key);
+}
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
+export function applyTranslations() {
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach((el) => {
+    const key = el.getAttribute('data-i18n');
+    const translatedText = t(key);
+    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'email' || el.type === 'password')) {
+      el.placeholder = translatedText;
+    } else {
+      el.textContent = translatedText;
+    }
+  });
+
+  const langToggles = document.querySelectorAll('.lang-toggle-text');
+  langToggles.forEach((el) => {
+    el.textContent = currentLang === 'en' ? 'BN' : 'EN';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations();
+});

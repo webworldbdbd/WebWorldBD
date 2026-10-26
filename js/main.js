@@ -1,0 +1,1048 @@
+import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
+import { subscribeAuthState, logOut, ADMIN_EMAIL } from './auth.js';
+
+let currentUser = null;
+let currentUserData = null;
+
+// Initialize app UI as soon as DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  injectParticlesBg();
+  injectHeader();
+  injectSidebar();
+  injectFooter();
+  injectFloatingButtons();
+  injectModals();
+  injectToastContainer();
+  applyTranslations();
+
+  // Subscribe to Auth State Changes
+  subscribeAuthState((user, userData) => {
+    currentUser = user;
+    currentUserData = userData;
+    updateAuthDependentUI();
+    document.dispatchEvent(new CustomEvent('authStateUpdated', { detail: { user, userData } }));
+  });
+});
+
+/* ================= THEME MANAGEMENT ================= */
+function initTheme() {
+  const savedTheme = localStorage.getItem('webworldbd_theme') || 'light';
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark');
+  }
+}
+
+export function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('webworldbd_theme', isDark ? 'dark' : 'light');
+  updateThemeIcons();
+}
+
+function updateThemeIcons() {
+  const isDark = document.body.classList.contains('dark');
+  const sunIcons = document.querySelectorAll('.theme-icon-sun');
+  const moonIcons = document.querySelectorAll('.theme-icon-moon');
+  const themeLabels = document.querySelectorAll('.theme-label-text');
+
+  sunIcons.forEach(el => el.style.display = isDark ? 'none' : 'inline-block');
+  moonIcons.forEach(el => el.style.display = isDark ? 'inline-block' : 'none');
+  themeLabels.forEach(el => el.textContent = isDark ? 'Dark' : 'Light');
+}
+
+/* ================= PARTICLES BG ================= */
+function injectParticlesBg() {
+  if (document.querySelector('.particles-bg')) return;
+  const bg = document.createElement('div');
+  bg.className = 'particles-bg';
+  bg.innerHTML = `
+    <div class="particle" style="width:12px; height:12px; top:12%; left:10%; animation-delay:0s;"></div>
+    <div class="particle" style="width:16px; height:16px; top:25%; left:85%; animation-delay:2s;"></div>
+    <div class="particle" style="width:8px; height:8px; top:50%; left:20%; animation-delay:4s;"></div>
+    <div class="particle" style="width:20px; height:20px; top:75%; left:70%; animation-delay:1s;"></div>
+    <div class="particle" style="width:12px; height:12px; top:90%; left:40%; animation-delay:3s;"></div>
+  `;
+  document.body.prepend(bg);
+}
+
+/* ================= HEADER INJECTION ================= */
+function injectHeader() {
+  const headerContainer = document.getElementById('header-root');
+  if (!headerContainer) return;
+
+  const isDark = document.body.classList.contains('dark');
+
+  headerContainer.innerHTML = `
+    <header class="sticky top-0 z-40 w-full glass-nav px-4 py-3 transition-colors duration-200">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <!-- Left Section: Hamburger + Brand Logo -->
+        <div class="flex items-center gap-3">
+          <button
+            id="btn-open-sidebar"
+            aria-label="Open Navigation Menu"
+            class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs cursor-pointer"
+          >
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+
+          <a href="./index.html" class="flex items-center gap-2 group">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-xl shadow-md group-hover:scale-105 transition-transform">
+              W
+            </div>
+            <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+              <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
+            </span>
+          </a>
+        </div>
+
+        <!-- Right Section: Theme Toggle + Language Toggle Pill -->
+        <div class="flex items-center gap-2.5">
+          <button
+            id="btn-toggle-theme"
+            aria-label="Toggle Light/Dark Theme"
+            class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-xs cursor-pointer"
+          >
+            <i class="fa-solid fa-sun text-amber-500 theme-icon-sun" style="display:${isDark ? 'none' : 'inline-block'};"></i>
+            <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:${isDark ? 'inline-block' : 'none'};"></i>
+          </button>
+
+          <button
+            id="btn-toggle-lang"
+            aria-label="Toggle Language"
+            class="px-3.5 py-2 rounded-full flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-xs transition-colors shadow-xs cursor-pointer border border-slate-200 dark:border-slate-700"
+          >
+            <i class="fa-solid fa-globe text-sky-500"></i>
+            <span class="lang-toggle-text">${getLanguage() === 'en' ? 'BN' : 'EN'}</span>
+          </button>
+        </div>
+      </div>
+    </header>
+  `;
+
+  document.getElementById('btn-open-sidebar')?.addEventListener('click', openSidebar);
+  document.getElementById('btn-toggle-theme')?.addEventListener('click', toggleTheme);
+  document.getElementById('btn-toggle-lang')?.addEventListener('click', toggleLanguage);
+}
+
+/* ================= SIDEBAR INJECTION ================= */
+function injectSidebar() {
+  if (document.getElementById('sidebar-drawer')) return;
+
+  const drawer = document.createElement('div');
+  drawer.id = 'sidebar-drawer';
+  drawer.className = 'fixed inset-0 z-50 flex hidden';
+  drawer.innerHTML = `
+    <!-- Blurred Dark Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+
+    <!-- Drawer Container -->
+    <div class="relative w-80 max-w-[85vw] bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
+      <!-- Top Header -->
+      <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-lg shadow-xs">
+            W
+          </div>
+          <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
+            <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black" data-i18n="brandBD">${t('brandBD')}</span>
+          </span>
+        </div>
+
+        <button
+          id="btn-close-sidebar"
+          aria-label="Close Navigation"
+          class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Content Body -->
+      <div class="p-4 space-y-6">
+        <!-- User Card -->
+        <div id="sidebar-user-card" class="bg-white dark:bg-slate-800/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xs flex items-center gap-3">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- MAIN MENU SECTION -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="mainMenu">
+            ${t('mainMenu')}
+          </h3>
+          <div class="space-y-2">
+            <!-- Home -->
+            <a
+              href="./index.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="index.html"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-house"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="home">${t('home')}</span>
+              </div>
+            </a>
+
+            <!-- Services -->
+            <a
+              href="./services.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="services.html"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="services">${t('services')}</span>
+              </div>
+            </a>
+
+            <!-- Start Project -->
+            <button
+              id="sidebar-start-project"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-rocket"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="startProject">${t('startProject')}</span>
+              </div>
+            </button>
+
+            <!-- Live Chat -->
+            <button
+              id="sidebar-live-chat"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer relative"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0 relative">
+                  <i class="fa-solid fa-comments"></i>
+                  <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></span>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="liveChat">${t('liveChat')}</span>
+              </div>
+            </button>
+
+            <!-- Connect -->
+            <a
+              href="./contact.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all"
+              data-path="contact.html"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="connect">${t('connect')}</span>
+              </div>
+            </a>
+
+            <!-- Settings -->
+            <button
+              id="sidebar-open-settings"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-gear"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="settings">${t('settings')}</span>
+              </div>
+            </button>
+
+            <!-- Admin Panel (Conditional) -->
+            <a
+              id="sidebar-admin-link"
+              href="./admin.html"
+              class="sidebar-nav-item w-full p-2.5 rounded-xl items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all hidden"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="adminPanel">${t('adminPanel')}</span>
+              </div>
+            </a>
+
+            <!-- Theme Switcher Card -->
+            <div
+              id="sidebar-toggle-theme"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-sun text-amber-500 theme-icon-sun"></i>
+                  <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:none;"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="theme">${t('theme')}</span>
+              </div>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 theme-label-text">
+                ${document.body.classList.contains('dark') ? 'Dark' : 'Light'}
+              </span>
+            </div>
+
+            <!-- Language Switcher Card -->
+            <div
+              id="sidebar-toggle-lang"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            >
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center text-sky-500 shrink-0">
+                  <i class="fa-solid fa-globe"></i>
+                </div>
+                <span class="text-sm font-semibold" data-i18n="language">${t('language')}</span>
+              </div>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 lang-toggle-text">
+                ${getLanguage() === 'en' ? 'EN' : 'BN'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE PREVIEW SECTION -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1">
+            LIVE PREVIEW
+          </h3>
+          <div class="space-y-2">
+            ${['Market Koro', "Student's Tool's & AI", 'Birthday Website', 'Animated Heart', 'RunZone'].map(projectName => `
+              <a
+                href="./index.html#live-projects"
+                class="sidebar-live-link w-full p-2.5 rounded-xl flex items-center justify-between bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all text-sm font-semibold"
+              >
+                <span>${projectName}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- OTHERS SECTION -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="others">
+            ${t('others')}
+          </h3>
+          <div class="space-y-2">
+            <button
+              id="sidebar-my-profile"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-user text-sky-500"></i>
+                <span class="text-sm font-semibold" data-i18n="myProfile">${t('myProfile')}</span>
+              </div>
+            </button>
+
+            <button
+              id="sidebar-modal-whychoose"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-circle-check text-sky-500"></i>
+                <span class="text-sm font-semibold" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
+              </div>
+            </button>
+
+            <button
+              id="sidebar-modal-workprocess"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-list-check text-sky-500"></i>
+                <span class="text-sm font-semibold" data-i18n="workProcess">${t('workProcess')}</span>
+              </div>
+            </button>
+
+            <button
+              id="sidebar-modal-faq"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-circle-question text-sky-500"></i>
+                <span class="text-sm font-semibold" data-i18n="faq">${t('faq')}</span>
+              </div>
+            </button>
+
+            <button
+              id="sidebar-modal-privacy"
+              class="w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-white dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-file-contract text-sky-500"></i>
+                <span class="text-sm font-semibold" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
+              </div>
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- CREATE ACCOUNT / LOG OUT SECTION -->
+        <div id="sidebar-auth-section">
+          <!-- Dynamically updated -->
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(drawer);
+
+  // Attach event handlers
+  document.getElementById('btn-close-sidebar')?.addEventListener('click', closeSidebar);
+  document.getElementById('sidebar-backdrop')?.addEventListener('click', closeSidebar);
+
+  document.querySelectorAll('.sidebar-live-link').forEach(el => {
+    el.addEventListener('click', closeSidebar);
+  });
+
+  document.getElementById('sidebar-toggle-theme')?.addEventListener('click', toggleTheme);
+  document.getElementById('sidebar-toggle-lang')?.addEventListener('click', toggleLanguage);
+
+  document.getElementById('sidebar-start-project')?.addEventListener('click', () => {
+    closeSidebar();
+    if (!currentUser) {
+      showToast(getLanguage() === 'en' ? "Please log in first to start a project." : "প্রজেক্ট শুরু করতে প্রথমে লগ ইন করুন।", "info");
+      window.location.href = './login.html';
+    } else {
+      window.location.href = './contact.html';
+    }
+  });
+
+  document.getElementById('sidebar-live-chat')?.addEventListener('click', () => {
+    closeSidebar();
+    if (!currentUser) {
+      showToast(getLanguage() === 'en' ? "Please log in first for live chat." : "লাইভ চ্যাটের জন্য প্রথমে লগ ইন করুন।", "info");
+      window.location.href = './login.html';
+    } else {
+      openModal('liveChat');
+    }
+  });
+
+  document.getElementById('sidebar-open-settings')?.addEventListener('click', () => {
+    closeSidebar();
+    openModal('settings');
+  });
+
+  document.getElementById('sidebar-my-profile')?.addEventListener('click', () => {
+    closeSidebar();
+    if (!currentUser) {
+      window.location.href = './login.html';
+    } else {
+      window.location.href = './profile.html';
+    }
+  });
+
+  document.getElementById('sidebar-modal-whychoose')?.addEventListener('click', () => { closeSidebar(); openModal('whyChooseMe'); });
+  document.getElementById('sidebar-modal-workprocess')?.addEventListener('click', () => { closeSidebar(); openModal('workProcess'); });
+  document.getElementById('sidebar-modal-faq')?.addEventListener('click', () => { closeSidebar(); openModal('faq'); });
+  document.getElementById('sidebar-modal-privacy')?.addEventListener('click', () => { closeSidebar(); openModal('privacyPolicy'); });
+
+  highlightActiveSidebarNav();
+}
+
+function highlightActiveSidebarNav() {
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+    const targetPath = el.getAttribute('data-path');
+    if (targetPath === currentPath || (currentPath === '' && targetPath === 'index.html')) {
+      el.className = "sidebar-nav-item w-full p-2.5 rounded-xl flex items-center justify-between text-left bg-gradient-to-r from-sky-50 to-purple-50 dark:from-sky-950/50 dark:to-purple-950/50 border-l-4 border-sky-500 text-sky-700 dark:text-sky-300 font-bold shadow-xs";
+    }
+  });
+}
+
+export function openSidebar() {
+  const drawer = document.getElementById('sidebar-drawer');
+  if (drawer) {
+    drawer.classList.remove('hidden');
+  }
+}
+
+export function closeSidebar() {
+  const drawer = document.getElementById('sidebar-drawer');
+  if (drawer) {
+    drawer.classList.add('hidden');
+  }
+}
+
+/* ================= UPDATE AUTH DEPENDENT UI ================= */
+function updateAuthDependentUI() {
+  const userCard = document.getElementById('sidebar-user-card');
+  const authSection = document.getElementById('sidebar-auth-section');
+  const adminLink = document.getElementById('sidebar-admin-link');
+
+  if (userCard) {
+    if (currentUser) {
+      const name = currentUserData?.name || currentUser.displayName || 'WebWorldBD User';
+      const email = currentUser.email || '';
+      const photoURL = currentUser.photoURL;
+
+      userCard.innerHTML = `
+        <div class="w-11 h-11 rounded-full bg-sky-100 dark:bg-sky-950/80 border-2 border-sky-400 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0 overflow-hidden">
+          ${photoURL ? `<img src="${photoURL}" alt="${name}" class="w-full h-full object-cover">` : name.charAt(0).toUpperCase()}
+        </div>
+        <div class="overflow-hidden">
+          <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
+          <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
+            ${email}
+          </a>
+        </div>
+      `;
+    } else {
+      userCard.innerHTML = `
+        <div class="w-11 h-11 rounded-full bg-sky-100 dark:bg-sky-950/80 border-2 border-sky-400 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="overflow-hidden">
+          <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate" data-i18n="guest">${t('guest')}</h4>
+          <a href="./login.html" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate" data-i18n="logIn">
+            ${t('logIn')}
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  if (authSection) {
+    if (currentUser) {
+      authSection.innerHTML = `
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="createAccount">
+          ACCOUNT
+        </h3>
+        <button
+          id="btn-sidebar-logout"
+          class="w-full p-3 rounded-xl flex items-center justify-between bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 transition-all cursor-pointer"
+        >
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-right-from-bracket text-sm"></i>
+            <span class="text-sm font-bold" data-i18n="logOut">${t('logOut')}</span>
+          </div>
+        </button>
+      `;
+
+      document.getElementById('btn-sidebar-logout')?.addEventListener('click', async () => {
+        closeSidebar();
+        await logOut();
+        showToast(getLanguage() === 'en' ? "Signed out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
+        window.location.href = './index.html';
+      });
+    } else {
+      authSection.innerHTML = `
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5 px-1" data-i18n="createAccount">
+          ${t('createAccount')}
+        </h3>
+        <div class="grid grid-cols-2 gap-2">
+          <a
+            href="./login.html"
+            class="p-2.5 rounded-xl text-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold transition-all"
+            data-i18n="logIn"
+          >
+            ${t('logIn')}
+          </a>
+          <a
+            href="./signup.html"
+            class="p-2.5 rounded-xl text-center btn-primary-gradient text-xs font-bold transition-all"
+            data-i18n="signUp"
+          >
+            ${t('signUp')}
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  if (adminLink) {
+    if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL) {
+      adminLink.classList.remove('hidden');
+      adminLink.classList.add('flex');
+    } else {
+      adminLink.classList.add('hidden');
+      adminLink.classList.remove('flex');
+    }
+  }
+}
+
+/* ================= FOOTER INJECTION ================= */
+function injectFooter() {
+  const footerContainer = document.getElementById('footer-root');
+  if (!footerContainer) return;
+
+  footerContainer.innerHTML = `
+    <footer class="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 pt-12 pb-8 px-4 transition-colors">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          <!-- Column 1: Logo & Brief -->
+          <div class="col-span-2 md:col-span-1 space-y-4">
+            <a href="./index.html" class="flex items-center gap-2">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-xl shadow-xs">
+                W
+              </div>
+              <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+                WebWorld<span class="text-sky-400 font-black">BD</span>
+              </span>
+            </a>
+            <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-400 font-normal" data-i18n="footerDesc">
+              ${t('footerDesc')}
+            </p>
+
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+              <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3" data-i18n="popularServices">
+                ${t('popularServices')}
+              </h4>
+              <ul class="space-y-2 text-xs">
+                ${['Business Website', 'E-commerce Website', 'Portfolio Website', 'Web App / SaaS', 'AI Website / Tools'].map(s => `
+                  <li>
+                    <a href="./services.html" class="hover:text-sky-500 transition-colors">${s}</a>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Column 2: Quick Links -->
+          <div class="col-span-1 space-y-3">
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3" data-i18n="quickLinks">
+              ${t('quickLinks')}
+            </h4>
+            <ul class="space-y-2.5 text-xs">
+              <li><a href="./index.html" class="hover:text-sky-500 transition-colors" data-i18n="home">${t('home')}</a></li>
+              <li><a href="./index.html#about-me" class="hover:text-sky-500 transition-colors" data-i18n="aboutMeTitle">${t('aboutMeTitle')}</a></li>
+              <li><a href="./services.html" class="hover:text-sky-500 transition-colors" data-i18n="services">${t('services')}</a></li>
+              <li><a href="./index.html#live-projects" class="hover:text-sky-500 transition-colors">Projects</a></li>
+              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="whyChooseMe" data-i18n="whyChooseMe">${t('whyChooseMe')}</button></li>
+              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="workProcess" data-i18n="workProcess">${t('workProcess')}</button></li>
+              <li><button class="btn-footer-modal hover:text-sky-500 transition-colors text-left cursor-pointer" data-modal="faq" data-i18n="faq">${t('faq')}</button></li>
+              <li><a href="./profile.html" class="hover:text-sky-500 transition-colors" data-i18n="myProfile">${t('myProfile')}</a></li>
+              <li><a href="./contact.html" class="hover:text-sky-500 transition-colors" data-i18n="connect">${t('connect')}</a></li>
+            </ul>
+          </div>
+
+          <!-- Column 3 & 4: Contact Info -->
+          <div class="col-span-1 md:col-span-2 space-y-3">
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3" data-i18n="contactInfo">
+              ${t('contactInfo')}
+            </h4>
+            <ul class="space-y-3 text-xs">
+              <li class="flex items-center gap-2.5">
+                <i class="fa-solid fa-location-dot text-sky-500"></i>
+                <span data-i18n="location">Kushtia, Bangladesh</span>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i class="fa-solid fa-envelope text-sky-500"></i>
+                <a href="mailto:saripofficialsupport@gmail.com" class="hover:underline hover:text-sky-500 truncate">
+                  saripofficialsupport@gmail.com
+                </a>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i class="fa-solid fa-phone text-sky-500"></i>
+                <a href="tel:+8801342697743" class="hover:underline hover:text-sky-500">
+                  +8801342697743
+                </a>
+              </li>
+              <li class="flex items-center gap-2.5">
+                <i class="fa-solid fa-headset text-sky-500"></i>
+                <a href="tel:+8809658183506" class="hover:underline hover:text-sky-500">
+                  +8809658183506
+                </a>
+              </li>
+              <li class="flex items-center gap-2.5 pt-1">
+                <i class="fa-brands fa-linkedin text-sky-500 text-sm"></i>
+                <a
+                  href="https://www.linkedin.com/in/sh-sarip-4066b2431"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hover:underline hover:text-sky-500 truncate font-medium text-sky-600 dark:text-sky-400"
+                >
+                  LinkedIn Profile
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+          <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="copyright">
+            ${t('copyright')}
+          </p>
+        </div>
+      </div>
+    </footer>
+  `;
+
+  document.querySelectorAll('.btn-footer-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const modalType = e.currentTarget.getAttribute('data-modal');
+      if (modalType) openModal(modalType);
+    });
+  });
+}
+
+/* ================= FLOATING BUTTONS INJECTION ================= */
+function injectFloatingButtons() {
+  if (document.getElementById('floating-buttons-root')) return;
+
+  const floating = document.createElement('div');
+  floating.id = 'floating-buttons-root';
+  floating.className = 'fixed bottom-6 right-6 z-40 flex items-center gap-3';
+  floating.innerHTML = `
+    <!-- Scroll To Top Button -->
+    <button
+      id="btn-scroll-top"
+      aria-label="Scroll to top"
+      class="w-12 h-12 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 items-center justify-center shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer hidden"
+    >
+      <i class="fa-solid fa-arrow-up text-lg"></i>
+    </button>
+
+    <!-- Floating Green WhatsApp Button -->
+    <a
+      href="https://wa.me/8801342697743"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Chat on WhatsApp"
+      class="w-13 h-13 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all cursor-pointer ring-4 ring-emerald-500/20"
+    >
+      <i class="fa-brands fa-whatsapp text-2xl"></i>
+    </a>
+  `;
+
+  document.body.appendChild(floating);
+
+  const scrollTopBtn = document.getElementById('btn-scroll-top');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 200) {
+      scrollTopBtn?.classList.remove('hidden');
+      scrollTopBtn?.classList.add('flex');
+    } else {
+      scrollTopBtn?.classList.add('hidden');
+      scrollTopBtn?.classList.remove('flex');
+    }
+  });
+
+  scrollTopBtn?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+/* ================= MODALS INJECTION ================= */
+function injectModals() {
+  if (document.getElementById('modal-dialog-root')) return;
+
+  const modalContainer = document.createElement('div');
+  modalContainer.id = 'modal-dialog-root';
+  modalContainer.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 hidden';
+  modalContainer.innerHTML = `
+    <!-- Dark overlay backdrop -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+
+    <!-- Modal Dialog Card -->
+    <div class="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 z-10 overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
+        <div class="flex items-center gap-2">
+          <i id="modal-header-icon" class="fa-solid fa-info-circle text-sky-500 text-lg"></i>
+          <h3 id="modal-header-title" class="font-bold text-base text-slate-900 dark:text-white capitalize"></h3>
+        </div>
+
+        <button
+          id="btn-close-modal"
+          aria-label="Close modal"
+          class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="modal-body-content" class="p-5 overflow-y-auto space-y-4 text-slate-700 dark:text-slate-300 text-sm">
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modalContainer);
+
+  document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+  document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
+}
+
+export function openModal(modalType) {
+  const modalContainer = document.getElementById('modal-dialog-root');
+  const modalIcon = document.getElementById('modal-header-icon');
+  const modalTitle = document.getElementById('modal-header-title');
+  const modalBody = document.getElementById('modal-body-content');
+
+  if (!modalContainer || !modalBody) return;
+
+  modalContainer.classList.remove('hidden');
+
+  let iconClass = 'fa-solid fa-info-circle text-sky-500';
+  let titleText = t(modalType) || modalType;
+  let bodyHTML = '';
+
+  switch (modalType) {
+    case 'liveChat':
+      iconClass = 'fa-solid fa-comments text-sky-500';
+      titleText = t('liveChat');
+      bodyHTML = `
+        <div class="space-y-4">
+          <div id="chat-messages-box" class="h-64 overflow-y-auto space-y-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-start">
+              <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none shadow-xs">
+                Hello! I am SHAFAET HOSSEN SARIP. How can WebWorldBD assist you today with your web or mobile project?
+              </div>
+            </div>
+          </div>
+
+          <form id="live-chat-form" class="flex items-center gap-2">
+            <input
+              id="chat-input"
+              type="text"
+              placeholder="Type your message..."
+              class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+            />
+            <button
+              type="submit"
+              class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Send</span>
+            </button>
+          </form>
+        </div>
+      `;
+      break;
+
+    case 'settings':
+      iconClass = 'fa-solid fa-gear text-sky-500';
+      titleText = t('settings');
+      bodyHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-circle-half-stroke text-amber-500"></i>
+              <span class="font-semibold">${t('theme')} Mode</span>
+            </div>
+            <button
+              id="modal-toggle-theme"
+              class="px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium text-xs cursor-pointer"
+            >
+              Toggle Light/Dark
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-globe text-sky-500"></i>
+              <span class="font-semibold">${t('language')}</span>
+            </div>
+            <button
+              id="modal-toggle-lang"
+              class="px-3 py-1.5 rounded-lg bg-sky-500 text-white font-medium text-xs cursor-pointer"
+            >
+              ${getLanguage() === 'en' ? 'বাংলা রূপান্তর' : 'Switch to English'}
+            </button>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'whyChooseMe':
+      iconClass = 'fa-solid fa-circle-check text-sky-500';
+      titleText = t('whyChooseMe');
+      bodyHTML = `
+        <div class="space-y-3 text-xs leading-relaxed">
+          <div class="p-3 bg-sky-50 dark:bg-sky-950/40 rounded-xl border border-sky-200 dark:border-sky-900">
+            <h5 class="font-bold text-sky-700 dark:text-sky-300 text-sm mb-1">1. High-Performance Engineering</h5>
+            <p>Fast loading speed, mobile-responsive layout, and modern tech stack (React, Tailwind, Node.js, Next.js).</p>
+          </div>
+          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900">
+            <h5 class="font-bold text-emerald-700 dark:text-emerald-300 text-sm mb-1">2. 100% Ethical Commitment</h5>
+            <p>Strict refusal of gambling, betting, adult, or illegal platforms. Positive & professional digital solutions only.</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900">
+            <h5 class="font-bold text-purple-700 dark:text-purple-300 text-sm mb-1">3. Direct Developer Support</h5>
+            <p>24/7 direct communication, bug-free warranty, and ongoing maintenance.</p>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'workProcess':
+      iconClass = 'fa-solid fa-list-check text-sky-500';
+      titleText = t('workProcess');
+      bodyHTML = `
+        <div class="space-y-3 text-xs">
+          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">1</div>
+            <div>
+              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Requirement Gathering</h5>
+              <p class="text-slate-600 dark:text-slate-400">Discussion of client preferences, target audience, and feature roadmap.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">2</div>
+            <div>
+              <h5 class="font-bold text-slate-900 dark:text-white text-sm">UI Design & Architecture</h5>
+              <p class="text-slate-600 dark:text-slate-400">Designing modern, clean glassmorphism layouts and structural database schemas.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">3</div>
+            <div>
+              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Coding & API Integration</h5>
+              <p class="text-slate-600 dark:text-slate-400">Full-stack development, mobile responsiveness, and payment gateway integration.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">4</div>
+            <div>
+              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Testing, Deployment & Handover</h5>
+              <p class="text-slate-600 dark:text-slate-400">Final security checks, domain setup, hosting deployment, and client handover.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'faq':
+      iconClass = 'fa-solid fa-circle-question text-sky-500';
+      titleText = t('faq');
+      bodyHTML = `
+        <div class="space-y-3 text-xs">
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: How long does a web project take?</h5>
+            <p class="text-slate-600 dark:text-slate-400">Standard business sites take 3-5 days. Complex e-commerce or SaaS apps take 1-3 weeks.</p>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: Do you accept payment via bKash / Nagad / SSLCommerz?</h5>
+            <p class="text-slate-600 dark:text-slate-400">Yes! Local Bangladeshi payment gateways as well as Fiverr / international payments are accepted.</p>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
+            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: Do you build gambling or betting sites?</h5>
+            <p class="text-slate-600 dark:text-slate-400 text-red-500 font-medium">No. WebWorldBD strictly refuses all Gambling, Betting, Adult, or illegal projects.</p>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'privacyPolicy':
+      iconClass = 'fa-solid fa-file-contract text-sky-500';
+      titleText = t('privacyPolicy');
+      bodyHTML = `
+        <div class="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+          <p>
+            WebWorldBD respects your privacy. All project information, source code, and credentials shared with SHAFAET HOSSEN SARIP remain 100% confidential.
+          </p>
+          <div class="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 font-medium">
+            WebWorldBD strictly builds positive, business-oriented, and legal platforms only. Absolutely NO Gambling, Betting, Adult, or illegal websites are accepted.
+          </div>
+        </div>
+      `;
+      break;
+
+    default:
+      titleText = t(modalType) || modalType;
+      bodyHTML = `<p class="text-sm">${t(modalType) || 'Information'}</p>`;
+  }
+
+  modalIcon.className = iconClass;
+  modalTitle.textContent = titleText;
+  modalBody.innerHTML = bodyHTML;
+
+  // Bind internal modal actions if any
+  document.getElementById('modal-toggle-theme')?.addEventListener('click', () => {
+    toggleTheme();
+  });
+  document.getElementById('modal-toggle-lang')?.addEventListener('click', () => {
+    toggleLanguage();
+    closeModal();
+  });
+
+  const chatForm = document.getElementById('live-chat-form');
+  if (chatForm) {
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const messagesBox = document.getElementById('chat-messages-box');
+      messagesBox.innerHTML += `
+        <div class="flex justify-end">
+          <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-sky-500 text-white rounded-br-none shadow-xs">
+            ${escapeHTML(text)}
+          </div>
+        </div>
+      `;
+      input.value = '';
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+
+      setTimeout(() => {
+        messagesBox.innerHTML += `
+          <div class="flex justify-start">
+            <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none shadow-xs">
+              Thank you for your message! You can also contact me directly via WhatsApp at +8801342697743 or email saripofficialsupport@gmail.com for instant response.
+            </div>
+          </div>
+        `;
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+      }, 1000);
+    });
+  }
+}
+
+export function closeModal() {
+  const modalContainer = document.getElementById('modal-dialog-root');
+  if (modalContainer) {
+    modalContainer.classList.add('hidden');
+  }
+}
+
+/* ================= TOAST NOTIFICATION SYSTEM ================= */
+function injectToastContainer() {
+  if (document.getElementById('toast-container')) return;
+  const container = document.createElement('div');
+  container.id = 'toast-container';
+  document.body.appendChild(container);
+}
+
+export function showToast(message, type = 'info') {
+  injectToastContainer();
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  let iconHTML = '<i class="fa-solid fa-circle-info"></i>';
+  if (type === 'success') iconHTML = '<i class="fa-solid fa-circle-check"></i>';
+  if (type === 'error') iconHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+
+  toast.innerHTML = `
+    ${iconHTML}
+    <span>${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
