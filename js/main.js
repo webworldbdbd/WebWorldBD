@@ -89,9 +89,14 @@ function injectHeader() {
           </button>
 
           <a href="./index.html" class="flex items-center gap-2.5 group">
-            <div class="w-9 h-9 rounded-xl header-logo-tile flex items-center justify-center p-1.5 shadow-md group-hover:scale-105 transition-transform">
-              <img src="./assets/favicon.svg" alt="WebWorldBD Logo" class="w-full h-full object-contain filter drop-shadow-xs" />
-            </div>
+            <img
+              src="./assets/logo.png?v=2"
+              alt="WebWorldBD"
+              width="44"
+              height="44"
+              class="h-10 md:h-11 w-auto object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform"
+              onerror="this.style.display='none';"
+            />
             <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
               <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
             </span>
@@ -149,9 +154,14 @@ function injectSidebar() {
       <!-- Top Header -->
       <div class="p-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 sticky top-0 z-20 sidebar-header-glass">
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl logo-3d-tile flex items-center justify-center p-1.5 shadow-md">
-            <img src="./assets/favicon.svg" alt="WebWorldBD" class="w-full h-full object-contain filter drop-shadow-xs" />
-          </div>
+          <img
+            src="./assets/logo.png?v=2"
+            alt="WebWorldBD"
+            width="40"
+            height="40"
+            class="h-10 w-auto object-contain filter drop-shadow-xs"
+            onerror="this.style.display='none';"
+          />
           <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
             <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black" data-i18n="brandBD">${t('brandBD')}</span>
           </span>
@@ -520,24 +530,37 @@ function updateAuthDependentUI() {
       const email = currentUser.email || '';
       const photoURL = currentUser.photoURL;
 
-      const avatarSrc = photoURL || './assets/profile.jpg';
-      userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
-          <span>W</span>
-          <img src="${avatarSrc}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.style.display='none';">
-          <span class="online-status-dot"></span>
-        </div>
-        <div class="overflow-hidden flex-1">
-          <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
-          <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
-            ${email}
-          </a>
-        </div>
-      `;
+      if (photoURL) {
+        userCard.innerHTML = `
+          <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
+            <img src="${photoURL}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">
+            <span class="online-status-dot"></span>
+          </div>
+          <div class="overflow-hidden flex-1">
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
+            <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
+              ${email}
+            </a>
+          </div>
+        `;
+      } else {
+        userCard.innerHTML = `
+          <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center shrink-0 overflow-hidden relative">
+            <img src="./assets/logo.png?v=2" alt="${name}" width="44" height="44" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">
+            <span class="online-status-dot"></span>
+          </div>
+          <div class="overflow-hidden flex-1">
+            <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
+            <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
+              ${email}
+            </a>
+          </div>
+        `;
+      }
     } else {
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full avatar-double-ring bg-sky-100 dark:bg-sky-950/80 flex items-center justify-center text-sky-500 font-bold text-lg shrink-0 relative">
-          <i class="fa-solid fa-user"></i>
+        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center shrink-0 overflow-hidden relative">
+          <img src="./assets/logo.png?v=2" alt="Guest" width="44" height="44" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">
           <span class="online-status-dot"></span>
         </div>
         <div class="overflow-hidden flex-1">
@@ -623,9 +646,14 @@ function injectFooter() {
           <!-- Column 1: Logo & Brief -->
           <div class="col-span-2 md:col-span-1 space-y-4">
             <a href="./index.html" class="flex items-center gap-2">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-xl shadow-xs">
-                W
-              </div>
+              <img
+                src="./assets/logo.png?v=2"
+                alt="WebWorldBD"
+                width="36"
+                height="36"
+                class="h-9 w-auto object-contain filter drop-shadow-xs"
+                onerror="this.style.display='none';"
+              />
               <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
                 WebWorld<span class="text-sky-400 font-black">BD</span>
               </span>
