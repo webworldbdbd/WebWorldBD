@@ -333,6 +333,21 @@ function injectSidebar() {
               <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
+            <!-- My Profile -->
+            <button
+              id="sidebar-my-profile"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
+              data-path="profile.html"
+            >
+              <div class="flex items-center gap-3">
+                <div class="icon-tile-3d icon-tile-profile w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="myProfile">${t('myProfile')}</span>
+              </div>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+            </button>
+
             <!-- Start Project -->
             <a
               href="./start-project.html"
@@ -474,18 +489,6 @@ function injectSidebar() {
             ${t('others')}
           </h3>
           <div class="space-y-2.5">
-            <button
-              id="sidebar-my-profile"
-              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
-            >
-              <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
-                  <i class="fa-solid fa-user"></i>
-                </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="myProfile">${t('myProfile')}</span>
-              </div>
-            </button>
-
             <a
               href="./why-choose-me.html"
               class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
@@ -700,8 +703,8 @@ function updateAuthDependentUI() {
         </div>
         <div class="overflow-hidden flex-1">
           <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
-          ${username ? `<p class="text-[11px] text-sky-500 font-semibold truncate">${username}</p>` : ''}
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${email}</p>
+          ${username ? `<span class="text-[11px] text-sky-500 font-semibold block truncate">${username}</span>` : ''}
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">${email}</span>
         </div>
         <a href="./profile.html?edit=true" onclick="event.stopPropagation();" aria-label="Edit Profile" class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950/80 hover:bg-sky-200 dark:hover:bg-sky-900 text-sky-600 dark:text-sky-300 flex items-center justify-center transition-colors shrink-0">
           <i class="fa-solid fa-pencil text-xs"></i>
@@ -723,9 +726,9 @@ function updateAuthDependentUI() {
         </div>
         <div class="overflow-hidden flex-1">
           <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate" data-i18n="guest">${t('guest')}</h4>
-          <a href="./login.html" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate" data-i18n="logIn">
+          <span class="text-xs text-sky-500 dark:text-sky-400 font-medium block truncate" data-i18n="logIn">
             ${t('logIn')}
-          </a>
+          </span>
         </div>
       `;
     }
@@ -841,14 +844,14 @@ function injectFooter() {
             </h4>
             <ul class="space-y-2.5 text-xs">
               <li><a href="./index.html" class="hover:text-sky-500 transition-colors" data-i18n="home">${t('home')}</a></li>
-              <li><a href="./index.html#about-me" class="hover:text-sky-500 transition-colors" data-i18n="aboutMeTitle">${t('aboutMeTitle')}</a></li>
               <li><a href="./services.html" class="hover:text-sky-500 transition-colors" data-i18n="services">${t('services')}</a></li>
-              <li><a href="./index.html#live-projects" class="hover:text-sky-500 transition-colors">Projects</a></li>
+              <li><a href="./profile.html" class="hover:text-sky-500 transition-colors" data-i18n="myProfile">${t('myProfile')}</a></li>
+              <li><a href="./start-project.html" class="hover:text-sky-500 transition-colors" data-i18n="startProject">${t('startProject')}</a></li>
+              <li><a href="./contact.html" class="hover:text-sky-500 transition-colors" data-i18n="connect">${t('connect')}</a></li>
+              <li><a href="./settings.html" class="hover:text-sky-500 transition-colors" data-i18n="settings">${t('settings')}</a></li>
               <li><a href="./why-choose-me.html" class="hover:text-sky-500 transition-colors" data-i18n="whyChooseMe">${t('whyChooseMe')}</a></li>
               <li><a href="./process.html" class="hover:text-sky-500 transition-colors" data-i18n="workProcess">${t('workProcess')}</a></li>
               <li><a href="./faq.html" class="hover:text-sky-500 transition-colors" data-i18n="faq">${t('faq')}</a></li>
-              <li><a href="./profile.html" class="hover:text-sky-500 transition-colors" data-i18n="myProfile">${t('myProfile')}</a></li>
-              <li><a href="./contact.html" class="hover:text-sky-500 transition-colors" data-i18n="connect">${t('connect')}</a></li>
             </ul>
           </div>
 

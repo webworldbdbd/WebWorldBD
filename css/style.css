@@ -1279,6 +1279,12 @@ body.dark .card-3d.active span {
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+/* My Profile - Indigo / Purple Gradient Tile */
+.icon-tile-profile {
+  background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
 /* Live Chat Pulsing Dot */
 .live-chat-red-dot {
   position: absolute;
