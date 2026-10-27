@@ -24,41 +24,51 @@
   </script>
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="min-h-screen flex flex-col justify-between relative">
+<body class="min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+  <!-- Ambient 3D Blurred Gradient Orbs Background -->
+  <div class="contact-orbs-container" aria-hidden="true">
+    <div class="contact-orb orb-sky"></div>
+    <div class="contact-orb orb-purple"></div>
+    <div class="contact-orb orb-pink"></div>
+  </div>
 
   <!-- Shared Header -->
   <div id="header-root"></div>
 
   <!-- Main Content -->
-  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-10 animate-fade-in-up">
-    <!-- Header -->
-    <div class="text-center space-y-3">
-      <span class="inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-sky-100 text-sky-600 dark:bg-sky-900/60 dark:text-sky-300" data-i18n="getInTouchBadge">
-        Get In Touch
-      </span>
+  <main class="relative z-10 flex-grow pt-8 pb-32 md:pb-20 px-4 max-w-4xl mx-auto w-full space-y-10 animate-fade-in-up">
+    <!-- Top Section -->
+    <div class="text-center space-y-4 relative z-10">
+      <div class="inline-flex items-center justify-center">
+        <span class="badge-3d-glossy px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-sky-600 dark:text-sky-300 shadow-sm" data-i18n="getInTouchBadge">
+          Get In Touch
+        </span>
+      </div>
 
-      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight" data-i18n="contactHeading">
+      <h1 class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-snug contact-3d-heading" data-i18n="contactHeading">
         Let's Build Something Great Together!
       </h1>
 
-      <p class="text-xs md:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto font-medium" data-i18n="contactText">
+      <p class="text-xs md:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto font-medium leading-relaxed" data-i18n="contactText">
         Ready to take your business online or start a new project? Contact me today for a free consultation.
       </p>
     </div>
 
-    <!-- Contact List -->
-    <div class="space-y-3.5">
-      <!-- Email Support -->
+    <!-- Contact Grid (Single column mobile, two columns tablet/desktop) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 1. Email Support -->
       <a
         href="mailto:saripofficialsupport@gmail.com"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-email p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.05s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-solid fa-envelope text-lg"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-email shrink-0 flex items-center justify-center">
+            <i class="fa-solid fa-envelope text-lg text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="emailSupport">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="emailSupport">
               EMAIL SUPPORT
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -66,20 +76,35 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="btn-copy-card w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
+            data-copy="saripofficialsupport@gmail.com"
+            title="Copy Email"
+            aria-label="Copy Email"
+          >
+            <i class="fa-regular fa-copy text-xs"></i>
+          </button>
+          <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors"></i>
+          </div>
+        </div>
       </a>
 
-      <!-- Phone Number -->
+      <!-- 2. Phone Number -->
       <a
         href="tel:+8801342697743"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-phone p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.1s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-solid fa-phone text-lg"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-phone shrink-0 flex items-center justify-center">
+            <i class="fa-solid fa-phone text-lg text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="phoneNumber">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="phoneNumber">
               PHONE NUMBER
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -87,22 +112,37 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="btn-copy-card w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+            data-copy="+8801342697743"
+            title="Copy Phone Number"
+            aria-label="Copy Phone Number"
+          >
+            <i class="fa-regular fa-copy text-xs"></i>
+          </button>
+          <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+          </div>
+        </div>
       </a>
 
-      <!-- WhatsApp Message -->
+      <!-- 3. WhatsApp Message -->
       <a
         href="https://wa.me/8801342697743"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-whatsapp p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.15s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-green-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-brands fa-whatsapp text-xl"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-whatsapp shrink-0 flex items-center justify-center">
+            <i class="fa-brands fa-whatsapp text-xl text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="whatsappMessage">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="whatsappMessage">
               WHATSAPP MESSAGE
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -110,20 +150,35 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="btn-copy-card w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+            data-copy="+8801342697743"
+            title="Copy WhatsApp Number"
+            aria-label="Copy WhatsApp Number"
+          >
+            <i class="fa-regular fa-copy text-xs"></i>
+          </button>
+          <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+          </div>
+        </div>
       </a>
 
-      <!-- Support Hotline -->
+      <!-- 4. Support Hotline -->
       <a
         href="tel:+8809658183506"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-hotline p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.2s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-solid fa-headset text-lg"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-hotline shrink-0 flex items-center justify-center">
+            <i class="fa-solid fa-headset text-lg text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="supportHotline">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="supportHotline">
               SUPPORT HOTLINE
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -131,22 +186,37 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="btn-copy-card w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+            data-copy="+8809658183506"
+            title="Copy Support Hotline"
+            aria-label="Copy Support Hotline"
+          >
+            <i class="fa-regular fa-copy text-xs"></i>
+          </button>
+          <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+          </div>
+        </div>
       </a>
 
-      <!-- Telegram Support -->
+      <!-- 5. Telegram Support -->
       <a
         href="https://t.me/saripsupportBD"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-telegram p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.25s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-sky-500 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-brands fa-telegram text-xl"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-telegram shrink-0 flex items-center justify-center">
+            <i class="fa-brands fa-telegram text-xl text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="telegramSupport">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="telegramSupport">
               TELEGRAM SUPPORT
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -154,22 +224,37 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            class="btn-copy-card w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
+            data-copy="@saripsupportBD"
+            title="Copy Telegram Handle"
+            aria-label="Copy Telegram Handle"
+          >
+            <i class="fa-regular fa-copy text-xs"></i>
+          </button>
+          <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors"></i>
+          </div>
+        </div>
       </a>
 
-      <!-- LinkedIn Profile -->
+      <!-- 6. LinkedIn Profile -->
       <a
         href="https://www.linkedin.com/in/sh-sarip-4066b2431"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-linkedin p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.3s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-blue-700 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white">
-            <i class="fa-brands fa-linkedin text-xl"></i>
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-linkedin shrink-0 flex items-center justify-center">
+            <i class="fa-brands fa-linkedin text-xl text-white"></i>
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="linkedinProfile">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="linkedinProfile">
               LINKEDIN PROFILE
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -177,22 +262,26 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-blue-600 transition-colors"></i>
+        </div>
       </a>
 
-      <!-- Fiverr Profile -->
+      <!-- 7. Fiverr Profile -->
       <a
         href="https://www.fiverr.com/s/0DbA3ok"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-fiverr p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.35s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-fiverr shrink-0 flex items-center justify-center text-white font-black text-sm">
             fi
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="fiverrProfile">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="fiverrProfile">
               FIVERR PROFILE
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -200,22 +289,26 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+        </div>
       </a>
 
-      <!-- Web Development Fiverr Gig -->
+      <!-- 8. Web Development Fiverr Gig -->
       <a
         href="https://www.fiverr.com/s/8xzaXEp"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-fiverr p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.4s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-fiverr shrink-0 flex items-center justify-center text-white font-black text-sm">
             fi
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="webDevelopment">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="webDevelopment">
               WEB DEVELOPMENT
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -223,22 +316,26 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+        </div>
       </a>
 
-      <!-- Android App Dev Fiverr Gig -->
+      <!-- 9. Android App Dev Fiverr Gig -->
       <a
         href="https://www.fiverr.com/s/vbvDpkL"
         target="_blank"
         rel="noopener noreferrer"
-        class="p-4 rounded-2xl bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center justify-between group shadow-xs cursor-pointer"
+        class="contact-card-3d card-brand-fiverr p-4 rounded-[20px] flex items-center justify-between group cursor-pointer relative overflow-hidden"
+        style="animation-delay: 0.45s;"
       >
-        <div class="flex items-center gap-4 overflow-hidden">
-          <div class="w-11 h-11 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform text-white font-black text-sm">
+        <div class="flex items-center gap-3.5 overflow-hidden flex-1 mr-2">
+          <div class="contact-icon-tile tile-fiverr shrink-0 flex items-center justify-center text-white font-black text-sm">
             fi
           </div>
-          <div class="overflow-hidden">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="androidAppDev">
+          <div class="overflow-hidden flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5" data-i18n="androidAppDev">
               ANDROID APP DEVELOPMENT
             </p>
             <p class="text-xs md:text-sm font-bold text-slate-900 dark:text-white truncate">
@@ -246,23 +343,31 @@
             </p>
           </div>
         </div>
-        <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-sky-500 transition-colors shrink-0 ml-2"></i>
+
+        <div class="contact-action-btn w-8 h-8 rounded-full flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+        </div>
       </a>
     </div>
 
     <!-- SOCIAL NETWORKS Section -->
-    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 text-center space-y-4">
-      <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500" data-i18n="socialNetworks">
-        SOCIAL NETWORKS
-      </h3>
+    <div class="pt-8 border-t border-slate-200/60 dark:border-slate-800/60 text-center space-y-6">
+      <div class="flex items-center justify-center gap-4 max-w-md mx-auto">
+        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-sky-400"></div>
+        <h3 class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 shrink-0" data-i18n="socialNetworks">
+          SOCIAL NETWORKS
+        </h3>
+        <div class="h-px flex-1 bg-gradient-to-r from-sky-400 via-slate-300 dark:via-slate-700 to-transparent"></div>
+      </div>
 
-      <div class="flex flex-wrap items-center justify-center gap-3">
+      <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5">
         <a
           href="https://facebook.com"
           target="_blank"
           rel="noopener noreferrer"
           title="Facebook"
-          class="w-11 h-11 rounded-full bg-blue-600 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-facebook flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 0s;"
         >
           <i class="fa-brands fa-facebook-f text-lg"></i>
         </a>
@@ -271,7 +376,8 @@
           target="_blank"
           rel="noopener noreferrer"
           title="TikTok"
-          class="w-11 h-11 rounded-full bg-slate-900 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-tiktok flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 0.3s;"
         >
           <i class="fa-brands fa-tiktok text-lg"></i>
         </a>
@@ -280,7 +386,8 @@
           target="_blank"
           rel="noopener noreferrer"
           title="Telegram"
-          class="w-11 h-11 rounded-full bg-sky-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-telegram flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 0.6s;"
         >
           <i class="fa-brands fa-telegram text-lg"></i>
         </a>
@@ -289,14 +396,16 @@
           target="_blank"
           rel="noopener noreferrer"
           title="LinkedIn"
-          class="w-11 h-11 rounded-full bg-blue-700 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-linkedin flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 0.9s;"
         >
           <i class="fa-brands fa-linkedin-in text-lg"></i>
         </a>
         <a
           href="mailto:saripofficialsupport@gmail.com"
           title="Gmail"
-          class="w-11 h-11 rounded-full bg-red-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-gmail flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 1.2s;"
         >
           <i class="fa-solid fa-envelope text-lg"></i>
         </a>
@@ -305,7 +414,8 @@
           target="_blank"
           rel="noopener noreferrer"
           title="WhatsApp"
-          class="w-11 h-11 rounded-full bg-emerald-500 hover:opacity-90 flex items-center justify-center text-white shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-whatsapp flex items-center justify-center text-white cursor-pointer"
+          style="animation-delay: 1.5s;"
         >
           <i class="fa-brands fa-whatsapp text-xl"></i>
         </a>
@@ -314,7 +424,8 @@
           target="_blank"
           rel="noopener noreferrer"
           title="Fiverr"
-          class="w-11 h-11 rounded-full bg-emerald-600 hover:opacity-90 flex items-center justify-center text-white font-extrabold text-xs shadow-md hover:scale-110 transition-all cursor-pointer"
+          class="social-sphere sphere-fiverr flex items-center justify-center text-white font-extrabold text-xs cursor-pointer"
+          style="animation-delay: 1.8s;"
         >
           fi
         </a>
