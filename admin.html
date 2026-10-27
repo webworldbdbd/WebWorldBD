@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="format-detection" content="email=no, telephone=no, address=no">
-  <title>Admin Dashboard | WebWorldBD</title>
-    <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <title>Admin Executive Center | WebWorldBD</title>
+  <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
-  <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
-  <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -25,134 +24,510 @@
   </script>
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="min-h-screen flex flex-col justify-between relative">
+<body class="min-h-screen bg-slate-900 text-slate-100 font-sans relative overflow-x-hidden">
 
-  <!-- Shared Header -->
-  <div id="header-root"></div>
+  <!-- Initial Fullscreen Blank Auth Loading Screen (Prevents layout leakage) -->
+  <div id="admin-auth-guard" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-4">
+    <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
 
-  <!-- Main Content -->
-  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-4xl mx-auto w-full animate-fade-in-up">
-    <!-- Admin Loading -->
-    <div id="admin-loading" class="glass-card p-8 rounded-3xl text-center space-y-3">
-      <span class="spinner mx-auto border-sky-500 border-top-transparent w-8 h-8"></span>
-      <p class="text-xs text-slate-500">Verifying administrative credentials...</p>
-    </div>
+  <!-- Entire Admin Interface (Hidden by default until client guard verifies credentials) -->
+  <div id="admin-app" class="hidden min-h-screen flex flex-col md:flex-row relative">
 
-    <!-- Admin Content Container -->
-    <div id="admin-content" class="space-y-6 hidden">
-      <!-- Top Banner -->
-      <div class="bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 text-white p-6 md:p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <span class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white mb-2">
-            Administrator Privilege
-          </span>
-          <h1 class="text-2xl md:text-3xl font-black" data-i18n="adminTitle">
-            Admin Management Dashboard
-          </h1>
-          <p class="text-xs opacity-90 mt-1">
-            Logged in as: <strong id="admin-email-text">webworldbd.lmt@gmail.com</strong>
-          </p>
-        </div>
-
-        <a href="./profile.html" class="px-4 py-2.5 rounded-xl bg-white text-slate-900 font-bold text-xs hover:bg-slate-100 transition-colors shrink-0">
-          My Account
+    <!-- DESKTOP SIDEBAR -->
+    <aside id="admin-sidebar" class="hidden md:flex flex-col w-64 bg-slate-950/90 backdrop-blur-xl border-r border-slate-800 shrink-0 sticky top-0 h-screen z-30 transition-all duration-300">
+      <!-- Logo Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <a href="./index.html" class="flex items-center gap-3">
+          <img src="./assets/logo.png?v=2" alt="WebWorldBD" class="h-9 w-auto">
+          <div>
+            <span class="font-extrabold text-base tracking-tight text-white">WebWorld<span class="text-sky-400">BD</span></span>
+            <span class="block text-[9px] font-black uppercase text-sky-400 tracking-wider">Executive Panel</span>
+          </div>
         </a>
       </div>
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="glass-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Active Projects</p>
-          <p class="text-xl font-extrabold text-sky-500">12 Ongoing</p>
-        </div>
+      <!-- Navigation Menu Items -->
+      <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
+        <button data-section="dashboard" class="admin-nav-btn active w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-chart-pie text-sky-400 text-base w-5 text-center"></i>
+            <span>Dashboard</span>
+          </div>
+        </button>
 
-        <div class="glass-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Total Completed</p>
-          <p class="text-xl font-extrabold text-emerald-500">108+ Done</p>
-        </div>
+        <button data-section="chat" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all relative">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-comments text-emerald-400 text-base w-5 text-center"></i>
+            <span>Live Chat Inbox</span>
+          </div>
+          <span id="nav-chat-unread-badge" class="hidden px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black">0</span>
+        </button>
 
-        <div class="glass-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">System Status</p>
-          <p class="text-xl font-extrabold text-purple-500">100% Online</p>
-        </div>
+        <button data-section="requests" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all relative">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-rocket text-purple-400 text-base w-5 text-center"></i>
+            <span>Project Requests</span>
+          </div>
+          <span id="nav-requests-badge" class="hidden px-2 py-0.5 rounded-full bg-sky-500 text-white text-[10px] font-black">0</span>
+        </button>
 
-        <div class="glass-card p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
-          <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">Inquiries Today</p>
-          <p class="text-xl font-extrabold text-amber-500">5 New</p>
-        </div>
-      </div>
+        <button data-section="users" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-users text-amber-400 text-base w-5 text-center"></i>
+            <span>Users Manager</span>
+          </div>
+        </button>
 
-      <!-- Control Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Card 1: System Info -->
-        <div class="glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-          <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-server text-sky-500"></i>
-            Platform Infrastructure
-          </h3>
-          <div class="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-            <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-              <span>Hosting:</span>
-              <strong class="text-slate-900 dark:text-white">GitHub Pages (Static)</strong>
+        <button data-section="content" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-pen-to-square text-pink-400 text-base w-5 text-center"></i>
+            <span>Content Manager</span>
+          </div>
+        </button>
+
+        <button data-section="site-control" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-sliders text-indigo-400 text-base w-5 text-center"></i>
+            <span>Site Control</span>
+          </div>
+        </button>
+
+        <button data-section="activity" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-list-check text-teal-400 text-base w-5 text-center"></i>
+            <span>Activity Log</span>
+          </div>
+        </button>
+
+        <button data-section="settings" class="admin-nav-btn w-full px-3.5 py-3 rounded-2xl flex items-center justify-between text-xs font-bold transition-all">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-gear text-slate-400 text-base w-5 text-center"></i>
+            <span>Settings</span>
+          </div>
+        </button>
+      </nav>
+
+      <!-- Bottom Admin Profile Widget -->
+      <div class="p-3 border-t border-slate-800">
+        <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shrink-0">
+              A
             </div>
-            <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-              <span>Authentication:</span>
-              <strong class="text-slate-900 dark:text-white">Firebase Auth (Modular)</strong>
-            </div>
-            <div class="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-              <span>Database:</span>
-              <strong class="text-slate-900 dark:text-white">Firestore DB</strong>
-            </div>
-            <div class="flex justify-between py-1.5">
-              <span>Build System:</span>
-              <strong class="text-emerald-500">Pure Static (No Build)</strong>
+            <div class="overflow-hidden">
+              <p class="font-bold text-xs text-white truncate">Administrator</p>
+              <p class="text-[10px] text-sky-400 truncate">webworldbd.lmt@gmail.com</p>
             </div>
           </div>
-        </div>
-
-        <!-- Card 2: Security & Policy -->
-        <div class="glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
-          <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-            <i class="fa-solid fa-shield-cat text-amber-500"></i>
-            Security Compliance
-          </h3>
-          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            All user authentication sessions and Firestore database rules are configured to restrict access to authorized user documents and executive administrators.
-          </p>
-          <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 text-xs font-semibold">
-            🔒 Restricted Area: Executive privileges granted for webworldbd.lmt@gmail.com
-          </div>
+          <button id="btn-admin-logout" title="Sign out from admin" class="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs transition-colors cursor-pointer">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
       </div>
+    </aside>
+
+    <!-- MAIN BODY AREA -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- TOP BAR -->
+      <header class="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 flex items-center justify-between sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+          <h2 id="topbar-section-title" class="font-black text-lg text-white">Dashboard</h2>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Quick Search -->
+          <div class="relative hidden sm:block w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+            <input type="text" id="admin-global-search" placeholder="Search chats, requests, users..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+          </div>
+
+          <!-- Direct Link to Public Site -->
+          <a href="./index.html" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-globe"></i>
+            <span class="hidden sm:inline">View Public Site</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- CONTENT SECTIONS CONTAINER -->
+      <main class="flex-1 p-4 md:p-6 overflow-y-auto pb-24 md:pb-6">
+
+        <!-- 1. DASHBOARD SECTION -->
+        <section id="section-dashboard" class="admin-section space-y-6">
+          <!-- Stat Cards Grid -->
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">Total Users</p>
+              <h3 id="stat-total-users" class="text-2xl font-black text-white">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">New (7 Days)</p>
+              <h3 id="stat-new-users" class="text-2xl font-black text-sky-400">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">Open Chats</p>
+              <h3 id="stat-open-chats" class="text-2xl font-black text-emerald-400">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">Unread Msgs</p>
+              <h3 id="stat-unread-msgs" class="text-2xl font-black text-red-400">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">New Requests</p>
+              <h3 id="stat-new-requests" class="text-2xl font-black text-amber-400">0</h3>
+            </div>
+            <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
+              <p class="text-[11px] font-bold text-slate-400 uppercase">Total Requests</p>
+              <h3 id="stat-total-requests" class="text-2xl font-black text-purple-400">0</h3>
+            </div>
+          </div>
+
+          <!-- Analytics SVG Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Line Chart: Registrations in last 14 days -->
+            <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
+              <h4 class="font-bold text-xs uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line"></i> User Registrations (Last 14 Days)
+              </h4>
+              <div id="chart-users-trend" class="h-44 w-full flex items-center justify-center">
+                <!-- SVG Chart Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Donut Chart: Project Requests by Category -->
+            <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
+              <h4 class="font-bold text-xs uppercase tracking-wider text-purple-400 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie"></i> Requests by Category
+              </h4>
+              <div id="chart-requests-category" class="h-44 w-full flex items-center justify-center">
+                <!-- Donut Chart Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Shortcuts -->
+          <div class="glass-card p-4 rounded-3xl border border-slate-800 bg-slate-900/60 flex flex-wrap gap-2 items-center justify-between">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Actions:</span>
+            <div class="flex flex-wrap gap-2">
+              <button data-action="switch-chat" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-reply"></i> Reply Chats
+              </button>
+              <button data-action="switch-requests" class="px-3.5 py-2 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-list-check"></i> View Requests
+              </button>
+              <button id="btn-toggle-maintenance" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Toggle Maintenance
+              </button>
+            </div>
+          </div>
+
+          <!-- Activity Summary Grids -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Latest Unread Chats -->
+            <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                  <i class="fa-solid fa-comments text-emerald-400"></i> Recent Unread Chats
+                </h4>
+              </div>
+              <div id="dash-recent-chats" class="space-y-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Latest Project Requests -->
+            <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                  <i class="fa-solid fa-rocket text-purple-400"></i> Latest Requests
+                </h4>
+              </div>
+              <div id="dash-recent-requests" class="space-y-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Latest New Users -->
+            <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-bold text-sm text-white flex items-center gap-2">
+                  <i class="fa-solid fa-user-plus text-sky-400"></i> New Registered Users
+                </h4>
+              </div>
+              <div id="dash-recent-users" class="space-y-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. LIVE CHAT INBOX SECTION (Messenger Split View) -->
+        <section id="section-chat" class="admin-section hidden h-[calc(100vh-140px)]">
+          <div class="h-full flex rounded-3xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl relative">
+
+            <!-- LEFT: Conversation List -->
+            <div id="admin-chat-list-panel" class="w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col shrink-0 bg-slate-900/50">
+              <!-- Filter & Search Header -->
+              <div class="p-3 border-b border-slate-800 space-y-2">
+                <input type="text" id="chat-search-input" placeholder="Search name, email, msg..." class="w-full py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+                <div class="flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
+                  <button data-filter="all" class="chat-filter-tab active px-2.5 py-1 rounded-lg bg-slate-800 text-white">All</button>
+                  <button data-filter="unread" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Unread</button>
+                  <button data-filter="open" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Open</button>
+                  <button data-filter="closed" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Closed</button>
+                  <button data-filter="pinned" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Pinned</button>
+                  <button data-filter="blocked" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Blocked</button>
+                </div>
+              </div>
+
+              <!-- Conversation Items Scroll -->
+              <div id="admin-chat-conversations" class="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- RIGHT: Active Conversation View -->
+            <div id="admin-chat-view-panel" class="hidden md:flex flex-1 flex-col bg-slate-950 relative">
+              <!-- Conversation Header -->
+              <div id="admin-chat-header" class="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+                <div class="flex items-center gap-3">
+                  <button id="btn-back-chat-list" class="md:hidden w-8 h-8 rounded-xl bg-slate-800 text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-arrow-left"></i>
+                  </button>
+                  <div class="relative w-9 h-9 rounded-full bg-slate-800 overflow-hidden ring-1 ring-sky-400 shrink-0">
+                    <img id="admin-active-user-avatar" src="./assets/logo.png?v=2" class="w-full h-full object-cover">
+                  </div>
+                  <div>
+                    <h4 id="admin-active-user-name" class="font-bold text-xs text-white truncate">Select a chat</h4>
+                    <p id="admin-active-user-email" class="text-[10px] text-slate-400 truncate">No chat open</p>
+                  </div>
+                </div>
+
+                <!-- Chat Actions Menu -->
+                <div class="flex items-center gap-2">
+                  <button id="btn-toggle-user-info" title="View User Info" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white font-bold transition-colors">
+                    <i class="fa-solid fa-circle-info mr-1"></i> Profile
+                  </button>
+                </div>
+              </div>
+
+              <!-- Active Messages Scroll Area -->
+              <div id="admin-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-950">
+                <div class="text-center py-20 text-slate-500 text-xs">
+                  Select a user conversation from the list to start messaging.
+                </div>
+              </div>
+
+              <!-- Admin Quick Reply Bar Trigger -->
+              <div id="admin-quick-reply-drawer" class="hidden px-3 py-2 bg-slate-900 border-t border-slate-800 max-h-32 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1.5 shrink-0">
+                <!-- Quick replies populated via JS -->
+              </div>
+
+              <!-- Admin Composer Input Bar -->
+              <form id="admin-chat-composer" class="p-3 bg-slate-900 border-t border-slate-800 flex items-end gap-2 shrink-0">
+                <textarea id="admin-chat-textarea" rows="1" placeholder="Type reply (or '/' for quick replies)..." class="flex-1 py-2.5 px-3.5 rounded-2xl bg-slate-800 border border-transparent focus:border-sky-500 text-white text-xs focus:outline-hidden resize-none max-h-32"></textarea>
+
+                <button type="submit" id="btn-admin-send" class="w-10 h-10 rounded-xl bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center text-base transition-colors shrink-0 cursor-pointer">
+                  <i class="fa-solid fa-paper-plane"></i>
+                </button>
+              </form>
+            </div>
+
+            <!-- USER INFO DRAWER (Right Overlay) -->
+            <div id="admin-user-info-drawer" class="hidden absolute right-0 top-0 bottom-0 w-80 bg-slate-900 border-l border-slate-800 z-30 flex flex-col p-4 space-y-4 overflow-y-auto shadow-2xl">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="font-bold text-sm text-white">User Profile & Info</h4>
+                <button id="btn-close-user-drawer" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <div id="user-drawer-content" class="space-y-4 text-xs text-slate-300">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 3. PROJECT REQUESTS SECTION -->
+        <section id="section-requests" class="admin-section hidden space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
+            <h3 class="font-black text-base text-white">Project Inquiries & Requests</h3>
+            <div class="flex items-center gap-2">
+              <button id="btn-export-requests-csv" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Requests List Table / Cards -->
+          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th class="p-3.5">Name / Contact</th>
+                    <th class="p-3.5">Category</th>
+                    <th class="p-3.5">Budget</th>
+                    <th class="p-3.5">Date</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requests-table-body" class="divide-y divide-slate-800/60">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. USERS MANAGER SECTION -->
+        <section id="section-users" class="admin-section hidden space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
+            <h3 class="font-black text-base text-white">Registered Users Directory</h3>
+            <button id="btn-export-users-csv" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-file-csv"></i> Export Users CSV
+            </button>
+          </div>
+
+          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
+                  <tr>
+                    <th class="p-3.5">User</th>
+                    <th class="p-3.5">Username</th>
+                    <th class="p-3.5">Provider</th>
+                    <th class="p-3.5">Joined</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body" class="divide-y divide-slate-800/60">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CONTENT MANAGER SECTION -->
+        <section id="section-content" class="admin-section hidden space-y-6">
+          <div class="bg-slate-900/60 p-4 rounded-3xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <h3 class="font-black text-base text-white">Site Content Manager</h3>
+              <p class="text-xs text-slate-400">Controls live projects, services, FAQs, hero text and contact links across WebWorldBD.</p>
+            </div>
+            <button id="btn-save-site-config" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold text-xs shadow-lg transition-all cursor-pointer">
+              <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Site Config
+            </button>
+          </div>
+
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-bold text-sm text-sky-400 uppercase tracking-wider">Live Projects Editor</h4>
+            <div id="content-projects-list" class="space-y-3">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. SITE CONTROL SECTION -->
+        <section id="section-site-control" class="admin-section hidden space-y-6">
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-6">
+            <h3 class="font-black text-base text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-indigo-400"></i> Platform System Controls
+            </h3>
+
+            <!-- Maintenance Mode Toggle -->
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-sm text-white">Maintenance Mode</h4>
+                <p class="text-xs text-slate-400">When active, public visitors see an "Under Maintenance" screen while admin remains fully functional.</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-maintenance-mode" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-800 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+
+            <!-- Global Feature Toggles -->
+            <div class="space-y-3">
+              <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider">Feature Toggles</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                  <span class="text-xs font-bold text-white">New User Signups</span>
+                  <input type="checkbox" id="toggle-allow-signups" checked class="accent-sky-500">
+                </label>
+                <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                  <span class="text-xs font-bold text-white">Live Chat System</span>
+                  <input type="checkbox" id="toggle-allow-chat" checked class="accent-sky-500">
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. ACTIVITY LOG SECTION -->
+        <section id="section-activity" class="admin-section hidden space-y-4">
+          <div class="flex items-center justify-between bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
+            <h3 class="font-black text-base text-white">Admin Activity & Audit Trail</h3>
+            <button id="btn-clear-old-logs" class="px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-bold transition-all cursor-pointer">
+              Clear Logs > 30 Days
+            </button>
+          </div>
+
+          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+            <div id="admin-logs-list" class="space-y-2 text-xs text-slate-300">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. SETTINGS SECTION -->
+        <section id="section-settings" class="admin-section hidden space-y-6">
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h3 class="font-black text-base text-white">Executive Settings</h3>
+            <div class="space-y-3 text-xs text-slate-300">
+              <p><strong>Admin Email:</strong> webworldbd.lmt@gmail.com</p>
+              <p><strong>Firebase UID:</strong> dS9uZZToHTUPP1Q3DiWiG25D3Xt2</p>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
-  </main>
 
-  <!-- Shared Footer -->
-  <div id="footer-root"></div>
+    <!-- MOBILE BOTTOM NAVIGATION TAB BAR -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 z-40 flex items-center justify-around px-2">
+      <button data-section="dashboard" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
+        <i class="fa-solid fa-chart-pie text-base"></i>
+        <span>Dash</span>
+      </button>
+      <button data-section="chat" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
+        <i class="fa-solid fa-comments text-base"></i>
+        <span>Chats</span>
+      </button>
+      <button data-section="requests" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
+        <i class="fa-solid fa-rocket text-base"></i>
+        <span>Requests</span>
+      </button>
+      <button data-section="users" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
+        <i class="fa-solid fa-users text-base"></i>
+        <span>Users</span>
+      </button>
+      <button data-section="site-control" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
+        <i class="fa-solid fa-sliders text-base"></i>
+        <span>Control</span>
+      </button>
+    </nav>
+
+  </div>
 
   <script type="module" src="./js/main.js"></script>
-  <script type="module">
-    import { subscribeAuthState, ADMIN_EMAIL } from './js/auth.js';
-    import { showToast } from './js/main.js';
-    import { getLanguage } from './js/i18n.js';
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const loading = document.getElementById('admin-loading');
-      const content = document.getElementById('admin-content');
-      const emailText = document.getElementById('admin-email-text');
-
-      subscribeAuthState((user, userData) => {
-        if (!user || !user.email || user.email.toLowerCase() !== ADMIN_EMAIL) {
-          showToast(getLanguage() === 'en' ? "Access Denied. Admin privilege required." : "প্রবেশাধিকার সংরক্ষিত। এডমিন অনুমতি প্রয়োজন।", "error");
-          window.location.href = './index.html';
-          return;
-        }
-
-        loading?.classList.add('hidden');
-        content?.classList.remove('hidden');
-        if (emailText) emailText.textContent = user.email;
-      });
-    });
-  </script>
+  <script type="module" src="./js/admin.js"></script>
 </body>
 </html>

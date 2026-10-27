@@ -1,6 +1,9 @@
 import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
-import { subscribeAuthState, logOut, ADMIN_EMAIL } from './auth.js';
+import { subscribeAuthState, logOut } from './auth.js';
+import { ADMIN_CONFIG, isAdminUser } from './admin-config.js';
 import { getOptimizedImageUrl } from './cloudinary-config.js';
+import { db } from './firebase-config.js';
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export const PRIVACY_POLICY_URL = 'https://webworldbd-privacypolicy.pages.dev/';
 
@@ -44,6 +47,7 @@ export const LIVE_PROJECTS = [
 
 let currentUser = null;
 let currentUserData = null;
+let userChatUnsub = null;
 
 // Initialize app UI as soon as DOM loads
 document.addEventListener('DOMContentLoaded', () => {
@@ -58,15 +62,64 @@ document.addEventListener('DOMContentLoaded', () => {
   injectBottomNav();
   applyTranslations();
   initCopyCardButtons();
+  subscribeSiteConfigPublic();
 
   // Subscribe to Auth State Changes
   subscribeAuthState((user, userData) => {
     currentUser = user;
     currentUserData = userData;
     updateAuthDependentUI();
+    subscribeUserChatUnreadStatus();
     document.dispatchEvent(new CustomEvent('authStateUpdated', { detail: { user, userData } }));
   });
 });
+
+/* ================= PUBLIC SITE CONFIG & MAINTENANCE CHECK ================= */
+function subscribeSiteConfigPublic() {
+  const configRef = doc(db, 'siteConfig', 'main');
+  onSnapshot(configRef, (snap) => {
+    if (snap.exists()) {
+      const config = snap.data();
+      // Check maintenance mode for non-admin users
+      if (config.maintenanceMode && !isAdminUser(currentUser) && !window.location.pathname.includes('admin.html')) {
+        document.body.innerHTML = `
+          <div class="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center font-sans">
+            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-3xl mb-4">
+              <i class="fa-solid fa-screwdriver-wrench animate-bounce"></i>
+            </div>
+            <h1 class="text-2xl font-black mb-2">Platform Under Maintenance</h1>
+            <p class="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">
+              ${getLanguage() === 'en' ? 'WebWorldBD is currently undergoing scheduled upgrades. We will be back online shortly!' : 'ওয়েবওয়ার্ল্ডবিডি বর্তমানে আপডেট করা হচ্ছে। আমরা শীঘ্রই ফিরে আসব!'}
+            </p>
+            <a href="https://wa.me/8801342697743" target="_blank" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">Contact on WhatsApp</a>
+          </div>
+        `;
+      }
+    }
+  }, () => {});
+}
+
+function subscribeUserChatUnreadStatus() {
+  if (userChatUnsub) { userChatUnsub(); userChatUnsub = null; }
+  if (!currentUser) return;
+
+  const chatRef = doc(db, 'chats', currentUser.uid);
+  userChatUnsub = onSnapshot(chatRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data();
+      const hasUnread = data.unreadForUser > 0;
+      document.querySelectorAll('.live-chat-red-dot').forEach(el => {
+        if (hasUnread) {
+          el.classList.remove('hidden');
+          el.style.display = 'block';
+        } else {
+          el.classList.add('hidden');
+          el.style.display = 'none';
+        }
+      });
+    }
+  }, () => {});
+}
 
 /* ================= THEME MANAGEMENT ================= */
 function initTheme() {
@@ -363,19 +416,21 @@ function injectSidebar() {
               <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
-            <!-- Live Chat -->
-            <button
-              id="sidebar-live-chat"
-              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer relative"
+            <!-- Live Chat (Opens livechat.html page) -->
+            <a
+              href="./livechat.html"
+              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all relative"
+              data-path="livechat.html"
             >
               <div class="flex items-center gap-3">
                 <div class="icon-tile-3d icon-tile-chat w-10 h-10 rounded-xl flex items-center justify-center text-emerald-500 shrink-0 relative">
                   <i class="fa-solid fa-comments"></i>
-                  <span class="live-chat-red-dot"></span>
+                  <span class="live-chat-red-dot hidden"></span>
                 </div>
                 <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="liveChat">${t('liveChat')}</span>
               </div>
-            </button>
+              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+            </a>
 
             <!-- Connect -->
             <a
@@ -407,7 +462,7 @@ function injectSidebar() {
               <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
-            <!-- Admin Panel (Conditional) -->
+            <!-- Admin Panel (Conditional - rendered ONLY for Executive Admin) -->
             <a
               id="sidebar-admin-link"
               href="./admin.html"
@@ -575,16 +630,6 @@ function injectSidebar() {
     el.addEventListener('click', closeSidebar);
   });
 
-  document.getElementById('sidebar-live-chat')?.addEventListener('click', () => {
-    closeSidebar();
-    if (!currentUser) {
-      showToast(getLanguage() === 'en' ? "Please log in first for live chat." : "লাইভ চ্যাটের জন্য প্রথমে লগ ইন করুন।", "info");
-      window.location.href = './login.html';
-    } else {
-      openModal('liveChat');
-    }
-  });
-
   document.getElementById('sidebar-my-profile')?.addEventListener('click', () => {
     closeSidebar();
     if (!currentUser) {
@@ -593,7 +638,6 @@ function injectSidebar() {
       window.location.href = './profile.html';
     }
   });
-
 
   highlightActiveSidebarNav();
 }
@@ -784,8 +828,9 @@ function updateAuthDependentUI() {
     }
   }
 
+  // Render Admin Link ONLY for Executive Admin User
   if (adminLink) {
-    if (currentUser && currentUser.email && currentUser.email.toLowerCase() === ADMIN_EMAIL) {
+    if (currentUser && isAdminUser(currentUser)) {
       adminLink.classList.remove('hidden');
       adminLink.classList.add('flex');
     } else {
@@ -847,6 +892,7 @@ function injectFooter() {
               <li><a href="./services.html" class="hover:text-sky-500 transition-colors" data-i18n="services">${t('services')}</a></li>
               <li><a href="./profile.html" class="hover:text-sky-500 transition-colors" data-i18n="myProfile">${t('myProfile')}</a></li>
               <li><a href="./start-project.html" class="hover:text-sky-500 transition-colors" data-i18n="startProject">${t('startProject')}</a></li>
+              <li><a href="./livechat.html" class="hover:text-sky-500 transition-colors" data-i18n="liveChat">${t('liveChat')}</a></li>
               <li><a href="./contact.html" class="hover:text-sky-500 transition-colors" data-i18n="connect">${t('connect')}</a></li>
               <li><a href="./settings.html" class="hover:text-sky-500 transition-colors" data-i18n="settings">${t('settings')}</a></li>
               <li><a href="./why-choose-me.html" class="hover:text-sky-500 transition-colors" data-i18n="whyChooseMe">${t('whyChooseMe')}</a></li>
@@ -906,13 +952,6 @@ function injectFooter() {
       </div>
     </footer>
   `;
-
-  document.querySelectorAll('.btn-footer-modal').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const modalType = e.currentTarget.getAttribute('data-modal');
-      if (modalType) openModal(modalType);
-    });
-  });
 }
 
 /* ================= BOTTOM NAVIGATION BAR INJECTION ================= */
@@ -923,6 +962,7 @@ function injectBottomNav() {
   const isHomeActive = currentPath === 'index.html' || currentPath === '';
   const isServicesActive = currentPath === 'services.html';
   const isStartProjectActive = currentPath === 'start-project.html';
+  const isLiveChatActive = currentPath === 'livechat.html';
   const isConnectActive = currentPath === 'contact.html';
 
   const nav = document.createElement('nav');
@@ -970,16 +1010,17 @@ function injectBottomNav() {
       </div>
 
       <!-- 4. Live Chat -->
-      <button
-        id="btn-bottom-live-chat"
-        class="bottom-nav-btn"
+      <a
+        href="./livechat.html"
+        class="bottom-nav-btn ${isLiveChatActive ? 'active' : ''}"
         aria-label="Live Chat"
       >
-        <div class="bottom-nav-icon-wrapper">
+        <div class="bottom-nav-icon-wrapper relative">
           <i class="fa-solid fa-comments text-lg"></i>
+          <span class="live-chat-red-dot hidden"></span>
         </div>
         <span class="bottom-nav-label" data-i18n="liveChat">${t('liveChat')}</span>
-      </button>
+      </a>
 
       <!-- 5. Connect -->
       <a
@@ -995,16 +1036,6 @@ function injectBottomNav() {
   `;
 
   document.body.appendChild(nav);
-
-  // Attach event handlers for buttons requiring auth check
-  document.getElementById('btn-bottom-live-chat')?.addEventListener('click', () => {
-    if (!currentUser) {
-      showToast(getLanguage() === 'en' ? "Please log in first for live chat." : "লাইভ চ্যাটের জন্য প্রথমে লগ ইন করুন।", "info");
-      window.location.href = './login.html';
-    } else {
-      openModal('liveChat');
-    }
-  });
 }
 
 /* ================= FLOATING BUTTONS INJECTION ================= */
@@ -1110,38 +1141,6 @@ export function openModal(modalType) {
   let bodyHTML = '';
 
   switch (modalType) {
-    case 'liveChat':
-      iconClass = 'fa-solid fa-comments text-sky-500';
-      titleText = t('liveChat');
-      bodyHTML = `
-        <div class="space-y-4">
-          <div id="chat-messages-box" class="h-64 overflow-y-auto space-y-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <div class="flex justify-start">
-              <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none shadow-xs">
-                Hello! I am SHAFAET HOSSEN SARIP. How can WebWorldBD assist you today with your web or mobile project?
-              </div>
-            </div>
-          </div>
-
-          <form id="live-chat-form" class="flex items-center gap-2">
-            <input
-              id="chat-input"
-              type="text"
-              placeholder="Type your message..."
-              class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs focus:outline-hidden focus:ring-2 focus:ring-sky-500"
-            />
-            <button
-              type="submit"
-              class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <i class="fa-solid fa-paper-plane"></i>
-              <span>Send</span>
-            </button>
-          </form>
-        </div>
-      `;
-      break;
-
     case 'settings':
       iconClass = 'fa-solid fa-gear text-sky-500';
       titleText = t('settings');
@@ -1176,100 +1175,6 @@ export function openModal(modalType) {
       `;
       break;
 
-    case 'whyChooseMe':
-      iconClass = 'fa-solid fa-circle-check text-sky-500';
-      titleText = t('whyChooseMe');
-      bodyHTML = `
-        <div class="space-y-3 text-xs leading-relaxed">
-          <div class="p-3 bg-sky-50 dark:bg-sky-950/40 rounded-xl border border-sky-200 dark:border-sky-900">
-            <h5 class="font-bold text-sky-700 dark:text-sky-300 text-sm mb-1">1. High-Performance Engineering</h5>
-            <p>Fast loading speed, mobile-responsive layout, and modern tech stack (React, Tailwind, Node.js, Next.js).</p>
-          </div>
-          <div class="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900">
-            <h5 class="font-bold text-emerald-700 dark:text-emerald-300 text-sm mb-1">2. 100% Ethical Commitment</h5>
-            <p>Strict refusal of gambling, betting, adult, or illegal platforms. Positive & professional digital solutions only.</p>
-          </div>
-          <div class="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900">
-            <h5 class="font-bold text-purple-700 dark:text-purple-300 text-sm mb-1">3. Direct Developer Support</h5>
-            <p>24/7 direct communication, bug-free warranty, and ongoing maintenance.</p>
-          </div>
-        </div>
-      `;
-      break;
-
-    case 'workProcess':
-      iconClass = 'fa-solid fa-list-check text-sky-500';
-      titleText = t('workProcess');
-      bodyHTML = `
-        <div class="space-y-3 text-xs">
-          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">1</div>
-            <div>
-              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Requirement Gathering</h5>
-              <p class="text-slate-600 dark:text-slate-400">Discussion of client preferences, target audience, and feature roadmap.</p>
-            </div>
-          </div>
-          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">2</div>
-            <div>
-              <h5 class="font-bold text-slate-900 dark:text-white text-sm">UI Design & Architecture</h5>
-              <p class="text-slate-600 dark:text-slate-400">Designing modern, clean glassmorphism layouts and structural database schemas.</p>
-            </div>
-          </div>
-          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">3</div>
-            <div>
-              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Coding & API Integration</h5>
-              <p class="text-slate-600 dark:text-slate-400">Full-stack development, mobile responsiveness, and payment gateway integration.</p>
-            </div>
-          </div>
-          <div class="flex gap-3 items-start p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <div class="w-6 h-6 rounded-full bg-sky-500 text-white font-bold flex items-center justify-center shrink-0">4</div>
-            <div>
-              <h5 class="font-bold text-slate-900 dark:text-white text-sm">Testing, Deployment & Handover</h5>
-              <p class="text-slate-600 dark:text-slate-400">Final security checks, domain setup, hosting deployment, and client handover.</p>
-            </div>
-          </div>
-        </div>
-      `;
-      break;
-
-    case 'faq':
-      iconClass = 'fa-solid fa-circle-question text-sky-500';
-      titleText = t('faq');
-      bodyHTML = `
-        <div class="space-y-3 text-xs">
-          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: How long does a web project take?</h5>
-            <p class="text-slate-600 dark:text-slate-400">Standard business sites take 3-5 days. Complex e-commerce or SaaS apps take 1-3 weeks.</p>
-          </div>
-          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: Do you accept payment via bKash / Nagad / SSLCommerz?</h5>
-            <p class="text-slate-600 dark:text-slate-400">Yes! Local Bangladeshi payment gateways as well as Fiverr / international payments are accepted.</p>
-          </div>
-          <div class="p-3 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700">
-            <h5 class="font-bold text-slate-900 dark:text-white mb-1">Q: Do you build gambling or betting sites?</h5>
-            <p class="text-slate-600 dark:text-slate-400 text-red-500 font-medium">No. WebWorldBD strictly refuses all Gambling, Betting, Adult, or illegal projects.</p>
-          </div>
-        </div>
-      `;
-      break;
-
-    case 'privacyPolicy':
-      iconClass = 'fa-solid fa-file-contract text-sky-500';
-      titleText = t('privacyPolicy');
-      bodyHTML = `
-        <div class="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-          <p>
-            WebWorldBD respects your privacy. All project information, source code, and credentials shared with SHAFAET HOSSEN SARIP remain 100% confidential.
-          </p>
-          <div class="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 font-medium">
-            WebWorldBD strictly builds positive, business-oriented, and legal platforms only. Absolutely NO Gambling, Betting, Adult, or illegal websites are accepted.
-          </div>
-        </div>
-      `;
-      break;
-
     default:
       titleText = t(modalType) || modalType;
       bodyHTML = `<p class="text-sm">${t(modalType) || 'Information'}</p>`;
@@ -1279,7 +1184,6 @@ export function openModal(modalType) {
   modalTitle.textContent = titleText;
   modalBody.innerHTML = bodyHTML;
 
-  // Bind internal modal actions if any
   document.getElementById('modal-toggle-theme')?.addEventListener('click', () => {
     toggleTheme();
   });
@@ -1287,38 +1191,6 @@ export function openModal(modalType) {
     toggleLanguage();
     closeModal();
   });
-
-  const chatForm = document.getElementById('live-chat-form');
-  if (chatForm) {
-    chatForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-
-      const messagesBox = document.getElementById('chat-messages-box');
-      messagesBox.innerHTML += `
-        <div class="flex justify-end">
-          <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-sky-500 text-white rounded-br-none shadow-xs">
-            ${escapeHTML(text)}
-          </div>
-        </div>
-      `;
-      input.value = '';
-      messagesBox.scrollTop = messagesBox.scrollHeight;
-
-      setTimeout(() => {
-        messagesBox.innerHTML += `
-          <div class="flex justify-start">
-            <div class="max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-none shadow-xs">
-              Thank you for your message! You can also contact me directly via WhatsApp at +8801342697743 or email saripofficialsupport@gmail.com for instant response.
-            </div>
-          </div>
-        `;
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-      }, 1000);
-    });
-  }
 }
 
 export function closeModal() {
@@ -1380,7 +1252,6 @@ function initCopyCardButtons() {
         const msg = getLanguage() === 'en' ? 'Copied!' : 'অনুলিপি করা হয়েছে!';
         showToast(msg, 'success');
       }).catch(() => {
-        // Fallback for older browsers
         const textarea = document.createElement('textarea');
         textarea.value = textToCopy;
         textarea.style.position = 'fixed';
@@ -1398,16 +1269,4 @@ function initCopyCardButtons() {
       });
     });
   });
-}
-
-function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g,
-    tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
 }
