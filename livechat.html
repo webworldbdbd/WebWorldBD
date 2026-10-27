@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="email=no, telephone=no, address=no">
+  <title>Live Chat Support | WebWorldBD</title>
+  <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
+  <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
+  <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+
+  <!-- Shared Header -->
+  <div id="header-root"></div>
+
+  <!-- Main Chat Page Container -->
+  <main class="relative z-10 flex-grow max-w-4xl mx-auto w-full px-2 sm:px-4 py-4 flex flex-col h-[calc(100vh-80px)] md:h-[calc(100vh-100px)]">
+
+    <!-- Auth Guard State: Logged Out Card -->
+    <div id="chat-login-prompt" class="hidden my-auto glass-card p-8 rounded-3xl text-center max-w-md mx-auto space-y-5 animate-fade-in-up shadow-2xl border border-white/20 dark:border-slate-800">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 text-white flex items-center justify-center mx-auto text-2xl shadow-lg ring-4 ring-sky-400/20">
+        <i class="fa-solid fa-comments"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white" data-i18n="chatLoginTitle">
+          Please log in to start a live chat
+        </h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed" data-i18n="chatLoginSub">
+          Connect directly with WebWorldBD support to discuss custom web & mobile development, get instant estimates, and track your ongoing projects.
+        </p>
+      </div>
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <a href="./login.html" class="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs transition-all" data-i18n="logIn">
+          Log In
+        </a>
+        <a href="./signup.html" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-bold text-xs shadow-lg hover:shadow-sky-500/25 transition-all" data-i18n="signUp">
+          Sign Up
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Chat Window Container -->
+    <div id="chat-active-container" class="hidden flex-1 flex flex-col glass-card rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden relative">
+
+      <!-- Connection / Reconnection Offline Banner -->
+      <div id="chat-connection-banner" class="hidden px-4 py-2 bg-amber-500/90 text-white text-xs font-semibold flex items-center justify-center gap-2 animate-pulse z-30">
+        <i class="fa-solid fa-wifi text-xs"></i>
+        <span id="chat-connection-text">Connecting to server...</span>
+      </div>
+
+      <!-- Header: Admin Avatar, Status, Typing Indicator -->
+      <div class="px-4 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between z-20 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="relative w-10 h-10 rounded-full bg-slate-900 overflow-hidden ring-2 ring-sky-400 shrink-0">
+            <img src="./assets/logo.png?v=2" alt="WebWorldBD Support" class="w-full h-full object-contain p-1">
+            <span id="admin-status-dot" class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-slate-400 ring-2 ring-white dark:ring-slate-900"></span>
+          </div>
+          <div>
+            <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>WebWorldBD Support</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-500 border border-sky-500/20">Official</span>
+            </h3>
+            <p id="admin-status-text" class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Online</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a href="https://wa.me/8801342697743" target="_blank" rel="noopener noreferrer" title="WhatsApp Support" class="w-9 h-9 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 flex items-center justify-center transition-colors">
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Message History Scroll Area -->
+      <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 relative scroll-smooth bg-slate-50/50 dark:bg-slate-950/50">
+        <!-- Empty Welcome State (if no messages) -->
+        <div id="chat-empty-state" class="hidden flex flex-col items-center justify-center my-auto h-full text-center space-y-3 py-10">
+          <div class="w-16 h-16 rounded-3xl bg-sky-500/10 text-sky-500 flex items-center justify-center text-2xl border border-sky-500/20">
+            <i class="fa-solid fa-hand-wave"></i>
+          </div>
+          <h4 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Welcome to WebWorldBD Live Chat!</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+            Send a message below to start chatting with SHAFAET HOSSEN SARIP regarding your web design, app, or technical requirements.
+          </p>
+        </div>
+
+        <!-- Messages stream populated via JS -->
+      </div>
+
+      <!-- Scroll to Bottom Button -->
+      <button id="btn-scroll-bottom" class="hidden absolute bottom-20 right-4 z-20 px-3 py-2 rounded-full bg-sky-500 hover:bg-sky-600 text-white shadow-xl flex items-center gap-2 text-xs font-bold transition-all animate-bounce cursor-pointer">
+        <i class="fa-solid fa-arrow-down"></i>
+        <span id="unread-scroll-count" class="hidden px-1.5 py-0.5 rounded-full bg-white text-sky-600 text-[10px] font-black">0</span>
+      </button>
+
+      <!-- Upload Progress Overlay Bar -->
+      <div id="upload-progress-card" class="hidden px-4 py-2.5 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0 z-20">
+        <div class="flex items-center gap-2 flex-1 overflow-hidden">
+          <i class="fa-solid fa-cloud-arrow-up text-sky-500 text-sm animate-pulse"></i>
+          <div class="flex-1">
+            <div class="flex justify-between text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+              <span id="upload-filename-text" class="truncate">Uploading file...</span>
+              <span id="upload-percent-text">0%</span>
+            </div>
+            <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div id="upload-progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-indigo-500 w-0 transition-all duration-150"></div>
+            </div>
+          </div>
+        </div>
+        <button id="btn-cancel-upload" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold transition-colors shrink-0">
+          Cancel
+        </button>
+      </div>
+
+      <!-- Blocked User Warning Banner -->
+      <div id="chat-blocked-banner" class="hidden p-3 bg-red-500/10 border-t border-red-500/20 text-red-500 text-xs font-bold text-center shrink-0">
+        <i class="fa-solid fa-ban mr-1"></i> Chat is disabled for this account.
+      </div>
+
+      <!-- Attachment Preview Drawer -->
+      <div id="attachment-preview-box" class="hidden px-4 py-2 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <i id="attachment-preview-icon" class="fa-solid fa-file text-sky-500 text-lg"></i>
+          <div class="overflow-hidden">
+            <p id="attachment-preview-name" class="text-xs font-bold text-slate-900 dark:text-white truncate">file.pdf</p>
+            <p id="attachment-preview-size" class="text-[10px] text-slate-500 dark:text-slate-400">0 KB</p>
+          </div>
+        </div>
+        <button id="btn-remove-attachment" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Emoji Picker Panel -->
+      <div id="emoji-picker-drawer" class="hidden p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 grid grid-cols-8 sm:grid-cols-10 gap-2 max-h-40 overflow-y-auto shrink-0 z-20">
+        <!-- Emoji buttons injected via JS -->
+      </div>
+
+      <!-- Message Composer Input Bar -->
+      <form id="chat-input-form" class="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-end gap-2 shrink-0 z-20">
+        <button type="button" id="btn-toggle-emoji" aria-label="Emoji Picker" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-500 flex items-center justify-center text-lg transition-colors shrink-0 cursor-pointer">
+          <i class="fa-solid fa-face-smile"></i>
+        </button>
+
+        <label for="chat-file-input" class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sky-500 flex items-center justify-center text-lg transition-colors shrink-0 cursor-pointer" title="Attach file or media">
+          <i class="fa-solid fa-paperclip"></i>
+          <input type="file" id="chat-file-input" class="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip">
+        </label>
+
+        <textarea
+          id="chat-textarea"
+          rows="1"
+          placeholder="Type a message..."
+          maxlength="2000"
+          style="font-size: 16px;"
+          class="flex-1 py-2.5 px-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-sky-500 text-slate-900 dark:text-white focus:outline-hidden resize-none max-h-32 transition-all leading-normal"
+        ></textarea>
+
+        <button
+          type="submit"
+          id="btn-send-message"
+          aria-label="Send Message"
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white flex items-center justify-center text-base shadow-md transition-all shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+
+    </div>
+
+  </main>
+
+  <!-- Fullscreen Image / Media Viewer Modal -->
+  <div id="media-viewer-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex-col items-center justify-between p-4">
+    <div class="w-full flex items-center justify-between text-white z-10">
+      <span id="media-viewer-title" class="text-xs font-semibold truncate">Image Preview</span>
+      <div class="flex items-center gap-3">
+        <a id="btn-download-media" href="#" download target="_blank" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-sm transition-colors">
+          <i class="fa-solid fa-download"></i>
+        </a>
+        <button id="btn-close-media-viewer" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-sm transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div class="flex-1 w-full flex items-center justify-center overflow-hidden p-2">
+      <img id="media-viewer-img" src="" alt="Full view" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-200">
+    </div>
+  </div>
+
+  <!-- Audio Notification Sound -->
+  <audio id="chat-sound-notify" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Shared Footer -->
+  <div id="footer-root"></div>
+
+  <script type="module" src="./js/main.js"></script>
+  <script type="module" src="./js/chat.js"></script>
+</body>
+</html>

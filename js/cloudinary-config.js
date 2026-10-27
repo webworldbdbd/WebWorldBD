@@ -23,20 +23,86 @@ export function getOptimizedImageUrl(url, width = 256, height = 256) {
 }
 
 /**
- * Uploads an image blob or file directly to Cloudinary using Unsigned upload preset.
- * @param {Blob|File} file - Image file or blob to upload
- * @param {Object} options - Upload options including onProgress callback and signal/xhr controller
+ * Compresses an image client-side if its dimensions exceed maxWidth or maxHeight.
+ * @param {File} file - Original image file
+ * @param {number} maxWidth - Maximum allowed width
+ * @param {number} maxHeight - Maximum allowed height
+ * @param {number} quality - Image quality (0.1 to 1.0)
+ * @returns {Promise<File|Blob>}
+ */
+export function compressImageIfNeeded(file, maxWidth = 2000, maxHeight = 2000, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) return resolve(file);
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let width = img.width;
+      let height = img.height;
+
+      if (width <= maxWidth && height <= maxHeight) {
+        return resolve(file);
+      }
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (!blob) return resolve(file);
+        const compressedFile = new File([blob], file.name, {
+          type: file.type || 'image/jpeg',
+          lastModified: Date.now()
+        });
+        resolve(compressedFile);
+      }, file.type || 'image/jpeg', quality);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src = url;
+  });
+}
+
+/**
+ * Uploads an image or document file directly to Cloudinary using Unsigned upload preset.
+ * Supports up to 30MB files and auto upload endpoint.
+ * @param {Blob|File} file - File or blob to upload
+ * @param {Object} options - Upload options including onProgress callback and registerCancel function
  * @returns {Promise<{secure_url: string, public_id: string}>}
  */
 export function uploadToCloudinary(file, options = {}) {
   return new Promise((resolve, reject) => {
-    // 1. File Validation
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (file.type && !allowedTypes.includes(file.type.toLowerCase())) {
-      return reject(new Error('INVALID_FORMAT'));
+    // 1. File Format Validation (Block Executables)
+    const blockedExts = ['.exe', '.apk', '.bat', '.js', '.sh'];
+    const fileName = file.name || '';
+    const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+
+    if (blockedExts.includes(ext)) {
+      return reject(new Error('EXECUTABLE_BLOCKED'));
     }
 
-    const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+    const MAX_SIZE_BYTES = 30 * 1024 * 1024; // 30MB
     if (file.size && file.size > MAX_SIZE_BYTES) {
       return reject(new Error('FILE_TOO_LARGE'));
     }
@@ -44,13 +110,12 @@ export function uploadToCloudinary(file, options = {}) {
     // 2. Prepare Form Data
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-    formData.append('folder', CLOUDINARY_CONFIG.folder);
-    formData.append('tags', 'profile');
+    formData.append('upload_preset', options.uploadPreset || CLOUDINARY_CONFIG.uploadPreset);
+    formData.append('folder', options.folder || CLOUDINARY_CONFIG.folder);
 
     // 3. XMLHttpRequest for real progress tracking
     const xhr = new XMLHttpRequest();
-    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
+    const endpoint = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/auto/upload`;
 
     xhr.open('POST', endpoint, true);
 

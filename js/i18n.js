@@ -26,6 +26,13 @@ const translations = {
     logOut: 'Log Out',
     guest: 'Guest',
 
+    // Chat Page
+    chatLoginTitle: "Please log in to start a live chat",
+    chatLoginSub: "Connect directly with WebWorldBD support to discuss custom web & mobile development, get instant estimates, and track your ongoing projects.",
+    chatDisabled: "Chat is disabled for this account.",
+    maxFileSizeError: "Maximum file size allowed is 30MB.",
+    executableBlockedError: "Executable files (.exe, .apk, .bat, .js, .sh) are strictly prohibited.",
+
     // Home Page Hero
     heroGreeting: "Hello! I am SHAFAET HOSSEN SARIP. Our work starts right from your ideas. We transform your preferences, needs, and vision into modern, attractive websites, web apps, and mobile apps. Your ideas, our technology—together we build your desired website & website applications.",
     viewAllProjects: "View All Live Projects",
@@ -269,6 +276,13 @@ const translations = {
     createAccount: 'অ্যাকাউন্ট তৈরি করুন',
     logOut: 'লগ আউট',
     guest: 'গেস্ট (অতিথি)',
+
+    // Chat Page
+    chatLoginTitle: "লাইভ চ্যাট শুরু করতে অনুগ্রহ করে লগ ইন করুন",
+    chatLoginSub: "আপনার কাস্টম ওয়েব ও মোবাইল প্রজেক্ট আলোচনা করতে এবং ইনস্ট্যান্ট এস্টিমেট পেতে সরাসরি সাপোর্ট টিমের সাথে কানেক্ট হোন।",
+    chatDisabled: "এই অ্যাকাউন্টের জন্য চ্যাট সুবিধা নিষ্ক্রিয় রয়েছে।",
+    maxFileSizeError: "সর্বোচ্চ ৩০MB সাইজের ফাইল আপলোড করা যাবে।",
+    executableBlockedError: "এক্সিকিউটেবল ফাইল (.exe, .apk, .bat, .js, .sh) আপলোড করা সম্পূর্ণ নিষেধ।",
 
     // Home Page Hero
     heroGreeting: "হ্যালো! আমি শাফায়েত হোসেন সারিপ। আপনার চিন্তা থেকেই আমাদের কাজ শুরু হয়। আমরা আপনার পছন্দ, চাহিদা এবং দৃষ্টিভঙ্গিকে আধুনিক, আকর্ষণীয় ওয়েবসাইট, ওয়েব অ্যাপ এবং মোবাইল অ্যাপে রূপান্তরিত করি। আপনার আইডিয়া, আমাদের প্রযুক্তি—একত্রে আমরা তৈরি করি আপনার স্বপ্নের ওয়েবসাইট ও অ্যাপ্লিকেশন।",

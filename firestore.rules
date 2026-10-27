@@ -12,12 +12,21 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'webworldbd.lmt@gmail.com';
+      return isSignedIn()
+        && request.auth.uid == "dS9uZZToHTUPP1Q3DiWiG25D3Xt2"
+        && request.auth.token.email == "webworldbd.lmt@gmail.com"
+        && request.auth.token.email_verified == true;
     }
 
-    // Users Collection - Owner Read & Write (Admin access permitted)
+    // Users Collection
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      // Owner can update profile fields but cannot modify role, uid, createdAt, blocked, or banned
+      allow update: if (isOwner(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid', 'createdAt', 'blocked', 'banned']))
+        || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
     }
 
     // Usernames Collection - Public Read, Owner Create & Delete
@@ -27,10 +36,59 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Project Requests Collection - Anyone Create, Admin Read/Write
+    // Live Chats Document (chats/{uid})
+    match /chats/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Separate create and update rules to avoid resource.data null errors on document creation
+      allow create: if (isOwner(uid) && request.resource.data.keys().hasOnly([
+        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'lastMessage', 'lastMessageAt',
+        'lastSender', 'unreadForAdmin', 'unreadForUser', 'userTyping', 'adminTyping', 'userLastSeen', 'createdAt', 'status', 'pinned', 'blocked', 'tags', 'adminNote'
+      ])) || isAdmin();
+
+      allow update: if (isOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'lastMessage', 'lastMessageAt',
+        'lastSender', 'unreadForAdmin', 'unreadForUser', 'userTyping', 'userLastSeen', 'createdAt', 'status'
+      ])) || isAdmin();
+
+      allow delete: if isAdmin();
+
+      // Messages Sub-collection
+      match /messages/{messageId} {
+        allow read: if isOwner(uid) || isAdmin();
+
+        // User can create messages only if chat is not blocked, sender is user, senderId matches auth uid, and text length <= 2000
+        allow create: if (isOwner(uid)
+          && get(/databases/$(database)/documents/chats/$(uid)).data.blocked != true
+          && request.resource.data.sender == "user"
+          && request.resource.data.senderId == request.auth.uid
+          && (request.resource.data.text == null || request.resource.data.text.size() <= 2000)
+        ) || isAdmin();
+
+        // User can only update readAt on admin messages
+        allow update: if (isOwner(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt'])
+        ) || isAdmin();
+
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Project Requests Collection - Anyone Create (with validation), Admin Read/Update/Delete
     match /projectRequests/{requestId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
+    }
+
+    // Site Configuration Document - Public Read, Admin Write Only
+    match /siteConfig/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin Activity Audit Logs - Admin Read/Write Only
+    match /adminLogs/{logId} {
+      allow read, write: if isAdmin();
     }
   }
 }
