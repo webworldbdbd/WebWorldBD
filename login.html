@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Log In | WebWorldBD</title>
-    <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
   <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
   <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
@@ -24,94 +24,124 @@
   </script>
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="min-h-screen flex flex-col justify-between relative">
+<body class="auth-page min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+  <!-- Ambient 3D Blurred Gradient Orbs Background -->
+  <div class="contact-orbs-container" aria-hidden="true">
+    <div class="contact-orb orb-sky"></div>
+    <div class="contact-orb orb-purple"></div>
+    <div class="contact-orb orb-pink"></div>
+  </div>
 
   <!-- Shared Header -->
   <div id="header-root"></div>
 
   <!-- Main Content -->
-  <main class="relative z-10 flex-grow pt-10 pb-16 px-4 max-w-md mx-auto w-full animate-fade-in-up">
-    <div class="glass-card p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
+  <main class="relative z-10 flex-grow pt-6 pb-28 md:pb-16 px-4 max-w-[440px] mx-auto w-full flex flex-col items-center justify-center">
 
-      <!-- Card Header -->
-      <div class="text-center space-y-2">
-        <img src="./assets/logo.png?v=2" alt="WebWorldBD" class="h-12 w-auto object-contain mx-auto drop-shadow-xs" onerror="this.outerHTML='<span class=\'font-black text-2xl text-slate-900 dark:text-white\'>WebWorldBD</span>'">
-        <h1 class="text-2xl font-black text-slate-900 dark:text-white" data-i18n="logIn">
-          Log In
-        </h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
-          Welcome back to WebWorldBD
-        </p>
+    <!-- Back to Home Pill -->
+    <div class="mb-5 text-center">
+      <a href="./index.html" class="btn-back-home-pill">
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        <span data-i18n="backToHome">Back to Home</span>
+      </a>
+    </div>
+
+    <!-- 3D Frosted Glass Auth Card -->
+    <div class="auth-glass-card p-6 sm:p-8 w-full space-y-6">
+
+      <!-- Logo & Heading -->
+      <div class="text-center space-y-3">
+        <div class="auth-logo-tile">
+          <img
+            src="./assets/logo.png?v=2"
+            alt="WebWorldBD"
+            class="h-10 w-auto object-contain drop-shadow-xs"
+            onerror="this.outerHTML='<span class=\'font-black text-xl text-sky-500\'>WBD</span>'"
+          >
+        </div>
+        <div class="space-y-1">
+          <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight" data-i18n="logIn">
+            Log In
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            Welcome back to WebWorldBD
+          </p>
+        </div>
       </div>
 
       <!-- Form -->
-      <form id="login-form" class="space-y-4">
-        <!-- Email -->
-        <div class="space-y-1">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="emailLabel">
+      <form id="login-form" class="space-y-4" novalidate>
+        <!-- Email Field -->
+        <div class="auth-input-group space-y-1.5">
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors" data-i18n="emailLabel">
             Email Address
           </label>
-          <div class="relative">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <i class="fa-solid fa-envelope"></i>
-            </span>
+          <div class="relative flex items-center">
+            <div class="absolute left-2.5 z-10 auth-input-tile-icon pointer-events-none">
+              <i class="fa-solid fa-envelope text-xs"></i>
+            </div>
             <input
               type="email"
               id="login-email"
               required
               placeholder="name@example.com"
-              class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 transition-all"
+              class="auth-input-field"
             >
+            <i class="fa-solid fa-circle-check auth-valid-check" id="email-valid-icon"></i>
           </div>
+          <div class="auth-field-error" id="email-error">Please enter a valid email address.</div>
         </div>
 
-        <!-- Password -->
-        <div class="space-y-1">
+        <!-- Password Field -->
+        <div class="auth-input-group space-y-1.5">
           <div class="flex items-center justify-between">
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="passwordLabel">
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors" data-i18n="passwordLabel">
               Password
             </label>
-            <a href="./forgot-password.html" class="text-[11px] font-bold text-sky-500 hover:underline" data-i18n="forgotPasswordLink">
+            <a href="./forgot-password.html" class="auth-link-gradient text-[11px]" data-i18n="forgotPasswordLink">
               Forgot password?
             </a>
           </div>
-          <div class="relative">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              <i class="fa-solid fa-lock"></i>
-            </span>
+          <div class="relative flex items-center">
+            <div class="absolute left-2.5 z-10 auth-input-tile-icon pointer-events-none">
+              <i class="fa-solid fa-lock text-xs"></i>
+            </div>
             <input
               type="password"
               id="login-password"
               required
               minlength="6"
               placeholder="••••••••"
-              class="w-full pl-10 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white text-xs font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 transition-all"
+              class="auth-input-field"
             >
             <button
               type="button"
               id="btn-toggle-login-password"
-              class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              aria-label="Toggle Password Visibility"
+              class="absolute right-3.5 z-10 btn-auth-eye"
             >
               <i class="fa-solid fa-eye" id="eye-icon"></i>
             </button>
           </div>
+          <div class="auth-field-error" id="password-error">Password must be at least 6 characters.</div>
         </div>
 
         <!-- Submit Button -->
         <button
           type="submit"
           id="btn-login-submit"
-          class="w-full py-3.5 rounded-xl btn-primary-gradient font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+          class="btn-auth-primary"
         >
           <span id="login-submit-text" data-i18n="logIn">Log In</span>
           <span id="login-submit-spinner" class="spinner hidden"></span>
         </button>
       </form>
 
-      <!-- Divider -->
-      <div class="relative flex items-center justify-center">
-        <div class="border-t border-slate-200 dark:border-slate-700 w-full"></div>
-        <span class="bg-white dark:bg-slate-900 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest absolute">
+      <!-- OR Divider -->
+      <div class="relative flex items-center justify-center my-4">
+        <div class="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+        <span class="auth-divider-pill absolute">
           OR
         </span>
       </div>
@@ -120,9 +150,9 @@
       <button
         type="button"
         id="btn-google-login"
-        class="w-full py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+        class="btn-auth-google"
       >
-        <svg class="w-4 h-4" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -132,12 +162,28 @@
       </button>
 
       <!-- Bottom link -->
-      <p class="text-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+      <p class="text-center text-xs font-semibold text-slate-600 dark:text-slate-400 pt-1">
         <span data-i18n="dontHaveAccount">Don't have an account?</span>
-        <a href="./signup.html" class="text-sky-500 hover:underline font-bold ml-1" data-i18n="signUp">
+        <a href="./signup.html" class="auth-link-gradient ml-1" data-i18n="signUp">
           Sign Up
         </a>
       </p>
+    </div>
+
+    <!-- Trust Badges Row -->
+    <div class="trust-badges-row">
+      <div class="trust-badge-pill">
+        <i class="fa-solid fa-lock"></i>
+        <span data-i18n="secureLogin">Secure Login</span>
+      </div>
+      <div class="trust-badge-pill">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span data-i18n="dataSafe">Your data is safe</span>
+      </div>
+      <div class="trust-badge-pill">
+        <i class="fa-solid fa-bolt"></i>
+        <span data-i18n="fastAccess">Fast Access</span>
+      </div>
     </div>
   </main>
 
@@ -148,17 +194,21 @@
   <script type="module">
     import { logIn, logInWithGoogle } from './js/auth.js';
     import { showToast } from './js/main.js';
-    import { getLanguage } from './js/i18n.js';
+    import { getLanguage, t } from './js/i18n.js';
 
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('login-form');
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
       const submitBtn = document.getElementById('btn-login-submit');
-      const submitText = document.getElementById('login-submit-text');
       const submitSpinner = document.getElementById('login-submit-spinner');
       const togglePasswordBtn = document.getElementById('btn-toggle-login-password');
-      const passwordInput = document.getElementById('login-password');
       const eyeIcon = document.getElementById('eye-icon');
       const googleBtn = document.getElementById('btn-google-login');
+
+      const emailValidIcon = document.getElementById('email-valid-icon');
+      const emailError = document.getElementById('email-error');
+      const passwordError = document.getElementById('password-error');
 
       // Toggle password visibility
       togglePasswordBtn?.addEventListener('click', () => {
@@ -171,13 +221,47 @@
         }
       });
 
+      // Live Email Validation
+      emailInput?.addEventListener('input', () => {
+        const val = emailInput.value.trim();
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        if (isValid) {
+          emailValidIcon?.classList.add('show');
+          emailError?.classList.remove('show');
+        } else {
+          emailValidIcon?.classList.remove('show');
+        }
+      });
+
+      // Live Password Validation
+      passwordInput?.addEventListener('input', () => {
+        if (passwordInput.value.length >= 6) {
+          passwordError?.classList.remove('show');
+        }
+      });
+
       // Submit Login Form
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
+        const email = emailInput.value.trim();
         const password = passwordInput.value;
 
-        if (!email || !password) return;
+        let hasError = false;
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          emailError?.classList.add('show');
+          hasError = true;
+        } else {
+          emailError?.classList.remove('show');
+        }
+
+        if (!password || password.length < 6) {
+          passwordError?.classList.add('show');
+          hasError = true;
+        } else {
+          passwordError?.classList.remove('show');
+        }
+
+        if (hasError) return;
 
         submitBtn.disabled = true;
         submitSpinner.classList.remove('hidden');
