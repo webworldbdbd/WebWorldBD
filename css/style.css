@@ -20,18 +20,39 @@
 html {
   scroll-behavior: smooth;
   font-family: var(--font-main);
+  -webkit-text-size-adjust: 100%;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: var(--font-main);
   background-color: var(--bg-light);
   color: var(--text-light);
-  overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Prevent double-tap zoom & focus zoom on mobile input fields */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+body.drawer-open {
+  overflow: hidden !important;
 }
 
 /* Dark Mode Body */
@@ -250,6 +271,8 @@ body.dark .badge-3d-glossy {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 body.dark .contact-3d-heading {
@@ -666,6 +689,12 @@ body.dark ::-webkit-scrollbar-thumb {
   to { transform: rotate(360deg); }
 }
 
+/* ================= FLOATING BUTTONS ROOT ================= */
+#floating-buttons-root {
+  z-index: 800 !important;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
 /* ================= BOTTOM NAVIGATION BAR ================= */
 .bottom-nav-container {
   position: fixed;
@@ -674,8 +703,16 @@ body.dark ::-webkit-scrollbar-thumb {
   right: 12px;
   max-width: 480px;
   margin: 0 auto;
-  z-index: 40;
+  z-index: 900 !important;
   pointer-events: auto;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+body.drawer-open .bottom-nav-container,
+body.drawer-open #floating-buttons-root {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(20px);
 }
 
 @media (min-width: 901px) {
@@ -890,6 +927,14 @@ body.dark .btn-3d-header-pill {
 
 /* Sidebar Drawer Overlay Container */
 .sidebar-drawer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 9999 !important;
   pointer-events: none;
   visibility: hidden;
   transition: visibility 0.4s ease;
@@ -902,6 +947,9 @@ body.dark .btn-3d-header-pill {
 
 /* Dark Blurred Backdrop */
 .sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998 !important;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -915,6 +963,17 @@ body.dark .btn-3d-header-pill {
 
 /* 3D Glassmorphism Panel */
 .sidebar-panel-3d {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
+  width: 320px;
+  max-width: 85vw;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999 !important;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
@@ -1013,8 +1072,11 @@ body.dark .btn-3d-close {
 
 /* Slim Scrollbar & Safe Area Padding */
 .sidebar-content-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .sidebar-content-scroll::-webkit-scrollbar {
