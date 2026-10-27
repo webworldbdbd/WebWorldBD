@@ -1,6 +1,8 @@
 import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
 import { subscribeAuthState, logOut, ADMIN_EMAIL } from './auth.js';
 
+export const PRIVACY_POLICY_URL = 'https://webworldbd-privacypolicy.pages.dev/';
+
 export const LIVE_PROJECTS = [
   {
     name: 'Market Koro',
@@ -453,8 +455,10 @@ function injectSidebar() {
               <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
-            <button
-              id="sidebar-modal-privacy"
+            <a
+              href="${PRIVACY_POLICY_URL}"
+              target="_blank"
+              rel="noopener noreferrer"
               class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
             >
               <div class="flex items-center gap-3">
@@ -464,7 +468,7 @@ function injectSidebar() {
                 <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
               </div>
               <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -481,6 +485,12 @@ function injectSidebar() {
   // Attach event handlers
   document.getElementById('btn-close-sidebar')?.addEventListener('click', closeSidebar);
   document.getElementById('sidebar-backdrop')?.addEventListener('click', closeSidebar);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeSidebar();
+    }
+  });
 
   document.getElementById('sidebar-toggle-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('sidebar-toggle-lang')?.addEventListener('click', toggleLanguage);
@@ -508,7 +518,6 @@ function injectSidebar() {
     }
   });
 
-  document.getElementById('sidebar-modal-privacy')?.addEventListener('click', () => { closeSidebar(); openModal('privacyPolicy'); });
 
   highlightActiveSidebarNav();
 }
@@ -539,6 +548,7 @@ export function openSidebar() {
   const drawer = document.getElementById('sidebar-drawer');
   if (drawer) {
     drawer.classList.add('is-open');
+    document.body.classList.add('drawer-open');
   }
 }
 
@@ -546,6 +556,10 @@ export function closeSidebar() {
   const drawer = document.getElementById('sidebar-drawer');
   if (drawer) {
     drawer.classList.remove('is-open');
+    document.body.classList.remove('drawer-open');
+  }
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
   }
 }
 
@@ -1195,6 +1209,9 @@ export function closeModal() {
   const modalContainer = document.getElementById('modal-dialog-root');
   if (modalContainer) {
     modalContainer.classList.add('hidden');
+  }
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
   }
 }
 
