@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>My Profile | WebWorldBD</title>
-    <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
   <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
   <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
@@ -23,98 +23,475 @@
     }
   </script>
   <link rel="stylesheet" href="./css/style.css">
+  <style>
+    .animated-banner-gradient {
+      background: linear-gradient(-45deg, #3b82f6, #6366f1, #a855f7, #ec4899);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between relative">
+<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950">
 
   <!-- Shared Header -->
   <div id="header-root"></div>
 
-  <!-- Main Content -->
-  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-lg mx-auto w-full animate-fade-in-up">
-    <div id="profile-card" class="glass-card p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6">
-      <!-- Loading State -->
-      <div id="profile-loading" class="text-center py-10 space-y-3">
-        <span class="spinner mx-auto border-sky-500 border-top-transparent w-8 h-8"></span>
-        <p class="text-xs text-slate-500">Loading user profile...</p>
-      </div>
+  <!-- Main Content Container -->
+  <main class="relative z-10 flex-grow pt-4 pb-20 px-3 sm:px-4 max-w-4xl mx-auto w-full animate-fade-in-up">
 
-      <!-- Profile Details (Hidden initially) -->
-      <div id="profile-content" class="space-y-6 hidden">
-        <!-- Top Banner Avatar -->
-        <div class="text-center space-y-3">
-          <div id="profile-avatar-wrapper" class="w-24 h-24 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 mx-auto flex items-center justify-center text-white font-black text-3xl shadow-xl ring-4 ring-sky-300 dark:ring-sky-900 overflow-hidden">
-            <span id="profile-initial">U</span>
-            <img id="profile-photo" class="w-full h-full object-cover hidden" alt="User Profile">
-          </div>
-
-          <div>
-            <h1 id="profile-name" class="text-xl font-extrabold text-slate-900 dark:text-white">
-              User Name
-            </h1>
-            <p id="profile-email" class="text-xs font-semibold text-sky-500 dark:text-sky-400">
-              user@example.com
-            </p>
-          </div>
-
-          <span id="profile-role-badge" class="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300">
-            User
-          </span>
-        </div>
-
-        <!-- Meta Details -->
-        <div class="space-y-3 bg-slate-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs text-slate-700 dark:text-slate-300">
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-slate-500 dark:text-slate-400">Account Status:</span>
-            <span class="font-bold text-emerald-500 flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Active
-            </span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-slate-500 dark:text-slate-400">Member Since:</span>
-            <span id="profile-created-date" class="font-bold text-slate-900 dark:text-white">--</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="font-semibold text-slate-500 dark:text-slate-400">User ID:</span>
-            <span id="profile-uid" class="font-mono text-[10px] text-slate-500 truncate max-w-[150px]">--</span>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="pt-2 space-y-3">
-          <button
-            id="btn-profile-logout"
-            class="w-full py-3.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-          >
-            <i class="fa-solid fa-right-from-bracket"></i>
-            <span data-i18n="logOut">Log Out</span>
-          </button>
-        </div>
+    <!-- Skeleton Loading Card -->
+    <div id="profile-skeleton" class="glass-card p-6 rounded-3xl space-y-6 animate-pulse border border-slate-200 dark:border-slate-800">
+      <div class="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full"></div>
+      <div class="flex flex-col items-center space-y-3 -mt-16">
+        <div class="w-24 h-24 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+        <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-48"></div>
+        <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-32"></div>
       </div>
     </div>
+
+    <!-- Main Profile Card Container -->
+    <div id="profile-card" class="glass-card rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl hidden">
+
+      <!-- 1. Top Cover Banner & Avatar Header -->
+      <div class="relative">
+        <div class="h-36 sm:h-44 w-full animated-banner-gradient relative overflow-hidden">
+          <!-- Floating decorative shapes -->
+          <div class="absolute w-20 h-20 rounded-full bg-white/10 blur-xl top-4 left-10"></div>
+          <div class="absolute w-32 h-32 rounded-full bg-white/10 blur-xl bottom-2 right-12"></div>
+        </div>
+
+        <!-- Avatar Container Overlapping Banner -->
+        <div class="flex flex-col items-center text-center px-4 -mt-16 sm:-mt-20 relative z-20">
+          <div class="relative group">
+            <div id="profile-avatar-ring" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-sky-400 via-indigo-500 to-pink-500 shadow-2xl ring-4 ring-white dark:ring-slate-900 overflow-hidden relative">
+              <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden relative">
+                <img id="profile-photo" class="w-full h-full object-cover hidden" alt="Profile">
+                <span id="profile-initial" class="text-white font-black text-3xl sm:text-4xl">U</span>
+              </div>
+            </div>
+
+            <!-- Online Indicator Dot -->
+            <span class="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 animate-pulse" title="Online"></span>
+
+            <!-- Quick Camera Edit Button -->
+            <button
+              id="btn-quick-photo-edit"
+              aria-label="Upload Photo"
+              class="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 cursor-pointer border-2 border-white dark:border-slate-900"
+            >
+              <i class="fa-solid fa-camera text-xs"></i>
+            </button>
+          </div>
+
+          <!-- User Identity Meta -->
+          <div class="mt-3 space-y-1">
+            <h1 id="profile-name" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              User Name
+            </h1>
+
+            <div class="flex items-center justify-center gap-2 flex-wrap pt-1">
+              <span id="profile-username" class="text-xs sm:text-sm font-bold text-sky-500 dark:text-sky-400">
+                @username
+              </span>
+              <button id="btn-copy-username" class="px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 hover:bg-sky-200 text-sky-600 dark:text-sky-300 text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i>
+                <span data-i18n="copyUsername">Copy Username</span>
+              </button>
+            </div>
+
+            <p id="profile-email" class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              user@example.com
+            </p>
+
+            <!-- Badges Row -->
+            <div class="flex items-center justify-center gap-2 pt-2 flex-wrap">
+              <!-- Verification Badge/Button -->
+              <div id="email-verification-container">
+                <span id="badge-email-verified" class="hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span data-i18n="emailVerified">Verified</span>
+                </span>
+                <button id="btn-verify-email" class="hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 hover:bg-amber-200 transition-colors cursor-pointer border border-amber-300 dark:border-amber-800">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span data-i18n="verifyEmail">Verify Email</span>
+                </button>
+              </div>
+
+              <!-- Role Badge -->
+              <span id="profile-role-badge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
+                User
+              </span>
+
+              <!-- Joined Date Pill -->
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <i class="fa-regular fa-calendar-check text-sky-500"></i>
+                <span data-i18n="memberSince">Member Since</span>: <span id="profile-member-since">--</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Primary Action Buttons -->
+          <div class="flex items-center justify-center gap-2.5 pt-5 w-full max-w-md">
+            <button
+              id="btn-open-edit-modal"
+              class="flex-1 py-3 px-4 rounded-xl btn-primary-gradient text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-user-pen"></i>
+              <span data-i18n="editProfile">Edit Profile</span>
+            </button>
+
+            <a
+              href="./settings.html"
+              class="py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-sliders"></i>
+              <span data-i18n="settings">Settings</span>
+            </a>
+
+            <button
+              id="btn-profile-logout-top"
+              class="py-3 px-4 rounded-xl bg-red-50 dark:bg-red-950/50 hover:bg-red-100 text-red-600 dark:text-red-400 font-bold text-xs border border-red-200 dark:border-red-900/60 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span data-i18n="logOut">Log Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Completion Bar -->
+      <div class="p-6 border-t border-slate-100 dark:border-slate-800/80 mt-6 space-y-2">
+        <div class="flex items-center justify-between text-xs font-bold">
+          <span class="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-line text-sky-500"></i>
+            <span data-i18n="profileCompletion">Profile Completion</span>
+          </span>
+          <span id="profile-completion-pct" class="text-sky-500">80%</span>
+        </div>
+        <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+          <div id="profile-completion-bar" class="h-full bg-gradient-to-r from-sky-400 to-indigo-500 transition-all duration-500" style="width: 80%;"></div>
+        </div>
+        <p id="profile-completion-hints" class="text-[11px] text-slate-500 dark:text-slate-400 italic pt-0.5">
+          <!-- Dynamically generated completion hints -->
+        </p>
+      </div>
+
+      <!-- Glass Info Cards Grid -->
+      <div class="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- Card 1: About Bio -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <i class="fa-solid fa-circle-info text-sky-500 text-sm"></i>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white" data-i18n="aboutSectionHeading">
+              About User
+            </h3>
+          </div>
+          <p id="profile-bio" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed italic">
+            No bio added yet.
+          </p>
+        </div>
+
+        <!-- Card 2: Contact Info -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <i class="fa-solid fa-address-book text-sky-500 text-sm"></i>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white" data-i18n="contactSectionHeading">
+              Contact Information
+            </h3>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400 font-medium" data-i18n="emailLabel">Email:</span>
+              <span id="profile-info-email" class="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">--</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400 font-medium" data-i18n="phoneLabel">Phone:</span>
+              <span id="profile-info-phone" class="font-semibold text-slate-800 dark:text-slate-200">Not added</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Account Details -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <i class="fa-solid fa-shield-halved text-sky-500 text-sm"></i>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white" data-i18n="accountInfoHeading">
+              Account Details
+            </h3>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400 font-medium" data-i18n="authProvider">Provider:</span>
+              <span id="profile-info-provider" class="font-semibold text-slate-800 dark:text-slate-200">Google / Password</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-slate-400 font-medium" data-i18n="lastLogin">Last Login:</span>
+              <span id="profile-info-last-login" class="font-semibold text-slate-800 dark:text-slate-200">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Quick Actions -->
+        <div class="glass-card p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+          <div class="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <i class="fa-solid fa-bolt text-sky-500 text-sm"></i>
+            <h3 class="font-bold text-sm text-slate-900 dark:text-white" data-i18n="quickActions">
+              Quick Actions
+            </h3>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <a href="./start-project.html" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 transition-colors">
+              <i class="fa-solid fa-rocket text-sky-500"></i>
+              <span data-i18n="startProject">Start Project</span>
+            </a>
+            <a href="./contact.html" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-sky-950/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2 transition-colors">
+              <i class="fa-solid fa-paper-plane text-sky-500"></i>
+              <span data-i18n="connect">Support</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
   </main>
+
+  <!-- ================= EDIT PROFILE SLIDE-UP / OVERLAY MODAL ================= -->
+  <div id="edit-profile-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+    <!-- Backdrop -->
+    <div id="edit-modal-backdrop" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs transition-opacity"></div>
+
+    <!-- Modal Content Window -->
+    <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 z-10 overflow-hidden flex flex-col max-h-[92vh]">
+
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-pen text-sky-500 text-lg"></i>
+          <h2 class="font-extrabold text-base text-slate-900 dark:text-white" data-i18n="editProfile">
+            Edit Profile
+          </h2>
+        </div>
+        <button id="btn-close-edit-modal" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Form Scroll Body -->
+      <form id="form-edit-profile" class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+
+        <!-- Photo Section -->
+        <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60">
+          <div class="relative w-20 h-20 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border-2 border-sky-400">
+            <img id="edit-photo-preview" class="w-full h-full object-cover hidden" alt="Preview">
+            <span id="edit-photo-initial" class="w-full h-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-extrabold text-2xl">U</span>
+          </div>
+
+          <div class="space-y-2 text-center sm:text-left flex-1">
+            <label class="block font-bold text-slate-900 dark:text-white" data-i18n="photoUpload">
+              Profile Photo
+            </label>
+            <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+              <input type="file" id="input-photo-file" accept="image/jpeg,image/png,image/webp" class="hidden">
+              <button type="button" id="btn-trigger-photo-file" class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs cursor-pointer transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-upload"></i>
+                <span data-i18n="changePhoto">Change Photo</span>
+              </button>
+              <button type="button" id="btn-remove-photo" class="px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-950 hover:bg-red-200 text-red-600 dark:text-red-300 font-bold text-xs cursor-pointer transition-colors flex items-center gap-1">
+                <i class="fa-solid fa-trash"></i>
+                <span data-i18n="removePhoto">Remove Photo</span>
+              </button>
+            </div>
+            <!-- Progress Bar during upload -->
+            <div id="upload-progress-container" class="hidden space-y-1 pt-1">
+              <div class="flex items-center justify-between text-[10px] font-bold text-sky-500">
+                <span>Uploading to Cloudinary...</span>
+                <span id="upload-progress-text">0%</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div id="upload-progress-bar" class="h-full bg-sky-500 transition-all duration-200" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Name -->
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-800 dark:text-slate-200" data-i18n="fullNameLabel">
+            Full Name
+          </label>
+          <input
+            type="text"
+            id="edit-input-name"
+            required
+            minlength="2"
+            maxlength="50"
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 text-xs sm:text-sm"
+          >
+          <p id="edit-name-error" class="text-[11px] text-red-500 font-medium hidden"></p>
+        </div>
+
+        <!-- Username with Live Availability -->
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-800 dark:text-slate-200" data-i18n="usernameLabel">
+            Username
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-3.5 text-sky-500 font-bold">@</span>
+            <input
+              type="text"
+              id="edit-input-username"
+              required
+              minlength="3"
+              maxlength="20"
+              class="w-full pl-8 pr-10 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 text-xs sm:text-sm"
+            >
+            <div id="username-status-spinner" class="absolute right-3.5 top-3.5 hidden">
+              <span class="spinner w-4 h-4 border-sky-500 border-top-transparent"></span>
+            </div>
+          </div>
+          <div id="username-availability-msg" class="text-[11px] font-bold flex items-center gap-1 hidden">
+            <!-- Rendered live -->
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold text-slate-800 dark:text-slate-200" data-i18n="bioLabel">
+              Bio (max 160 chars)
+            </label>
+            <span id="bio-counter" class="text-[10px] text-slate-400 font-mono">0 / 160</span>
+          </div>
+          <textarea
+            id="edit-input-bio"
+            maxlength="160"
+            rows="3"
+            data-i18n="bioPlaceholder"
+            placeholder="Tell us about yourself or your business..."
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 text-xs sm:text-sm resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-800 dark:text-slate-200" data-i18n="phoneLabel">
+            Phone Number (BD Format)
+          </label>
+          <input
+            type="tel"
+            id="edit-input-phone"
+            placeholder="01XXXXXXXXX"
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium focus:outline-hidden focus:ring-2 focus:ring-sky-500 text-xs sm:text-sm"
+          >
+          <p id="edit-phone-error" class="text-[11px] text-red-500 font-medium hidden"></p>
+        </div>
+
+        <!-- Read-only Email -->
+        <div class="space-y-1 opacity-75">
+          <label class="block font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
+            <span data-i18n="emailLabel">Email Address</span>
+            <i class="fa-solid fa-lock text-slate-400"></i>
+          </label>
+          <input
+            type="email"
+            id="edit-input-email"
+            disabled
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-500 font-mono text-xs cursor-not-allowed"
+          >
+        </div>
+
+        <!-- Footer Buttons -->
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
+          <button
+            type="button"
+            id="btn-cancel-edit"
+            class="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            data-i18n="cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="btn-save-profile"
+            disabled
+            class="px-6 py-2.5 rounded-xl btn-primary-gradient text-white font-bold text-xs shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+          >
+            <span id="save-spinner" class="spinner w-3.5 h-3.5 border-white border-top-transparent hidden"></span>
+            <span data-i18n="saveChanges">Save Changes</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= CANVAS CROP MODAL ================= -->
+  <div id="crop-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 z-10 space-y-4">
+      <h3 class="font-extrabold text-slate-900 dark:text-white text-base flex items-center gap-2" data-i18n="cropImageTitle">
+        <i class="fa-solid fa-crop text-sky-500"></i>
+        Crop Profile Photo
+      </h3>
+
+      <div class="relative w-64 h-64 mx-auto rounded-full overflow-hidden bg-slate-900 border-4 border-sky-400 shadow-inner flex items-center justify-center">
+        <canvas id="crop-canvas" class="cursor-grab active:cursor-grabbing"></canvas>
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+          <span data-i18n="zoomLabel">Zoom</span>
+          <span id="crop-zoom-val">1.0x</span>
+        </div>
+        <input type="range" id="crop-zoom-slider" min="1" max="3" step="0.05" value="1" class="w-full accent-sky-500 cursor-pointer">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" id="btn-crop-cancel" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold" data-i18n="cancel">
+          Cancel
+        </button>
+        <button type="button" id="btn-crop-apply" class="px-5 py-2 rounded-xl btn-primary-gradient text-white text-xs font-bold" data-i18n="applyCrop">
+          Apply & Upload
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Shared Footer -->
   <div id="footer-root"></div>
 
   <script type="module" src="./js/main.js"></script>
   <script type="module">
-    import { subscribeAuthState, logOut } from './js/auth.js';
+    import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
+    import { uploadToCloudinary, getOptimizedImageUrl } from './cloudinary-config.js';
     import { showToast } from './js/main.js';
-    import { getLanguage } from './js/i18n.js';
+    import { getLanguage, t } from './js/i18n.js';
+
+    let currentUser = null;
+    let currentUserData = null;
+    let initialFormState = {};
+    let pendingBlobToUpload = null;
+    let usernameCheckTimeout = null;
+    let isUsernameValid = true;
+
+    // Crop State
+    let rawImageObj = null;
+    let cropScale = 1;
+    let cropOffsetX = 0;
+    let cropOffsetY = 0;
+    let isDraggingCrop = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
-      const loading = document.getElementById('profile-loading');
-      const content = document.getElementById('profile-content');
-      const nameEl = document.getElementById('profile-name');
-      const emailEl = document.getElementById('profile-email');
-      const roleEl = document.getElementById('profile-role-badge');
-      const createdEl = document.getElementById('profile-created-date');
-      const uidEl = document.getElementById('profile-uid');
-      const photoEl = document.getElementById('profile-photo');
-      const initialEl = document.getElementById('profile-initial');
-      const logoutBtn = document.getElementById('btn-profile-logout');
-
+      // Auth Listener
       subscribeAuthState((user, userData) => {
         if (!user) {
           showToast(getLanguage() === 'en' ? "Please log in to view your profile." : "প্রোফাইল দেখতে লগ ইন করুন।", "info");
@@ -122,54 +499,498 @@
           return;
         }
 
-        loading?.classList.add('hidden');
-        content?.classList.remove('hidden');
+        currentUser = user;
+        currentUserData = userData;
 
-        const displayName = userData?.name || user.displayName || 'WebWorldBD User';
-        nameEl.textContent = displayName;
-        emailEl.textContent = user.email || '';
-        uidEl.textContent = user.uid || '--';
+        renderProfilePage(user, userData);
 
-        const created = userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'Recent';
-        createdEl.textContent = created;
-
-        const role = userData?.role || (user.email === 'webworldbd.lmt@gmail.com' ? 'admin' : 'user');
-        roleEl.textContent = role.toUpperCase();
-        if (role === 'admin') {
-          roleEl.className = 'inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300';
-        }
-
-        if (user.photoURL) {
-          photoEl.src = user.photoURL;
-          photoEl.alt = displayName;
-          photoEl.classList.remove('hidden');
-          initialEl.classList.add('hidden');
-          photoEl.onerror = () => {
-            photoEl.src = './assets/logo.png?v=2';
-            photoEl.className = 'w-full h-full object-contain p-2';
-          };
-        } else {
-          photoEl.src = './assets/logo.png?v=2';
-          photoEl.alt = displayName;
-          photoEl.width = 96;
-          photoEl.height = 96;
-          photoEl.className = 'w-full h-full object-contain p-2';
-          photoEl.onerror = () => {
-            photoEl.classList.add('hidden');
-            initialEl.textContent = 'W';
-            initialEl.classList.remove('hidden');
-          };
-          photoEl.classList.remove('hidden');
-          initialEl.classList.add('hidden');
+        // Check URL parameter for modal auto-open
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('edit') === 'true') {
+          openEditModal();
         }
       });
 
-      logoutBtn?.addEventListener('click', async () => {
+      // Bind Profile Action Listeners
+      document.getElementById('btn-open-edit-modal')?.addEventListener('click', openEditModal);
+      document.getElementById('btn-quick-photo-edit')?.addEventListener('click', openEditModal);
+      document.getElementById('btn-close-edit-modal')?.addEventListener('click', closeEditModal);
+      document.getElementById('btn-cancel-edit')?.addEventListener('click', closeEditModal);
+      document.getElementById('edit-modal-backdrop')?.addEventListener('click', closeEditModal);
+
+      document.getElementById('btn-profile-logout-top')?.addEventListener('click', async () => {
         await logOut();
         showToast(getLanguage() === 'en' ? "Logged out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
         window.location.href = './index.html';
       });
+
+      document.getElementById('btn-copy-username')?.addEventListener('click', () => {
+        const usernameText = currentUserData?.username ? `@${currentUserData.username}` : '';
+        if (usernameText) {
+          navigator.clipboard.writeText(usernameText);
+          showToast(t('copiedToast'), 'success');
+        }
+      });
+
+      document.getElementById('btn-verify-email')?.addEventListener('click', async () => {
+        if (currentUser) {
+          try {
+            await sendEmailVerificationToUser(currentUser);
+            showToast(t('verificationSent'), 'success');
+          } catch (err) {
+            showToast(err.messageEn || 'Error sending verification email', 'error');
+          }
+        }
+      });
+
+      // Photo Upload Triggers
+      const fileInput = document.getElementById('input-photo-file');
+      document.getElementById('btn-trigger-photo-file')?.addEventListener('click', () => fileInput?.click());
+
+      fileInput?.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          initCropModal(file);
+        }
+      });
+
+      document.getElementById('btn-remove-photo')?.addEventListener('click', () => {
+        pendingBlobToUpload = null;
+        const photoPreview = document.getElementById('edit-photo-preview');
+        const photoInitial = document.getElementById('edit-photo-initial');
+
+        if (photoPreview) photoPreview.classList.add('hidden');
+        if (photoInitial) {
+          photoInitial.textContent = (currentUserData?.name || 'U').charAt(0).toUpperCase();
+          photoInitial.classList.remove('hidden');
+        }
+        checkFormDirty();
+      });
+
+      // Live Input Validators & Dirty Checking
+      const inputName = document.getElementById('edit-input-name');
+      const inputUsername = document.getElementById('edit-input-username');
+      const inputBio = document.getElementById('edit-input-bio');
+      const inputPhone = document.getElementById('edit-input-phone');
+
+      inputName?.addEventListener('input', checkFormDirty);
+      inputBio?.addEventListener('input', () => {
+        const bioCounter = document.getElementById('bio-counter');
+        if (bioCounter) bioCounter.textContent = `${inputBio.value.length} / 160`;
+        checkFormDirty();
+      });
+      inputPhone?.addEventListener('input', () => {
+        validateBangladeshPhone(inputPhone.value);
+        checkFormDirty();
+      });
+
+      // Sanitized Live Username Checking
+      inputUsername?.addEventListener('input', (e) => {
+        const sanitized = sanitizeUsernameInput(e.target.value);
+        e.target.value = sanitized;
+
+        clearTimeout(usernameCheckTimeout);
+        const spinner = document.getElementById('username-status-spinner');
+        const statusMsg = document.getElementById('username-availability-msg');
+
+        if (sanitized === currentUserData?.username) {
+          spinner?.classList.add('hidden');
+          statusMsg?.classList.add('hidden');
+          isUsernameValid = true;
+          checkFormDirty();
+          return;
+        }
+
+        if (sanitized.length < 3) {
+          spinner?.classList.add('hidden');
+          if (statusMsg) {
+            statusMsg.className = "text-[11px] font-bold text-red-500 flex items-center gap-1";
+            statusMsg.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${t('tooShort')}`;
+            statusMsg.classList.remove('hidden');
+          }
+          isUsernameValid = false;
+          checkFormDirty();
+          return;
+        }
+
+        spinner?.classList.remove('hidden');
+        statusMsg?.classList.add('hidden');
+
+        usernameCheckTimeout = setTimeout(async () => {
+          const res = await checkUsernameAvailability(sanitized);
+          spinner?.classList.add('hidden');
+
+          if (res.available) {
+            statusMsg.className = "text-[11px] font-bold text-emerald-500 flex items-center gap-1";
+            statusMsg.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('available')}`;
+            isUsernameValid = true;
+          } else {
+            statusMsg.className = "text-[11px] font-bold text-red-500 flex items-center gap-1";
+            let reasonText = t('alreadyTaken');
+            if (res.reason === 'RESERVED') reasonText = t('reservedUsername');
+            statusMsg.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${reasonText}`;
+            isUsernameValid = false;
+          }
+          statusMsg?.classList.remove('hidden');
+          checkFormDirty();
+        }, 500);
+      });
+
+      // Submit Profile Form
+      document.getElementById('form-edit-profile')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!isUsernameValid) return;
+
+        const saveBtn = document.getElementById('btn-save-profile');
+        const saveSpinner = document.getElementById('save-spinner');
+
+        saveBtn.disabled = true;
+        saveSpinner?.classList.remove('hidden');
+
+        try {
+          let uploadedPhotoURL = currentUserData?.photoURL;
+
+          // Check if user uploaded a new photo blob
+          if (pendingBlobToUpload) {
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressText = document.getElementById('upload-progress-text');
+
+            progressContainer?.classList.remove('hidden');
+
+            const uploadRes = await uploadToCloudinary(pendingBlobToUpload, {
+              onProgress: (pct) => {
+                if (progressBar) progressBar.style.width = `${pct}%`;
+                if (progressText) progressText.textContent = `${pct}%`;
+              }
+            });
+
+            uploadedPhotoURL = uploadRes.secure_url;
+          } else if (document.getElementById('edit-photo-preview')?.classList.contains('hidden')) {
+            // User explicitly clicked remove photo
+            uploadedPhotoURL = currentUser?.photoURL || ''; // Fallback to Google photo or empty
+          }
+
+          const updatedName = inputName.value.trim();
+          const updatedUsername = inputUsername.value.trim();
+          const updatedBio = inputBio.value.trim();
+          const updatedPhone = inputPhone.value.trim();
+
+          // Confirmation dialog if username is changing
+          if (updatedUsername !== currentUserData?.username) {
+            const confirmMsg = getLanguage() === 'en'
+              ? `Are you sure you want to change your username to @${updatedUsername}?`
+              : `আপনি কি নিশ্চিত যে আপনার ইউজারনেম পরিবর্তন করে @${updatedUsername} করতে চান?`;
+            if (!confirm(confirmMsg)) {
+              saveBtn.disabled = false;
+              saveSpinner?.classList.add('hidden');
+              return;
+            }
+          }
+
+          const finalProfile = await updateUserProfileData(currentUser, {
+            name: updatedName,
+            username: updatedUsername,
+            bio: updatedBio,
+            phone: updatedPhone,
+            photoURL: uploadedPhotoURL
+          });
+
+          currentUserData = finalProfile;
+          renderProfilePage(currentUser, finalProfile);
+          showToast(t('profileUpdatedSuccess'), 'success');
+          closeEditModal();
+        } catch (err) {
+          console.error("Profile save error:", err);
+          showToast(err.message || 'Error updating profile', 'error');
+        } finally {
+          saveBtn.disabled = false;
+          saveSpinner?.classList.add('hidden');
+        }
+      });
     });
+
+    /* ================= RENDER PROFILE PAGE ================= */
+    function renderProfilePage(user, userData) {
+      document.getElementById('profile-skeleton')?.classList.add('hidden');
+      document.getElementById('profile-card')?.classList.remove('hidden');
+
+      const displayName = userData?.name || user.displayName || 'WebWorldBD User';
+      const email = user.email || '';
+      const username = userData?.username ? `@${userData.username}` : '@user';
+      const bio = userData?.bio || 'No bio added yet.';
+      const phone = userData?.phone || 'Not added';
+      const provider = userData?.provider === 'google' ? t('googleProviderText') : t('passwordProviderText');
+      const createdDate = userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString(getLanguage() === 'en' ? 'en-US' : 'bn-BD', { month: 'short', year: 'numeric' }) : 'Recent';
+      const lastLogin = userData?.lastLoginAt ? new Date(userData.lastLoginAt).toLocaleString() : 'Just now';
+      const role = userData?.role || 'user';
+      const photoURL = userData?.photoURL || user.photoURL;
+
+      document.getElementById('profile-name').textContent = displayName;
+      document.getElementById('profile-username').textContent = username;
+      document.getElementById('profile-email').textContent = email;
+      document.getElementById('profile-member-since').textContent = createdDate;
+
+      // Badges
+      const roleBadge = document.getElementById('profile-role-badge');
+      if (roleBadge) {
+        roleBadge.textContent = role.toUpperCase();
+        if (role === 'admin') {
+          roleBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800";
+        }
+      }
+
+      const verifiedBadge = document.getElementById('badge-email-verified');
+      const verifyBtn = document.getElementById('btn-verify-email');
+      if (user.emailVerified) {
+        verifiedBadge?.classList.remove('hidden');
+        verifyBtn?.classList.add('hidden');
+      } else {
+        verifiedBadge?.classList.add('hidden');
+        verifyBtn?.classList.remove('hidden');
+      }
+
+      // Photos & Initial
+      const photoEl = document.getElementById('profile-photo');
+      const initialEl = document.getElementById('profile-initial');
+
+      if (photoURL) {
+        const optimized = getOptimizedImageUrl(photoURL, 256, 256);
+        photoEl.src = optimized;
+        photoEl.classList.remove('hidden');
+        initialEl.classList.add('hidden');
+        photoEl.onerror = () => {
+          photoEl.classList.add('hidden');
+          initialEl.textContent = displayName.charAt(0).toUpperCase();
+          initialEl.classList.remove('hidden');
+        };
+      } else {
+        photoEl.classList.add('hidden');
+        initialEl.textContent = displayName.charAt(0).toUpperCase();
+        initialEl.classList.remove('hidden');
+      }
+
+      // Glass Info Cards
+      document.getElementById('profile-bio').textContent = bio;
+      document.getElementById('profile-info-email').textContent = email;
+      document.getElementById('profile-info-phone').textContent = phone;
+      document.getElementById('profile-info-provider').textContent = provider;
+      document.getElementById('profile-info-last-login').textContent = lastLogin;
+
+      // Completion Calculation
+      calculateProfileCompletion(user, userData);
+    }
+
+    function calculateProfileCompletion(user, userData) {
+      let pct = 25; // Base user created
+      const hints = [];
+
+      if (user.emailVerified) {
+        pct += 25;
+      } else {
+        hints.push(t('verifyEmailHint'));
+      }
+
+      if (userData?.bio && userData.bio.trim().length > 0) {
+        pct += 25;
+      } else {
+        hints.push(t('addBioHint'));
+      }
+
+      if (userData?.phone && userData.phone.trim().length > 0) {
+        pct += 15;
+      } else {
+        hints.push(t('addPhoneHint'));
+      }
+
+      if (userData?.photoURL) {
+        pct += 10;
+      } else {
+        hints.push(t('addPhotoHint'));
+      }
+
+      document.getElementById('profile-completion-pct').textContent = `${pct}%`;
+      const bar = document.getElementById('profile-completion-bar');
+      if (bar) bar.style.width = `${pct}%`;
+
+      const hintsEl = document.getElementById('profile-completion-hints');
+      if (hintsEl) {
+        hintsEl.textContent = hints.length > 0 ? `Hints: ${hints.join(' • ')}` : 'Great job! Your profile is 100% complete.';
+      }
+    }
+
+    /* ================= EDIT MODAL HELPERS ================= */
+    function openEditModal() {
+      const modal = document.getElementById('edit-profile-modal');
+      modal?.classList.remove('hidden');
+
+      const nameInput = document.getElementById('edit-input-name');
+      const usernameInput = document.getElementById('edit-input-username');
+      const bioInput = document.getElementById('edit-input-bio');
+      const phoneInput = document.getElementById('edit-input-phone');
+      const emailInput = document.getElementById('edit-input-email');
+
+      nameInput.value = currentUserData?.name || currentUser?.displayName || '';
+      usernameInput.value = currentUserData?.username || '';
+      bioInput.value = currentUserData?.bio || '';
+      phoneInput.value = currentUserData?.phone || '';
+      emailInput.value = currentUser?.email || '';
+
+      const photoPreview = document.getElementById('edit-photo-preview');
+      const photoInitial = document.getElementById('edit-photo-initial');
+      const photoURL = currentUserData?.photoURL || currentUser?.photoURL;
+
+      if (photoURL) {
+        photoPreview.src = getOptimizedImageUrl(photoURL, 128, 128);
+        photoPreview.classList.remove('hidden');
+        photoInitial.classList.add('hidden');
+      } else {
+        photoPreview.classList.add('hidden');
+        photoInitial.textContent = (currentUserData?.name || 'U').charAt(0).toUpperCase();
+        photoInitial.classList.remove('hidden');
+      }
+
+      initialFormState = {
+        name: nameInput.value,
+        username: usernameInput.value,
+        bio: bioInput.value,
+        phone: phoneInput.value
+      };
+
+      pendingBlobToUpload = null;
+      document.getElementById('btn-save-profile').disabled = true;
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-profile-modal')?.classList.add('hidden');
+    }
+
+    function checkFormDirty() {
+      const currentName = document.getElementById('edit-input-name').value.trim();
+      const currentUsername = document.getElementById('edit-input-username').value.trim();
+      const currentBio = document.getElementById('edit-input-bio').value.trim();
+      const currentPhone = document.getElementById('edit-input-phone').value.trim();
+
+      const isDirty = (
+        currentName !== initialFormState.name ||
+        currentUsername !== initialFormState.username ||
+        currentBio !== initialFormState.bio ||
+        currentPhone !== initialFormState.phone ||
+        pendingBlobToUpload !== null
+      );
+
+      const saveBtn = document.getElementById('btn-save-profile');
+      if (saveBtn) saveBtn.disabled = !isDirty || !isUsernameValid;
+    }
+
+    function validateBangladeshPhone(phone) {
+      const errorEl = document.getElementById('edit-phone-error');
+      if (!phone) {
+        errorEl?.classList.add('hidden');
+        return true;
+      }
+      const bdRegex = /^(?:\+8801|8801|01)[3-9]\d{8}$/;
+      if (!bdRegex.test(phone.replace(/\s+/g, ""))) {
+        if (errorEl) {
+          errorEl.textContent = getLanguage() === 'en' ? "Invalid Bangladesh phone format (e.g. 01712345678)" : "সঠিক বাংলাদেশ ফোন নম্বর লিখুন (যেমন: 01712345678)";
+          errorEl.classList.remove('hidden');
+        }
+        return false;
+      } else {
+        errorEl?.classList.add('hidden');
+        return true;
+      }
+    }
+
+    /* ================= CANVAS IMAGE CROP MODAL ================= */
+    function initCropModal(file) {
+      const cropModal = document.getElementById('crop-modal');
+      const canvas = document.getElementById('crop-canvas');
+      const ctx = canvas.getContext('2d');
+      const slider = document.getElementById('crop-zoom-slider');
+
+      canvas.width = 256;
+      canvas.height = 256;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        rawImageObj = new Image();
+        rawImageObj.onload = () => {
+          cropScale = 1;
+          cropOffsetX = 0;
+          cropOffsetY = 0;
+          slider.value = 1;
+          document.getElementById('crop-zoom-val').textContent = '1.0x';
+          drawCropCanvas(canvas, ctx);
+          cropModal.classList.remove('hidden');
+        };
+        rawImageObj.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      slider.oninput = (e) => {
+        cropScale = parseFloat(e.target.value);
+        document.getElementById('crop-zoom-val').textContent = `${cropScale.toFixed(1)}x`;
+        drawCropCanvas(canvas, ctx);
+      };
+
+      canvas.onmousedown = (e) => {
+        isDraggingCrop = true;
+        dragStartX = e.clientX - cropOffsetX;
+        dragStartY = e.clientY - cropOffsetY;
+      };
+
+      window.onmousemove = (e) => {
+        if (isDraggingCrop) {
+          cropOffsetX = e.clientX - dragStartX;
+          cropOffsetY = e.clientY - dragStartY;
+          drawCropCanvas(canvas, ctx);
+        }
+      };
+
+      window.onmouseup = () => { isDraggingCrop = false; };
+
+      document.getElementById('btn-crop-cancel').onclick = () => cropModal.classList.add('hidden');
+
+      document.getElementById('btn-crop-apply').onclick = () => {
+        // Output 512x512 canvas blob
+        const outputCanvas = document.createElement('canvas');
+        outputCanvas.width = 512;
+        outputCanvas.height = 512;
+        const outCtx = outputCanvas.getContext('2d');
+
+        drawCropCanvas(outputCanvas, outCtx, 512);
+
+        outputCanvas.toBlob((blob) => {
+          pendingBlobToUpload = blob;
+          const photoPreview = document.getElementById('edit-photo-preview');
+          const photoInitial = document.getElementById('edit-photo-initial');
+
+          photoPreview.src = URL.createObjectURL(blob);
+          photoPreview.classList.remove('hidden');
+          photoInitial.classList.add('hidden');
+
+          cropModal.classList.add('hidden');
+          checkFormDirty();
+        }, 'image/jpeg', 0.92);
+      };
+    }
+
+    function drawCropCanvas(targetCanvas, ctx, targetSize = 256) {
+      if (!rawImageObj) return;
+      ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+      const minDim = Math.min(rawImageObj.width, rawImageObj.height);
+      const drawW = (targetCanvas.width / minDim) * rawImageObj.width * cropScale;
+      const drawH = (targetCanvas.height / minDim) * rawImageObj.height * cropScale;
+
+      const x = (targetCanvas.width - drawW) / 2 + cropOffsetX * (targetSize / 256);
+      const y = (targetCanvas.height - drawH) / 2 + cropOffsetY * (targetSize / 256);
+
+      ctx.save();
+      ctx.drawImage(rawImageObj, x, y, drawW, drawH);
+      ctx.restore();
+    }
   </script>
 </body>
 </html>

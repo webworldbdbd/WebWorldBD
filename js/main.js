@@ -1,5 +1,6 @@
 import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
 import { subscribeAuthState, logOut, ADMIN_EMAIL } from './auth.js';
+import { getOptimizedImageUrl } from './cloudinary-config.js';
 
 export const PRIVACY_POLICY_URL = 'https://webworldbd-privacypolicy.pages.dev/';
 
@@ -144,8 +145,58 @@ function injectHeader() {
           </a>
         </div>
 
-        <!-- Right Section: Theme Toggle + Language Toggle Pill -->
-        <div class="flex items-center gap-2.5">
+        <!-- Right Section: Header Avatar Dropdown + Theme Toggle + Language Toggle Pill -->
+        <div class="flex items-center gap-2 md:gap-2.5">
+          <!-- Header User Avatar Dropdown (Hidden when logged out) -->
+          <div id="header-user-wrapper" class="relative hidden">
+            <button
+              id="btn-header-avatar"
+              aria-label="User Menu"
+              class="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 rounded-full cursor-pointer focus:outline-hidden ring-2 ring-sky-300 dark:ring-sky-900 transition-transform hover:scale-105"
+            >
+              <div class="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center">
+                <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Profile">
+                <span id="header-avatar-initial" class="text-white font-black text-xs">U</span>
+              </div>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              id="header-user-dropdown"
+              class="absolute right-0 mt-2 w-56 rounded-2xl glass-card border border-slate-200 dark:border-slate-800 shadow-2xl py-2 hidden z-50 animate-fade-in-up"
+            >
+              <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800/80">
+                <p id="header-dropdown-name" class="font-bold text-xs text-slate-900 dark:text-white truncate">User Name</p>
+                <p id="header-dropdown-username" class="text-[10px] text-sky-500 dark:text-sky-400 font-semibold truncate">@username</p>
+              </div>
+
+              <a href="./profile.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors">
+                <i class="fa-solid fa-user text-sky-500 w-4 text-center"></i>
+                <span data-i18n="myProfile">${t('myProfile')}</span>
+              </a>
+
+              <a href="./profile.html?edit=true" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors">
+                <i class="fa-solid fa-pen-to-square text-sky-500 w-4 text-center"></i>
+                <span data-i18n="editProfile">${t('editProfile')}</span>
+              </a>
+
+              <a href="./settings.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors">
+                <i class="fa-solid fa-gear text-sky-500 w-4 text-center"></i>
+                <span data-i18n="settings">${t('settings')}</span>
+              </a>
+
+              <div class="border-t border-slate-100 dark:border-slate-800/80 my-1"></div>
+
+              <button
+                id="btn-header-logout"
+                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer text-left"
+              >
+                <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
+                <span data-i18n="logOut">${t('logOut')}</span>
+              </button>
+            </div>
+          </div>
+
           <button
             id="btn-toggle-theme"
             aria-label="Toggle Light/Dark Theme"
@@ -171,6 +222,28 @@ function injectHeader() {
   document.getElementById('btn-open-sidebar')?.addEventListener('click', openSidebar);
   document.getElementById('btn-toggle-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('btn-toggle-lang')?.addEventListener('click', toggleLanguage);
+
+  // Header Avatar Dropdown Event Listeners
+  const avatarBtn = document.getElementById('btn-header-avatar');
+  const dropdown = document.getElementById('header-user-dropdown');
+
+  avatarBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown?.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown?.contains(e.target) && !avatarBtn?.contains(e.target)) {
+      dropdown?.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('btn-header-logout')?.addEventListener('click', async () => {
+    dropdown?.classList.add('hidden');
+    await logOut();
+    showToast(getLanguage() === 'en' ? "Signed out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
+    window.location.href = './index.html';
+  });
 }
 
 /* ================= SIDEBAR INJECTION ================= */
@@ -220,7 +293,7 @@ function injectSidebar() {
       <!-- Content Body -->
       <div class="p-4 space-y-6 overflow-y-auto flex-1 sidebar-content-scroll z-10">
         <!-- User Card -->
-        <div id="sidebar-user-card" class="sidebar-user-card-3d p-3.5 rounded-2xl flex items-center gap-3">
+        <div id="sidebar-user-card" class="sidebar-user-card-3d p-3.5 rounded-2xl flex items-center gap-3 cursor-pointer">
           <!-- Dynamically populated -->
         </div>
 
@@ -569,40 +642,80 @@ function updateAuthDependentUI() {
   const authSection = document.getElementById('sidebar-auth-section');
   const adminLink = document.getElementById('sidebar-admin-link');
 
-  if (userCard) {
-    if (currentUser) {
-      const name = currentUserData?.name || currentUser.displayName || 'WebWorldBD User';
-      const email = currentUser.email || '';
-      const photoURL = currentUser.photoURL;
+  // Header Avatar UI updates
+  const headerUserWrapper = document.getElementById('header-user-wrapper');
+  const headerAvatarImg = document.getElementById('header-avatar-img');
+  const headerAvatarInitial = document.getElementById('header-avatar-initial');
+  const headerDropdownName = document.getElementById('header-dropdown-name');
+  const headerDropdownUsername = document.getElementById('header-dropdown-username');
 
-      if (photoURL) {
-        userCard.innerHTML = `
-          <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
-            <img src="${photoURL}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">
-            <span class="online-status-dot"></span>
-          </div>
-          <div class="overflow-hidden flex-1">
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
-            <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
-              ${email}
-            </a>
-          </div>
-        `;
+  if (currentUser) {
+    const name = currentUserData?.name || currentUser.displayName || 'WebWorldBD User';
+    const email = currentUser.email || '';
+    const username = currentUserData?.username ? `@${currentUserData.username}` : '';
+    const photoURL = currentUserData?.photoURL || currentUser.photoURL;
+    const optimizedPhoto = getOptimizedImageUrl(photoURL, 128, 128);
+
+    if (headerUserWrapper) {
+      headerUserWrapper.classList.remove('hidden');
+      if (headerDropdownName) headerDropdownName.textContent = name;
+      if (headerDropdownUsername) headerDropdownUsername.textContent = username || email;
+
+      if (optimizedPhoto) {
+        if (headerAvatarImg) {
+          headerAvatarImg.src = optimizedPhoto;
+          headerAvatarImg.classList.remove('hidden');
+          headerAvatarImg.onerror = () => {
+            headerAvatarImg.classList.add('hidden');
+            if (headerAvatarInitial) {
+              headerAvatarInitial.textContent = name.charAt(0).toUpperCase();
+              headerAvatarInitial.classList.remove('hidden');
+            }
+          };
+        }
+        if (headerAvatarInitial) headerAvatarInitial.classList.add('hidden');
       } else {
-        userCard.innerHTML = `
-          <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center shrink-0 overflow-hidden relative">
-            <img src="./assets/logo.png?v=2" alt="${name}" width="44" height="44" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">
-            <span class="online-status-dot"></span>
-          </div>
-          <div class="overflow-hidden flex-1">
-            <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
-            <a href="mailto:${email}" class="text-xs text-sky-500 dark:text-sky-400 hover:underline font-medium block truncate">
-              ${email}
-            </a>
-          </div>
-        `;
+        if (headerAvatarImg) headerAvatarImg.classList.add('hidden');
+        if (headerAvatarInitial) {
+          headerAvatarInitial.textContent = name.charAt(0).toUpperCase();
+          headerAvatarInitial.classList.remove('hidden');
+        }
       }
-    } else {
+    }
+
+    if (userCard) {
+      userCard.onclick = () => {
+        closeSidebar();
+        window.location.href = './profile.html';
+      };
+
+      const avatarMarkup = photoURL
+        ? `<img src="${getOptimizedImageUrl(photoURL, 128, 128)}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">`
+        : `<div class="w-full h-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-sm">${name.charAt(0).toUpperCase()}</div>`;
+
+      userCard.innerHTML = `
+        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
+          ${avatarMarkup}
+          <span class="online-status-dot"></span>
+        </div>
+        <div class="overflow-hidden flex-1">
+          <h4 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h4>
+          ${username ? `<p class="text-[11px] text-sky-500 font-semibold truncate">${username}</p>` : ''}
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${email}</p>
+        </div>
+        <a href="./profile.html?edit=true" onclick="event.stopPropagation();" aria-label="Edit Profile" class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950/80 hover:bg-sky-200 dark:hover:bg-sky-900 text-sky-600 dark:text-sky-300 flex items-center justify-center transition-colors shrink-0">
+          <i class="fa-solid fa-pencil text-xs"></i>
+        </a>
+      `;
+    }
+  } else {
+    if (headerUserWrapper) headerUserWrapper.classList.add('hidden');
+
+    if (userCard) {
+      userCard.onclick = () => {
+        closeSidebar();
+        window.location.href = './login.html';
+      };
       userCard.innerHTML = `
         <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center shrink-0 overflow-hidden relative">
           <img src="./assets/logo.png?v=2" alt="Guest" width="44" height="44" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">
