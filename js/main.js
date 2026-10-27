@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   injectToastContainer();
   injectBottomNav();
   applyTranslations();
+  initCopyCardButtons();
 
   // Subscribe to Auth State Changes
   subscribeAuthState((user, userData) => {
@@ -1230,6 +1231,40 @@ export function showToast(message, type = 'info') {
     toast.style.transform = 'translateY(-10px)';
     setTimeout(() => toast.remove(), 300);
   }, 4000);
+}
+
+/* ================= COPY BUTTONS HANDLER FOR CONTACT CARDS ================= */
+function initCopyCardButtons() {
+  document.querySelectorAll('.btn-copy-card').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const textToCopy = btn.getAttribute('data-copy');
+      if (!textToCopy) return;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const msg = getLanguage() === 'en' ? 'Copied!' : 'অনুলিপি করা হয়েছে!';
+        showToast(msg, 'success');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          const msg = getLanguage() === 'en' ? 'Copied!' : 'অনুলিপি করা হয়েছে!';
+          showToast(msg, 'success');
+        } catch (err) {
+          showToast('Failed to copy', 'error');
+        }
+        document.body.removeChild(textarea);
+      });
+    });
+  });
 }
 
 function escapeHTML(str) {

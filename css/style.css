@@ -150,6 +150,415 @@ body.dark .glass-nav {
   transform: translateY(-1px);
 }
 
+/* ================= CONTACT PAGE AMBIENT 3D ORBS BACKGROUND ================= */
+.contact-orbs-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.contact-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  -webkit-filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.orb-sky {
+  width: 380px;
+  height: 380px;
+  top: -50px;
+  left: -60px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.05) 70%, transparent 100%);
+  animation: orbFloatSky 16s infinite alternate ease-in-out;
+}
+
+.orb-purple {
+  width: 420px;
+  height: 420px;
+  top: 35%;
+  right: -80px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.38) 0%, rgba(167, 139, 250, 0.05) 70%, transparent 100%);
+  animation: orbFloatPurple 18s infinite alternate ease-in-out;
+}
+
+.orb-pink {
+  width: 360px;
+  height: 360px;
+  bottom: 5%;
+  left: 15%;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.28) 0%, rgba(244, 114, 182, 0.05) 70%, transparent 100%);
+  animation: orbFloatPink 20s infinite alternate ease-in-out;
+}
+
+body.dark .orb-sky {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.35) 0%, rgba(14, 165, 233, 0.02) 70%, transparent 100%);
+  filter: blur(90px);
+  opacity: 0.7;
+}
+
+body.dark .orb-purple {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0.02) 70%, transparent 100%);
+  filter: blur(90px);
+  opacity: 0.7;
+}
+
+body.dark .orb-pink {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.22) 0%, rgba(236, 72, 153, 0.02) 70%, transparent 100%);
+  filter: blur(90px);
+  opacity: 0.6;
+}
+
+@keyframes orbFloatSky {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(60px, 80px) scale(1.12); }
+}
+
+@keyframes orbFloatPurple {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-70px, -60px) scale(1.15); }
+}
+
+@keyframes orbFloatPink {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, -50px) scale(1.08); }
+}
+
+/* 3D Glossy Badge Pill for Top Section */
+.badge-3d-glossy {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.85) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.dark .badge-3d-glossy {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(15, 23, 42, 0.75) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Contact 3D Heading Gradient & Shadow */
+.contact-3d-heading {
+  background: linear-gradient(135deg, #0F172A 0%, #0284C7 50%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+}
+
+body.dark .contact-3d-heading {
+  background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(56, 189, 248, 0.25));
+}
+
+/* ================= 3D GLASS CONTACT CARDS ================= */
+.contact-card-3d {
+  position: relative;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  animation: cardSlideUpStagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+body.dark .contact-card-3d {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Faint Diagonal Light Reflection Across Card */
+.contact-card-3d::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -50%;
+  width: 60%;
+  height: 220%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: transform 0.6s ease;
+}
+
+body.dark .contact-card-3d::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0) 100%);
+}
+
+.contact-card-3d:hover::after {
+  transform: rotate(25deg) translateX(200%);
+}
+
+/* Hover & Active Lift with 3D Tilt Perspective */
+.contact-card-3d:hover {
+  transform: perspective(800px) translateY(-4px) rotateX(2deg);
+}
+
+.contact-card-3d:active {
+  transform: scale(0.97) translateY(0);
+}
+
+/* Brand-Specific Hover Glows */
+.contact-card-3d.card-brand-email:hover {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-email:hover {
+  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.35), 0 0 18px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-phone:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 14px 30px rgba(16, 185, 129, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-phone:hover {
+  box-shadow: 0 14px 30px rgba(16, 185, 129, 0.35), 0 0 18px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-whatsapp:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-whatsapp:hover {
+  box-shadow: 0 14px 30px rgba(34, 197, 94, 0.35), 0 0 20px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-hotline:hover {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-hotline:hover {
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.35), 0 0 18px rgba(37, 99, 235, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-telegram:hover {
+  border-color: rgba(14, 165, 233, 0.5);
+  box-shadow: 0 14px 30px rgba(14, 165, 233, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-telegram:hover {
+  box-shadow: 0 14px 30px rgba(14, 165, 233, 0.35), 0 0 18px rgba(14, 165, 233, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-linkedin:hover {
+  border-color: rgba(10, 102, 194, 0.5);
+  box-shadow: 0 14px 30px rgba(10, 102, 194, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-linkedin:hover {
+  box-shadow: 0 14px 30px rgba(10, 102, 194, 0.35), 0 0 18px rgba(10, 102, 194, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.contact-card-3d.card-brand-fiverr:hover {
+  border-color: rgba(29, 191, 115, 0.5);
+  box-shadow: 0 14px 30px rgba(29, 191, 115, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+body.dark .contact-card-3d.card-brand-fiverr:hover {
+  box-shadow: 0 14px 30px rgba(29, 191, 115, 0.35), 0 0 18px rgba(29, 191, 115, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Glossy 3D Round Icon Tile (~52px) */
+.contact-icon-tile {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.contact-card-3d:hover .contact-icon-tile {
+  transform: scale(1.08);
+}
+
+/* Icon Tile Brand Colors & Glows */
+.tile-email {
+  background: linear-gradient(135deg, #FF4B4B 0%, #FF8F1F 100%);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-phone {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-whatsapp {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-hotline {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-telegram {
+  background: linear-gradient(135deg, #0088CC 0%, #38BDF8 100%);
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-linkedin {
+  background: linear-gradient(135deg, #0A66C2 0%, #004182 100%);
+  box-shadow: 0 6px 16px rgba(10, 102, 194, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.tile-fiverr {
+  background: linear-gradient(135deg, #1DBF73 0%, #10B981 100%);
+  box-shadow: 0 6px 16px rgba(29, 191, 115, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Action & Copy Buttons */
+.contact-action-btn,
+.btn-copy-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.25s ease;
+}
+
+body.dark .contact-action-btn,
+body.dark .btn-copy-card {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn-copy-card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+}
+
+.btn-copy-card:active {
+  transform: scale(0.9);
+}
+
+/* Scroll Entrance Animation */
+@keyframes cardSlideUpStagger {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= 3D SPHERE SOCIAL BUTTONS ================= */
+.social-sphere {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  animation: sphereIdleFloat 4s infinite ease-in-out;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, filter 0.35s ease;
+  will-change: transform;
+}
+
+/* Specular Highlight Overlay */
+.social-sphere::before {
+  content: '';
+  position: absolute;
+  top: 12%;
+  left: 18%;
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 75%);
+  pointer-events: none;
+}
+
+/* Hover & Active Spheres */
+.social-sphere:hover {
+  transform: translateY(-6px) scale(1.12) rotate(4deg);
+}
+
+.social-sphere:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Brand Radial Spheres */
+.sphere-facebook {
+  background: radial-gradient(circle at 35% 30%, #3B82F6 0%, #1D4ED8 70%, #1E40AF 100%);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-facebook:hover { box-shadow: 0 12px 28px rgba(59, 130, 246, 0.6), 0 0 16px rgba(59, 130, 246, 0.4); }
+
+.sphere-tiktok {
+  background: radial-gradient(circle at 35% 30%, #334155 0%, #0F172A 70%, #020617 100%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.4);
+}
+.sphere-tiktok:hover { box-shadow: 0 12px 28px rgba(15, 23, 42, 0.6), 0 0 16px rgba(15, 23, 42, 0.4); }
+
+.sphere-telegram {
+  background: radial-gradient(circle at 35% 30%, #38BDF8 0%, #0284C7 70%, #0369A1 100%);
+  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-telegram:hover { box-shadow: 0 12px 28px rgba(14, 165, 233, 0.6), 0 0 16px rgba(14, 165, 233, 0.4); }
+
+.sphere-linkedin {
+  background: radial-gradient(circle at 35% 30%, #2563EB 0%, #0A66C2 70%, #1E3A8A 100%);
+  box-shadow: 0 8px 20px rgba(10, 102, 194, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-linkedin:hover { box-shadow: 0 12px 28px rgba(10, 102, 194, 0.6), 0 0 16px rgba(10, 102, 194, 0.4); }
+
+.sphere-gmail {
+  background: radial-gradient(circle at 35% 30%, #FF4B4B 0%, #DC2626 70%, #991B1B 100%);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-gmail:hover { box-shadow: 0 12px 28px rgba(220, 38, 38, 0.6), 0 0 16px rgba(220, 38, 38, 0.4); }
+
+.sphere-whatsapp {
+  background: radial-gradient(circle at 35% 30%, #34D399 0%, #10B981 70%, #047857 100%);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-whatsapp:hover { box-shadow: 0 12px 28px rgba(16, 185, 129, 0.6), 0 0 16px rgba(16, 185, 129, 0.4); }
+
+.sphere-fiverr {
+  background: radial-gradient(circle at 35% 30%, #1DBF73 0%, #10B981 70%, #065F46 100%);
+  box-shadow: 0 8px 20px rgba(29, 191, 115, 0.4), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+.sphere-fiverr:hover { box-shadow: 0 12px 28px rgba(29, 191, 115, 0.6), 0 0 16px rgba(29, 191, 115, 0.4); }
+
+@keyframes sphereIdleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ================= FOOTER FROSTED GLASS TOUCH ON CONTACT PAGE ================= */
+body:has(.contact-card-3d) footer {
+  position: relative;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.85);
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.03);
+}
+
+body.dark:has(.contact-card-3d) footer {
+  background: rgba(11, 15, 25, 0.85);
+  border-top: 1px solid rgba(30, 41, 59, 0.8);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body:has(.contact-card-3d) footer a {
+  transition: transform 0.2s ease, color 0.2s ease;
+  display: inline-block;
+}
+
+body:has(.contact-card-3d) footer a:hover {
+  transform: translateY(-1px);
+}
+
 /* Custom animations */
 @keyframes fadeInSlideUp {
   from {
@@ -963,12 +1372,18 @@ body.dark .btn-3d-logout {
   .btn-3d-close,
   .card-3d,
   .icon-tile-3d,
-  .sidebar-drawer-container.is-open .sidebar-section-block > * {
+  .sidebar-drawer-container.is-open .sidebar-section-block > *,
+  .contact-orb,
+  .contact-card-3d,
+  .contact-icon-tile,
+  .social-sphere {
     transition: none !important;
     animation: none !important;
+    transform: none !important;
   }
 
-  .btn-3d-gradient-shine::after {
+  .btn-3d-gradient-shine::after,
+  .contact-card-3d::after {
     display: none;
   }
 }
