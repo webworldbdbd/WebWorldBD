@@ -280,7 +280,36 @@ export async function fetchOrCreateUserDoc(user, signupName = "") {
 export function subscribeAuthState(callback) {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const userData = await fetchOrCreateUserDoc(user);
+      let userData = null;
+      try {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("FIRESTORE_TIMEOUT")), 8000);
+        });
+        userData = await Promise.race([
+          fetchOrCreateUserDoc(user),
+          timeoutPromise
+        ]);
+      } catch (err) {
+        console.warn("subscribeAuthState Firestore fetch error, using fallback userData:", err);
+        const displayName = user.displayName || user.email?.split("@")[0] || 'User';
+        const nowIso = new Date().toISOString();
+        userData = {
+          uid: user.uid,
+          name: displayName,
+          email: user.email || '',
+          photoURL: user.photoURL || '',
+          username: generateBaseUsername(user.email || displayName),
+          bio: '',
+          phone: '',
+          createdAt: user.metadata?.creationTime ? new Date(user.metadata.creationTime).toISOString() : nowIso,
+          lastLoginAt: nowIso,
+          role: (user.email && user.email.toLowerCase() === ADMIN_EMAIL) ? 'admin' : 'user',
+          provider: user.providerData?.[0]?.providerId === 'google.com' ? 'google' : 'password',
+          emailVerified: user.emailVerified || false,
+          preferences: { theme: 'light', language: 'en' },
+          firestoreError: err
+        };
+      }
       callback(user, userData);
     } else {
       callback(null, null);

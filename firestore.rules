@@ -12,55 +12,25 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() &&
-             request.auth.token.email == 'webworldbd.lmt@gmail.com' &&
-             request.auth.token.email_verified == true;
+      return isSignedIn() && request.auth.token.email == 'webworldbd.lmt@gmail.com';
     }
 
-    function isValidUsername(username) {
-      return username.matches('^[a-z0-9]{3,20}$');
-    }
-
-    function isValidUserDoc(data) {
-      return data.name is string && data.name.size() >= 2 && data.name.size() <= 50 &&
-             data.username is string && isValidUsername(data.username) &&
-             (data.bio == null || (data.bio is string && data.bio.size() <= 160));
-    }
-
-    // Users Collection
+    // Users Collection - Owner Read & Write (Admin access permitted)
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-
-      allow create: if isOwner(userId) &&
-                       request.resource.data.uid == userId &&
-                       request.resource.data.role == 'user' &&
-                       isValidUserDoc(request.resource.data);
-
-      allow update: if isOwner(userId) &&
-                       request.resource.data.uid == resource.data.uid &&
-                       request.resource.data.role == resource.data.role &&
-                       request.resource.data.createdAt == resource.data.createdAt &&
-                       isValidUserDoc(request.resource.data);
-
-      allow delete: if isOwner(userId) || isAdmin();
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
-    // Usernames Collection for Live Availability Check
+    // Usernames Collection - Public Read, Owner Create & Delete
     match /usernames/{username} {
       allow read: if true;
-
-      allow create: if isSignedIn() &&
-                       isValidUsername(username) &&
-                       request.resource.data.uid == request.auth.uid;
-
-      allow delete: if isSignedIn() &&
-                       resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
-    // Project Requests Collection
+    // Project Requests Collection - Anyone Create, Admin Read/Write
     match /projectRequests/{requestId} {
       allow create: if true;
-      allow read, update, delete: if request.auth != null && request.auth.token.email == 'webworldbd.lmt@gmail.com';
+      allow read, update, delete: if isAdmin();
     }
   }
 }

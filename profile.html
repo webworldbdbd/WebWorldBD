@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="email=no, telephone=no, address=no">
   <title>My Profile | WebWorldBD</title>
   <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
@@ -52,6 +53,22 @@
         <div class="h-6 bg-slate-200 dark:bg-slate-800 rounded w-48"></div>
         <div class="h-4 bg-slate-200 dark:bg-slate-800 rounded w-32"></div>
       </div>
+    </div>
+
+    <!-- Error Banner Container (Hidden by default) -->
+    <div id="profile-error-banner" class="mb-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3 hidden">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl shrink-0"></i>
+        <div class="text-xs">
+          <p class="font-bold" id="error-banner-msg-en">Could not load live cloud profile data. Displaying fallback account details.</p>
+          <p class="text-[11px] opacity-90" id="error-banner-msg-bn">লাইভ ক্লাউড ডাটা লোড করা যায়নি। বিকল্প প্রোফাইল তথ্য দেখানো হচ্ছে।</p>
+          <p class="text-[10px] font-mono mt-0.5 text-amber-600 dark:text-amber-400" id="error-banner-reason"></p>
+        </div>
+      </div>
+      <button id="btn-retry-profile" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>Retry / পুনরায় চেষ্টা</span>
+      </button>
     </div>
 
     <!-- Main Profile Card Container -->
@@ -470,7 +487,7 @@
   <script type="module" src="./js/main.js"></script>
   <script type="module">
     import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
-    import { uploadToCloudinary, getOptimizedImageUrl } from './cloudinary-config.js';
+    import { uploadToCloudinary, getOptimizedImageUrl } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
 
@@ -493,22 +510,47 @@
     document.addEventListener('DOMContentLoaded', () => {
       // Auth Listener
       subscribeAuthState((user, userData) => {
-        if (!user) {
-          showToast(getLanguage() === 'en' ? "Please log in to view your profile." : "প্রোফাইল দেখতে লগ ইন করুন।", "info");
-          window.location.href = './login.html';
-          return;
+        const skeleton = document.getElementById('profile-skeleton');
+        const card = document.getElementById('profile-card');
+        const errorBanner = document.getElementById('profile-error-banner');
+
+        try {
+          if (!user) {
+            showToast(getLanguage() === 'en' ? "Please log in to view your profile." : "প্রোফাইল দেখতে লগ ইন করুন।", "info");
+            window.location.href = './login.html';
+            return;
+          }
+
+          currentUser = user;
+
+          if (userData && userData.firestoreError) {
+            const errReason = userData.firestoreError.message || String(userData.firestoreError);
+            const reasonEl = document.getElementById('error-banner-reason');
+            if (reasonEl) reasonEl.textContent = `Reason: ${errReason}`;
+            errorBanner?.classList.remove('hidden');
+          } else {
+            errorBanner?.classList.add('hidden');
+          }
+
+          currentUserData = userData;
+
+          renderProfilePage(user, userData);
+
+          // Check URL parameter for modal auto-open
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('edit') === 'true') {
+            openEditModal();
+          }
+        } catch (err) {
+          console.error("Profile rendering error:", err);
+        } finally {
+          skeleton?.classList.add('hidden');
+          card?.classList.remove('hidden');
         }
+      });
 
-        currentUser = user;
-        currentUserData = userData;
-
-        renderProfilePage(user, userData);
-
-        // Check URL parameter for modal auto-open
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('edit') === 'true') {
-          openEditModal();
-        }
+      document.getElementById('btn-retry-profile')?.addEventListener('click', () => {
+        window.location.reload();
       });
 
       // Bind Profile Action Listeners
