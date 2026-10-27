@@ -329,7 +329,7 @@
         </h2>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div id="live-projects-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div class="glass-card p-5 rounded-2xl space-y-3 border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
           <div class="space-y-2">
             <span class="text-[10px] font-bold uppercase tracking-wider text-sky-500">E-commerce Platform</span>
@@ -341,10 +341,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live Online
             </span>
-            <button class="btn-chat-preview px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
+            <a href="https://marketkoro.pages.dev/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
               <span>Preview</span>
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -359,10 +359,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live Online
             </span>
-            <button class="btn-chat-preview px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
+            <a href="https://studentstoolsorai.pages.dev/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
               <span>Preview</span>
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -377,10 +377,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live Online
             </span>
-            <button class="btn-chat-preview px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
+            <a href="https://happybirthday-all.pages.dev/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
               <span>Preview</span>
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -395,10 +395,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live Online
             </span>
-            <button class="btn-chat-preview px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
+            <a href="https://animatedheart.pages.dev/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
               <span>Preview</span>
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -413,10 +413,10 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
               Live Online
             </span>
-            <button class="btn-chat-preview px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
+            <a href="https://gamezonebd.pages.dev/" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300 text-xs font-bold flex items-center gap-1 hover:bg-sky-200 transition-colors cursor-pointer">
               <span>Preview</span>
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
+            </a>
           </div>
         </div>
       </div>
@@ -432,9 +432,6 @@
     import { openModal } from './js/main.js';
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('hero-live-chat-btn')?.addEventListener('click', () => openModal('liveChat'));
-      document.querySelectorAll('.btn-chat-preview').forEach(btn => {
-        btn.addEventListener('click', () => openModal('liveChat'));
-      });
     });
   </script>
 </body>

@@ -1,6 +1,44 @@
 import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
 import { subscribeAuthState, logOut, ADMIN_EMAIL } from './auth.js';
 
+export const LIVE_PROJECTS = [
+  {
+    name: 'Market Koro',
+    icon: 'fa-store',
+    url: 'https://marketkoro.pages.dev/',
+    tag: 'E-commerce Platform',
+    desc: 'Full-featured online shopping store with cart & checkout.'
+  },
+  {
+    name: "Student's Tool's & AI",
+    icon: 'fa-graduation-cap',
+    url: 'https://studentstoolsorai.pages.dev/',
+    tag: 'Educational SaaS',
+    desc: 'AI-assisted tools for academic productivity and study.'
+  },
+  {
+    name: 'Birthday Website',
+    icon: 'fa-cake-candles',
+    url: 'https://happybirthday-all.pages.dev/',
+    tag: 'Custom Interactive Web',
+    desc: 'Personalized animated celebration website with music & effects.'
+  },
+  {
+    name: 'Animated Heart',
+    icon: 'fa-heart',
+    url: 'https://animatedheart.pages.dev/',
+    tag: 'Interactive Canvas UI',
+    desc: '3D CSS/JS particle animation platform for creative presentation.'
+  },
+  {
+    name: 'RunZone',
+    icon: 'fa-person-running',
+    url: 'https://gamezonebd.pages.dev/',
+    tag: 'Sports & Fitness App',
+    desc: 'Fitness tracking dashboard and activity log web app.'
+  }
+];
+
 let currentUser = null;
 let currentUserData = null;
 
@@ -335,15 +373,11 @@ function injectSidebar() {
             LIVE PREVIEW
           </h3>
           <div class="space-y-2">
-            ${[
-              { name: 'Market Koro', icon: 'fa-store' },
-              { name: "Student's Tool's & AI", icon: 'fa-graduation-cap' },
-              { name: 'Birthday Website', icon: 'fa-cake-candles' },
-              { name: 'Animated Heart', icon: 'fa-heart' },
-              { name: 'RunZone', icon: 'fa-person-running' }
-            ].map(proj => `
+            ${LIVE_PROJECTS.map(proj => `
               <a
-                href="./index.html#live-projects"
+                href="${proj.url}"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="sidebar-live-link card-3d compact-live-card w-full p-2.5 rounded-xl flex items-center justify-between transition-all text-sm font-semibold text-slate-800 dark:text-slate-100"
               >
                 <div class="flex items-center gap-2.5">
@@ -446,10 +480,6 @@ function injectSidebar() {
   // Attach event handlers
   document.getElementById('btn-close-sidebar')?.addEventListener('click', closeSidebar);
   document.getElementById('sidebar-backdrop')?.addEventListener('click', closeSidebar);
-
-  document.querySelectorAll('.sidebar-live-link').forEach(el => {
-    el.addEventListener('click', closeSidebar);
-  });
 
   document.getElementById('sidebar-toggle-theme')?.addEventListener('click', toggleTheme);
   document.getElementById('sidebar-toggle-lang')?.addEventListener('click', toggleLanguage);
