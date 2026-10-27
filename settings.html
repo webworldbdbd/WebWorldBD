@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Settings | WebWorldBD</title>
-  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+    <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
+  <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
+  <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -505,14 +508,19 @@
       } else {
         const name = currentUserData?.name || currentUser.displayName || 'WebWorldBD User';
         const email = currentUser.email || '';
-        const avatarSrc = currentUser.photoURL || './assets/profile.jpg';
+
+        let avatarHTML = '';
+        if (currentUser.photoURL) {
+          avatarHTML = `<img src="${currentUser.photoURL}" alt="${name}" width="48" height="48" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">`;
+        } else {
+          avatarHTML = `<img src="./assets/logo.png?v=2" alt="${name}" width="48" height="48" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">`;
+        }
 
         container.innerHTML = `
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3.5 overflow-hidden">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-500 border-2 border-sky-400 flex items-center justify-center text-white font-bold text-xl shrink-0 overflow-hidden relative">
-                <span>W</span>
-                <img src="${avatarSrc}" alt="${name}" width="48" height="48" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.style.display='none';">
+              <div class="w-12 h-12 rounded-full avatar-double-ring flex items-center justify-center font-bold text-xl shrink-0 overflow-hidden relative">
+                ${avatarHTML}
               </div>
               <div class="overflow-hidden">
                 <h3 class="font-bold text-slate-900 dark:text-white text-sm truncate">${name}</h3>
