@@ -334,6 +334,10 @@ export async function fetchOrCreateUserDoc(user, signupName = "") {
 }
 
 export function subscribeAuthState(callback) {
+  if (window.__TEST_MODE__ && window.__TEST_USER__) {
+    setTimeout(() => callback(window.__TEST_USER__, window.__TEST_USER_DATA__), 50);
+    return () => {};
+  }
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
       let userData = null;
