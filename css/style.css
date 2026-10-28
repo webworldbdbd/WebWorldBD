@@ -1810,14 +1810,23 @@ body.dark .sidebar-icon-tile-logout {
 }
 
 /* Auth Buttons (Logged Out) */
+#sidebar-auth-section {
+  margin-top: 20px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
 .sidebar-auth-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
   width: 100%;
+  margin: 0 auto;
 }
 
 .sidebar-btn-login {
+  flex: 1;
   width: 100%;
   height: 48px;
   display: flex;
@@ -1862,6 +1871,7 @@ body.dark .sidebar-btn-login:hover {
 }
 
 .sidebar-btn-signup {
+  flex: 1;
   width: 100%;
   height: 48px;
   display: flex;
