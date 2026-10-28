@@ -444,16 +444,54 @@ function renderDashboardCharts() {
   renderRequestsCategoryChart();
 }
 
-function parseDocDate(val) {
+export function parseToDate(val) {
   if (!val) return null;
   if (typeof val.toDate === 'function') {
-    return val.toDate();
+    try { return val.toDate(); } catch (e) { return null; }
   }
-  if (val.seconds) {
+  if (typeof val === 'object' && val.seconds !== undefined) {
     return new Date(val.seconds * 1000);
   }
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? null : d;
+  if (typeof val === 'number') {
+    return new Date(val < 1e11 ? val * 1000 : val);
+  }
+  if (typeof val === 'string') {
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? null : val;
+  }
+  return null;
+}
+
+export function formatChatTime(value, fallbackValue = null) {
+  let date = parseToDate(value);
+  if (!date && fallbackValue) {
+    date = parseToDate(fallbackValue);
+  }
+  if (!date) return "";
+
+  const now = new Date();
+  const midnightToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const midnightYesterday = new Date(midnightToday);
+  midnightYesterday.setDate(midnightYesterday.getDate() - 1);
+  const midnight7DaysAgo = new Date(midnightToday);
+  midnight7DaysAgo.setDate(midnight7DaysAgo.getDate() - 6);
+
+  if (date >= midnightToday) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else if (date >= midnightYesterday) {
+    return "Yesterday";
+  } else if (date >= midnight7DaysAgo) {
+    return date.toLocaleDateString([], { weekday: 'long' });
+  } else {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+}
+
+function parseDocDate(val) {
+  return parseToDate(val);
 }
 
 function formatRelativeTime(date) {
@@ -464,7 +502,7 @@ function formatRelativeTime(date) {
   if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min ago`;
   if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hr ago`;
   if (diffSec < 604800) return `${Math.floor(diffSec / 86400)} days ago`;
-  return date.toLocaleDateString();
+  return formatChatTime(date);
 }
 
 function showDashboardError(err) {
@@ -673,15 +711,18 @@ function renderAdminLogsList(logs) {
     return;
   }
 
-  container.innerHTML = logs.map(l => `
+  container.innerHTML = logs.map(l => {
+    const formattedTime = formatChatTime(l.timestamp, l.isoDate) || 'Just now';
+    return `
     <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
       <div class="space-y-0.5">
         <p class="font-bold text-white text-xs"><span class="text-sky-400">${l.action}</span> • ${l.target}</p>
         ${l.details ? `<p class="text-[10px] text-slate-400">${l.details}</p>` : ''}
       </div>
-      <span class="text-[10px] text-slate-500">${l.isoDate ? new Date(l.isoDate).toLocaleString() : 'Just now'}</span>
+      <span class="text-[10px] text-slate-500">${formattedTime}</span>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function clearOldAdminLogs() {
@@ -1005,7 +1046,7 @@ function renderRecentUsersWidget() {
           <p class="text-[10px] text-slate-400 truncate">${u.email || '@' + u.username}</p>
         </div>
       </div>
-      <span class="text-[10px] text-slate-500">${new Date(u.createdAt).toLocaleDateString()}</span>
+      <span class="text-[10px] text-slate-500">${formatChatTime(u.createdAt)}</span>
     </div>
   `).join('');
 }
@@ -1190,12 +1231,24 @@ function renderChatConversationsList() {
     );
   }
 
+  // Sort conversations safely: missing dates go to bottom
+  filtered.sort((a, b) => {
+    const timeA = parseToDate(a.lastMessageAt, a.createdAt);
+    const timeB = parseToDate(b.lastMessageAt, b.createdAt);
+    if (!timeA && !timeB) return 0;
+    if (!timeA) return 1;
+    if (!timeB) return -1;
+    return timeB - timeA;
+  });
+
   if (filtered.length === 0) {
     container.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs">No conversations match the filter.</div>`;
     return;
   }
 
-  container.innerHTML = filtered.map(c => `
+  container.innerHTML = filtered.map(c => {
+    const formattedTime = formatChatTime(c.lastMessageAt, c.createdAt);
+    return `
     <div onclick="openAdminChat('${c.uid}')" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-900 transition-colors ${c.uid === activeChatUid ? 'bg-slate-800/90 border-l-4 border-sky-400' : ''}">
       <div class="flex items-center gap-3 overflow-hidden">
         <div class="relative w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0">
@@ -1211,12 +1264,13 @@ function renderChatConversationsList() {
         </div>
       </div>
       <div class="flex flex-col items-end gap-1 shrink-0">
-        <span class="text-[9px] text-slate-500">${c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+        <span class="text-[9px] text-slate-500">${formattedTime}</span>
         ${c.unreadForAdmin > 0 ? `<span class="px-2 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px]">${c.unreadForAdmin}</span>` : ''}
         ${!c.lastMessage ? `<span class="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-400 font-bold text-[9px]">Start chat</span>` : ''}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 window.openAdminChat = function(uid) {
@@ -1269,7 +1323,7 @@ function renderAdminMessages(messages) {
 
   container.innerHTML = messages.map(msg => {
     const isAdmin = msg.sender === 'admin';
-    const timeStr = msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const timeStr = formatChatTime(msg.createdAt, msg.deliveredAt);
 
     return `
       <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
@@ -1522,7 +1576,8 @@ function renderRequestsTable() {
   container.innerHTML = paginated.map(r => {
     const createdDate = parseDocDate(r.createdAt);
     const relTime = formatRelativeTime(createdDate);
-    const fullDate = createdDate ? createdDate.toLocaleString() : 'N/A';
+    const formattedDate = formatChatTime(r.createdAt);
+    const fullDate = formattedDate || 'N/A';
     const isNew = r.seenByAdmin === false || (r.status || '').toLowerCase() === 'new';
 
     return `
@@ -1647,7 +1702,7 @@ window.openRequestDetail = async function(reqId) {
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div><span class="text-slate-400">Category:</span> <p class="font-bold text-purple-300">${req.category || 'Custom'}</p></div>
         <div><span class="text-slate-400">Budget:</span> <p class="font-bold text-emerald-400">${req.budget || 'Unspecified'}</p></div>
-        <div><span class="text-slate-400">Submitted:</span> <p class="font-medium text-slate-200">${createdDate ? createdDate.toLocaleString() : 'N/A'}</p></div>
+        <div><span class="text-slate-400">Submitted:</span> <p class="font-medium text-slate-200">${formatChatTime(req.createdAt) || 'N/A'}</p></div>
         <div><span class="text-slate-400">Language:</span> <p class="font-semibold text-sky-400 uppercase">${req.language || 'EN'}</p></div>
       </div>
     </div>
@@ -1823,7 +1878,7 @@ function renderUsersTable() {
       <td class="p-3.5 text-slate-300 capitalize font-semibold">
         ${u.provider === 'google' ? `<span class="text-sky-400"><i class="fa-brands fa-google text-xs mr-1"></i>Google</span>` : `<span class="text-indigo-400"><i class="fa-solid fa-key text-xs mr-1"></i>Password</span>`}
       </td>
-      <td class="p-3.5 text-slate-400">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
+      <td class="p-3.5 text-slate-400">${formatChatTime(u.createdAt) || 'N/A'}</td>
       <td class="p-3.5">
         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.blocked ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
           ${u.blocked ? 'Blocked' : 'Active'}
@@ -1888,8 +1943,8 @@ window.viewUserDetail = function(uid) {
     <!-- User Profile Details Card -->
     <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-slate-300">
       <p><strong>Bio:</strong> <span class="italic text-slate-400">${u.bio || 'No bio written.'}</span></p>
-      <p><strong>Joined:</strong> ${u.createdAt ? new Date(u.createdAt).toLocaleString() : 'N/A'}</p>
-      <p><strong>Last Login:</strong> ${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : 'Just now'}</p>
+      <p><strong>Joined:</strong> ${formatChatTime(u.createdAt) || 'N/A'}</p>
+      <p><strong>Last Login:</strong> ${formatChatTime(u.lastLoginAt) || 'Just now'}</p>
       <p><strong>Project Requests:</strong> <span class="text-purple-400 font-bold">${userReqs.length} submitted</span></p>
     </div>
 

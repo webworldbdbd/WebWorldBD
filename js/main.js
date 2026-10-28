@@ -49,22 +49,32 @@ let currentUser = null;
 let currentUserData = null;
 let userChatUnsub = null;
 
-// Initialize app UI as soon as DOM loads
-document.addEventListener('DOMContentLoaded', () => {
-  const isAdminPage = window.location.pathname.endsWith('admin.html') || window.location.pathname.includes('/admin.html');
-  if (isAdminPage) {
+function checkIsAdminPage() {
+  const cleanPath = window.location.pathname.replace(/\/$/, '').toLowerCase();
+  const isAdminPath = cleanPath === '/admin' ||
+                      cleanPath === '/admin.html' ||
+                      cleanPath.endsWith('/admin') ||
+                      cleanPath.endsWith('/admin.html');
+  const hasDataPageAdmin = document.body && document.body.getAttribute('data-page') === 'admin';
+  const hasAdminRoot = !!(document.getElementById('admin-app') || document.getElementById('admin-auth-guard'));
+  return isAdminPath || hasDataPageAdmin || hasAdminRoot;
+}
+
+function initApp() {
+  const isAdminPage = checkIsAdminPage();
+  if (isAdminPage && document.body) {
     document.body.classList.add('admin-page');
   }
 
   const isLiveChatPage = window.location.pathname.endsWith('livechat.html') || window.location.pathname.includes('/livechat.html');
-  if (isLiveChatPage) {
+  if (isLiveChatPage && document.body) {
     document.body.classList.add('livechat-page');
   }
 
   initTheme();
-  injectParticlesBg();
 
   if (!isAdminPage) {
+    injectParticlesBg();
     injectHeader();
     injectSidebar();
     injectFooter();
@@ -86,7 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
     subscribeUserChatUnreadStatus();
     document.dispatchEvent(new CustomEvent('authStateUpdated', { detail: { user, userData } }));
   });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 /* ================= PUBLIC SITE CONFIG & MAINTENANCE CHECK ================= */
 function subscribeSiteConfigPublic() {
@@ -933,7 +949,7 @@ function injectFooter() {
   if (!footerContainer) return;
 
   footerContainer.innerHTML = `
-    <footer class="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 pt-12 pb-8 px-4 transition-colors">
+    <footer class="public-footer w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 pt-12 pb-8 px-4 transition-colors">
       <div class="max-w-6xl mx-auto">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           <!-- Column 1: Logo & Brief -->
@@ -1062,7 +1078,7 @@ function injectBottomNav() {
 
   const nav = document.createElement('nav');
   nav.id = 'bottom-nav-bar';
-  nav.className = 'bottom-nav-container';
+  nav.className = 'bottom-nav-container public-bottom-nav';
   nav.setAttribute('aria-label', 'Mobile Bottom Navigation');
 
   nav.innerHTML = `
@@ -1174,7 +1190,7 @@ function injectFloatingButtons() {
     <button
       id="btn-scroll-top"
       aria-label="Scroll to top"
-      class="w-12 h-12 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 items-center justify-center shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer hidden"
+      class="scroll-top w-12 h-12 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 items-center justify-center shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer hidden"
     >
       <i class="fa-solid fa-arrow-up text-lg"></i>
     </button>
@@ -1185,7 +1201,7 @@ function injectFloatingButtons() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
-      class="floating-whatsapp-glass cursor-pointer"
+      class="floating-whatsapp-glass floating-whatsapp cursor-pointer"
     >
       <i class="fa-brands fa-whatsapp text-2xl"></i>
     </a>

@@ -24,7 +24,7 @@
   </script>
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="min-h-screen bg-slate-900 text-slate-100 font-sans relative overflow-x-hidden">
+<body data-page="admin" class="min-h-screen bg-slate-900 text-slate-100 font-sans relative overflow-x-hidden">
 
   <!-- Initial Fullscreen Premium Auth Loading Screen -->
   <div id="admin-auth-guard" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
@@ -349,14 +349,14 @@
                     <i class="fa-solid fa-plus"></i> New
                   </button>
                 </div>
-                <div class="flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
-                  <button data-filter="all" class="chat-filter-tab active px-2.5 py-1 rounded-lg bg-slate-800 text-white">All</button>
-                  <button data-filter="unread" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Unread</button>
-                  <button data-filter="open" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Open</button>
-                  <button data-filter="all-users" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">All Users</button>
-                  <button data-filter="closed" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Closed</button>
-                  <button data-filter="pinned" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Pinned</button>
-                  <button data-filter="blocked" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Blocked</button>
+                <div class="chat-filter-tabs-row text-[11px] font-bold">
+                  <button data-filter="all" class="chat-filter-tab active">All</button>
+                  <button data-filter="unread" class="chat-filter-tab">Unread</button>
+                  <button data-filter="open" class="chat-filter-tab">Open</button>
+                  <button data-filter="all-users" class="chat-filter-tab">All Users</button>
+                  <button data-filter="closed" class="chat-filter-tab">Closed</button>
+                  <button data-filter="pinned" class="chat-filter-tab">Pinned</button>
+                  <button data-filter="blocked" class="chat-filter-tab">Blocked</button>
                 </div>
               </div>
 
