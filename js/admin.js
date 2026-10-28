@@ -267,6 +267,12 @@ function initAdminUI() {
   // Clear Logs
   document.getElementById('btn-clear-old-logs')?.addEventListener('click', clearOldAdminLogs);
 
+  // Dashboard Retry Button Listener
+  document.getElementById('btn-retry-dashboard')?.addEventListener('click', () => {
+    document.getElementById('dashboard-error-banner')?.classList.add('hidden');
+    subscribeDashboardData();
+  });
+
   // Save Settings Suite Listener
   document.getElementById('btn-save-all-settings')?.addEventListener('click', saveExecutiveSettingsSuite);
 }
@@ -358,54 +364,135 @@ function renderDashboardCharts() {
   renderRequestsCategoryChart();
 }
 
+function parseDocDate(val) {
+  if (!val) return null;
+  if (typeof val.toDate === 'function') {
+    return val.toDate();
+  }
+  if (val.seconds) {
+    return new Date(val.seconds * 1000);
+  }
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function showDashboardError(err) {
+  console.error("Dashboard Subscription Error:", err);
+  const banner = document.getElementById('dashboard-error-banner');
+  const msg = document.getElementById('dashboard-error-message');
+  if (banner && msg) {
+    msg.textContent = err.message || err.code || "Permission denied or network failure while reading Firestore data.";
+    banner.classList.remove('hidden');
+  }
+}
+
 function renderUsersTrendChart() {
   const container = document.getElementById('chart-users-trend');
   if (!container) return;
 
+  if (allUsersData.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center text-center p-4">
+        <i class="fa-solid fa-chart-line text-2xl text-slate-600 mb-1"></i>
+        <p class="text-xs font-bold text-slate-400">No data yet</p>
+        <p class="text-[10px] text-slate-500">User registrations will appear here.</p>
+      </div>
+    `;
+    return;
+  }
+
   const days = 14;
   const counts = new Array(days).fill(0);
+  const datesLabels = [];
   const now = new Date();
+  now.setHours(23, 59, 59, 999);
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    datesLabels.push(d.toLocaleDateString([], { month: 'short', day: 'numeric' }));
+  }
 
   allUsersData.forEach(u => {
-    if (!u.createdAt) return;
-    const date = new Date(u.createdAt);
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    const date = parseDocDate(u.createdAt);
+    if (!date) return;
+    const midnightNow = new Date(now);
+    midnightNow.setHours(0, 0, 0, 0);
+    const midnightUser = new Date(date);
+    midnightUser.setHours(0, 0, 0, 0);
+
+    const diffTime = midnightNow - midnightUser;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     if (diffDays >= 0 && diffDays < days) {
       counts[days - 1 - diffDays]++;
     }
   });
 
-  const maxVal = Math.max(...counts, 5);
-  const width = 300;
+  const totalInPeriod = counts.reduce((a, b) => a + b, 0);
+  if (totalInPeriod === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center text-center p-4">
+        <i class="fa-solid fa-users-slash text-2xl text-slate-600 mb-1"></i>
+        <p class="text-xs font-bold text-slate-400">No new registrations in last 14 days</p>
+        <p class="text-[10px] text-slate-500">Total registered users: ${allUsersData.length}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const maxVal = Math.max(...counts, 4);
+  const width = 320;
   const height = 120;
   const points = counts.map((val, idx) => {
-    const x = (idx / (days - 1)) * width;
-    const y = height - (val / maxVal) * (height - 20) - 10;
+    const x = (idx / (days - 1)) * (width - 20) + 10;
+    const y = height - (val / maxVal) * (height - 30) - 15;
     return `${x},${y}`;
   }).join(' ');
 
   container.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
-      <defs>
-        <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
-          <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
-        </linearGradient>
-      </defs>
-      <polygon points="0,${height} ${points} ${width},${height}" fill="url(#userGrad)" />
-      <polyline fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" points="${points}" />
-      ${counts.map((val, idx) => {
-        const x = (idx / (days - 1)) * width;
-        const y = height - (val / maxVal) * (height - 20) - 10;
-        return `<circle cx="${x}" cy="${y}" r="3" fill="#38bdf8" />`;
-      }).join('')}
-    </svg>
+    <div class="w-full flex flex-col items-center">
+      <svg viewBox="0 0 ${width} ${height}" class="w-full h-36 overflow-visible">
+        <defs>
+          <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <polygon points="10,${height - 10} ${points} ${width - 10},${height - 10}" fill="url(#userGrad)" />
+        <polyline fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
+        ${counts.map((val, idx) => {
+          const x = (idx / (days - 1)) * (width - 20) + 10;
+          const y = height - (val / maxVal) * (height - 30) - 15;
+          return `
+            <circle cx="${x}" cy="${y}" r="3.5" fill="#0f172a" stroke="#38bdf8" stroke-width="2">
+              <title>${datesLabels[idx]}: ${val} users</title>
+            </circle>
+          `;
+        }).join('')}
+      </svg>
+      <div class="w-full flex justify-between text-[9px] font-bold text-slate-500 px-1 mt-1">
+        <span>${datesLabels[0]}</span>
+        <span>${datesLabels[Math.floor(days/2)]}</span>
+        <span>${datesLabels[days - 1]}</span>
+      </div>
+    </div>
   `;
 }
 
 function renderRequestsCategoryChart() {
   const container = document.getElementById('chart-requests-category');
   if (!container) return;
+
+  if (allRequestsData.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center text-center p-4">
+        <i class="fa-solid fa-chart-pie text-2xl text-slate-600 mb-1"></i>
+        <p class="text-xs font-bold text-slate-400">No data yet</p>
+        <p class="text-[10px] text-slate-500">Project inquiries will appear here.</p>
+      </div>
+    `;
+    return;
+  }
 
   const categoryMap = {};
   allRequestsData.forEach(r => {
@@ -619,9 +706,13 @@ async function saveContentManagerChanges() {
 /* ================= REAL-TIME DATA SUBSCRIBERS ================= */
 
 function subscribeDashboardData() {
-  // 1. Subscribe to Live Chats
+  if (chatsUnsub) chatsUnsub();
+  if (requestsUnsub) requestsUnsub();
+  if (usersUnsub) usersUnsub();
+
+  // 1. Subscribe to Live Chats (All documents for full total unread / open counts)
   const chatsRef = collection(db, 'chats');
-  const qChats = query(chatsRef, orderBy('lastMessageAt', 'desc'), limit(100));
+  const qChats = query(chatsRef, orderBy('lastMessageAt', 'desc'));
 
   chatsUnsub = onSnapshot(qChats, (snapshot) => {
     allChatsData = [];
@@ -657,11 +748,13 @@ function subscribeDashboardData() {
     renderRecentChatsWidget();
     renderChatConversationsList();
     renderDashboardCharts();
+  }, (err) => {
+    showDashboardError(err);
   });
 
-  // 2. Subscribe to Project Requests
+  // 2. Subscribe to Project Requests (All documents)
   const requestsRef = collection(db, 'projectRequests');
-  const qReqs = query(requestsRef, orderBy('createdAt', 'desc'), limit(100));
+  const qReqs = query(requestsRef, orderBy('createdAt', 'desc'));
 
   requestsUnsub = onSnapshot(qReqs, (snapshot) => {
     allRequestsData = [];
@@ -693,13 +786,14 @@ function subscribeDashboardData() {
     renderRecentRequestsWidget();
     renderRequestsTable();
     renderDashboardCharts();
+  }, (err) => {
+    showDashboardError(err);
   });
 
-  // 3. Subscribe to Users
+  // 3. Subscribe to Users (All documents, no filter/limit to ensure exact total user count)
   const usersRef = collection(db, 'users');
-  const qUsers = query(usersRef, orderBy('createdAt', 'desc'), limit(100));
 
-  usersUnsub = onSnapshot(qUsers, (snapshot) => {
+  usersUnsub = onSnapshot(usersRef, (snapshot) => {
     allUsersData = [];
     snapshot.forEach(docSnap => {
       allUsersData.push({ uid: docSnap.id, ...docSnap.data() });
@@ -709,12 +803,17 @@ function subscribeDashboardData() {
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const newUsers = allUsersData.filter(u => new Date(u.createdAt) > sevenDaysAgo);
+    const newUsers = allUsersData.filter(u => {
+      const d = parseDocDate(u.createdAt);
+      return d && d > sevenDaysAgo;
+    });
     document.getElementById('stat-new-users').textContent = newUsers.length;
 
     renderRecentUsersWidget();
     renderUsersTable();
     renderDashboardCharts();
+  }, (err) => {
+    showDashboardError(err);
   });
 }
 

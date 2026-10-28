@@ -173,20 +173,20 @@
     <div class="flex-1 flex flex-col min-w-0">
 
       <!-- TOP BAR -->
-      <header class="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 flex items-center justify-between sticky top-0 z-20">
-        <div class="flex items-center gap-3">
+      <header class="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-3 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 sticky top-0 z-20">
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
           <!-- Mobile Hamburger Button -->
-          <button id="btn-open-mobile-drawer" class="md:hidden w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-base cursor-pointer">
+          <button id="btn-open-mobile-drawer" class="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-sm sm:text-base cursor-pointer shrink-0">
             <i class="fa-solid fa-bars"></i>
           </button>
-          <h2 id="topbar-section-title" class="font-black text-base sm:text-lg text-white">Dashboard</h2>
+          <h2 id="topbar-section-title" class="font-black text-sm sm:text-base md:text-lg text-white truncate max-w-[100px] xs:max-w-[140px] sm:max-w-none">Dashboard</h2>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 justify-end min-w-0">
           <!-- Global Search Input & Results Dropdown -->
-          <div class="relative w-40 sm:w-64 md:w-80">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
-            <input type="text" id="admin-global-search" placeholder="Search users, chats, msgs..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+          <div class="relative flex-1 min-w-0 max-w-xs sm:max-w-sm md:max-w-md">
+            <i class="fa-solid fa-magnifying-glass absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none"></i>
+            <input type="text" id="admin-global-search" placeholder="Search..." class="w-full py-1.5 pl-7 sm:pl-8 pr-2.5 sm:pr-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500 truncate">
 
             <!-- Floating Global Search Results Dropdown -->
             <div id="admin-search-results-dropdown" class="hidden absolute left-0 right-0 top-11 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto divide-y divide-slate-800 text-xs">
@@ -195,13 +195,13 @@
           </div>
 
           <!-- Notification Bell with Unread Badge -->
-          <button id="btn-topbar-notifications" data-section="chat" class="relative w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-sm cursor-pointer">
+          <button id="btn-topbar-notifications" data-section="chat" class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs sm:text-sm cursor-pointer shrink-0">
             <i class="fa-solid fa-bell"></i>
             <span id="topbar-unread-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px]">0</span>
           </button>
 
           <!-- Direct Link to Public Site -->
-          <a href="./index.html" target="_blank" class="hidden sm:flex px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all items-center gap-1.5">
+          <a href="./index.html" target="_blank" class="hidden sm:flex px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all items-center gap-1.5 shrink-0">
             <i class="fa-solid fa-globe"></i>
             <span>View Site</span>
           </a>
@@ -209,10 +209,25 @@
       </header>
 
       <!-- CONTENT SECTIONS CONTAINER -->
-      <main class="flex-1 p-4 md:p-6 overflow-y-auto pb-24 md:pb-6">
+      <main class="flex-1 p-4 md:p-6 overflow-y-auto pb-28 md:pb-6">
 
         <!-- 1. DASHBOARD SECTION -->
         <section id="section-dashboard" class="admin-section space-y-6">
+
+          <!-- Error Banner (Hidden by default, shown on Firestore subscription failures) -->
+          <div id="dashboard-error-banner" class="hidden p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-triangle-exclamation text-xl shrink-0"></i>
+              <div>
+                <h4 class="font-bold text-xs uppercase tracking-wider text-red-300">Data Subscription Error</h4>
+                <p id="dashboard-error-message" class="text-xs text-red-400 mt-0.5">Failed to fetch Firestore data.</p>
+              </div>
+            </div>
+            <button id="btn-retry-dashboard" class="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer">
+              <i class="fa-solid fa-rotate-right mr-1.5"></i> Retry
+            </button>
+          </div>
+
           <!-- Stat Cards Grid -->
           <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
             <div class="glass-card p-4 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-1">
@@ -816,28 +831,33 @@
       </main>
     </div>
 
-    <!-- MOBILE BOTTOM NAVIGATION TAB BAR (Floating) -->
-    <nav class="md:hidden fixed bottom-3 left-3 right-3 h-16 bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl z-40 flex items-center justify-around px-2 shadow-2xl">
-      <button data-section="dashboard" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
-        <i class="fa-solid fa-chart-pie text-base"></i>
+    <!-- MOBILE BOTTOM NAVIGATION TAB BAR (Admin Dark 3D Glass) -->
+    <nav class="md:hidden admin-bottom-tab-bar">
+      <button data-section="dashboard" class="admin-tab-btn mobile-admin-tab active">
+        <div class="admin-tab-active-glow"></div>
+        <i class="fa-solid fa-chart-pie"></i>
         <span>Dash</span>
       </button>
-      <button data-section="chat" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
-        <i class="fa-solid fa-comments text-base"></i>
+      <button data-section="chat" class="admin-tab-btn mobile-admin-tab relative">
+        <div class="admin-tab-active-glow"></div>
+        <i class="fa-solid fa-comments"></i>
         <span>Chats</span>
-        <span id="mobile-chat-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-red-500 text-white font-black text-[8px]">0</span>
+        <span id="mobile-chat-badge" class="hidden absolute top-1 right-2 px-1.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px] shadow-md">0</span>
       </button>
-      <button data-section="requests" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
-        <i class="fa-solid fa-rocket text-base"></i>
+      <button data-section="requests" class="admin-tab-btn mobile-admin-tab relative">
+        <div class="admin-tab-active-glow"></div>
+        <i class="fa-solid fa-rocket"></i>
         <span>Requests</span>
-        <span id="mobile-req-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-sky-500 text-white font-black text-[8px]">0</span>
+        <span id="mobile-req-badge" class="hidden absolute top-1 right-2 px-1.5 py-0.5 rounded-full bg-sky-500 text-white font-black text-[9px] shadow-md">0</span>
       </button>
-      <button data-section="users" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
-        <i class="fa-solid fa-users text-base"></i>
+      <button data-section="users" class="admin-tab-btn mobile-admin-tab">
+        <div class="admin-tab-active-glow"></div>
+        <i class="fa-solid fa-users"></i>
         <span>Users</span>
       </button>
-      <button data-section="settings" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
-        <i class="fa-solid fa-gear text-base"></i>
+      <button data-section="settings" class="admin-tab-btn mobile-admin-tab">
+        <div class="admin-tab-active-glow"></div>
+        <i class="fa-solid fa-gear"></i>
         <span>Settings</span>
       </button>
     </nav>

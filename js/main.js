@@ -51,15 +51,24 @@ let userChatUnsub = null;
 
 // Initialize app UI as soon as DOM loads
 document.addEventListener('DOMContentLoaded', () => {
+  const isAdminPage = window.location.pathname.endsWith('admin.html') || window.location.pathname.includes('/admin.html');
+  if (isAdminPage) {
+    document.body.classList.add('admin-page');
+  }
+
   initTheme();
   injectParticlesBg();
-  injectHeader();
-  injectSidebar();
-  injectFooter();
-  injectFloatingButtons();
+
+  if (!isAdminPage) {
+    injectHeader();
+    injectSidebar();
+    injectFooter();
+    injectFloatingButtons();
+    injectBottomNav();
+  }
+
   injectModals();
   injectToastContainer();
-  injectBottomNav();
   applyTranslations();
   initCopyCardButtons();
   subscribeSiteConfigPublic();

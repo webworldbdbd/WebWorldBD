@@ -1,5 +1,30 @@
 # WebWorldBD Fixes and Feature Implementations Log
 
+## Version 2.7.0 - Admin Panel Public UI Isolation, Header Search & Dashboard Data Fixes
+
+### Root Cause Analysis
+1. **Public Bottom Bar Overlaying Admin Tabs**:
+   - `js/main.js` previously executed public site injections (`injectHeader`, `injectSidebar`, `injectFooter`, `injectFloatingButtons`, `injectBottomNav`) unconditionally on every page load, including `admin.html`. This rendered the public floating WhatsApp button, scroll-to-top button, and public bottom navigation bar on top of the admin panel's own bottom tab bar.
+2. **Header Search Box Text Truncation**:
+   - The global search container on the admin top bar used fixed width utility classes (`w-40 sm:w-64 md:w-80`) with a static long placeholder `"Search users, chats, msgs..."`, causing text overflow and overlap on screen widths under 480px.
+3. **Dashboard Counters and Charts Showing 0 / Empty**:
+   - `subscribeDashboardData()` queried collections with restrictive limits (`limit(100)`) and did not robustly convert Firestore `Timestamp` objects (`toDate()` or `.seconds`) vs ISO string representations.
+   - Snapshot subscription error callbacks were unhandled, silently masking permission or network failures.
+
+### Summary of Changes Implemented
+1. **Public UI Isolation on `admin.html` & Dark 3D Admin Tab Bar**:
+   - Updated `js/main.js` to detect `admin.html`, add `document.body.classList.add("admin-page")`, and skip injecting public header, sidebar, footer, floating buttons, and public bottom bar.
+   - Added safety net CSS rules in `css/style.css` (`body.admin-page .public-bottom-nav, body.admin-page #bottom-nav-bar, ... { display: none !important; }`) and set `padding-bottom: 0 !important;` on `body.admin-page`.
+   - Redesigned the admin panel's own bottom tab bar with a dark glass 3D look (`.admin-bottom-tab-bar`), 12px side margins, rounded 26px corners, glowing active tabs, live badges, safe-area insets, and auto-hide behavior when the admin menu drawer or on-screen keyboard is active.
+2. **Responsive Header Search Box**:
+   - Refactored the search field container to `flex-1 min-width: 0 max-w-xs sm:max-w-sm md:max-w-md`.
+   - Added dynamic search placeholder logic shortening to `"Search..."` (English) / `"খুঁজুন..."` (Bengali) on screens below 480px.
+3. **Real-time Dashboard Data Subscriptions & Charts**:
+   - Removed artificial limit filters on total counts in `js/admin.js` to query complete collections (`users`, `projectRequests`, `chats`).
+   - Added `parseDocDate()` helper supporting Firestore `Timestamp.toDate()`, `.seconds`, ISO strings, and Date objects. Users without `createdAt` are still counted toward total users.
+   - Added friendly "No data yet" states for empty 14-day trend line and category donut charts.
+   - Added snapshot error handling that renders a clear error banner with a "Retry" button upon Firestore read failure.
+
 ## Version 2.6.0 - Admin Detection Flow & Header Layout Fixes
 
 ### Root Cause Analysis

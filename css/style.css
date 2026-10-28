@@ -61,6 +61,101 @@ body.dark {
   color: var(--text-dark);
 }
 
+/* Admin Page Safety Net Rules */
+body.admin-page {
+  padding-bottom: 0 !important;
+}
+
+body.admin-page .public-bottom-nav,
+body.admin-page .floating-whatsapp,
+body.admin-page .scroll-top,
+body.admin-page #bottom-nav-bar,
+body.admin-page #floating-buttons-root,
+body.admin-page #header-root,
+body.admin-page #footer-root,
+body.admin-page #sidebar-drawer {
+  display: none !important;
+}
+
+/* Admin Panel Mobile Bottom Tab Bar Styling */
+.admin-bottom-tab-bar {
+  position: fixed;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 12px;
+  right: 12px;
+  height: 64px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: 26px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  z-index: 35 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 6px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+body.drawer-open .admin-bottom-tab-bar,
+body.admin-keyboard-open .admin-bottom-tab-bar,
+body.admin-drawer-open .admin-bottom-tab-bar {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(100px) !important;
+}
+
+.admin-tab-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: #94A3B8;
+  font-size: 10px;
+  font-weight: 700;
+  transition: color 0.2s ease, transform 0.15s ease;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 2px 0;
+}
+
+.admin-tab-btn i {
+  font-size: 18px;
+  margin-bottom: 2px;
+  transition: transform 0.2s ease, color 0.2s ease, filter 0.2s ease;
+}
+
+.admin-tab-btn.active {
+  color: #38BDF8;
+}
+
+.admin-tab-btn.active i {
+  color: #38BDF8;
+  transform: translateY(-1px) scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.7));
+}
+
+.admin-tab-active-glow {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 80%;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.25) 0%, transparent 80%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.admin-tab-btn.active .admin-tab-active-glow {
+  opacity: 1;
+}
+
 /* Auth Page Body Ambient Glows & Extra Bottom Padding */
 body.auth-page {
   background-color: #F8FAFC;
