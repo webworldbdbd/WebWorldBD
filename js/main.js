@@ -838,7 +838,7 @@ function updateAuthDependentUI() {
         <h3 class="sidebar-section-title" data-i18n="createAccount">
           ${t('createAccount')}
         </h3>
-        <div class="sidebar-auth-grid grid grid-cols-2 gap-3">
+        <div class="sidebar-auth-grid flex items-center justify-center gap-3 w-full">
           <a
             href="./login.html"
             class="sidebar-btn-login block"
