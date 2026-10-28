@@ -144,6 +144,12 @@
                 User
               </span>
 
+              <!-- Executive Admin Badge -->
+              <span id="badge-admin-badge" class="hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                <i class="fa-solid fa-shield-halved"></i>
+                Admin
+              </span>
+
               <!-- Joined Date Pill -->
               <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 <i class="fa-regular fa-calendar-check text-sky-500"></i>
@@ -153,7 +159,16 @@
           </div>
 
           <!-- Primary Action Buttons -->
-          <div class="flex items-center justify-center gap-2.5 pt-5 w-full max-w-md">
+          <div class="flex items-center justify-center gap-2.5 pt-5 w-full max-w-md flex-wrap">
+            <a
+              id="btn-profile-admin-panel"
+              href="./admin.html"
+              class="hidden w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-gauge-high"></i>
+              <span>Open Admin Panel</span>
+            </a>
+
             <button
               id="btn-open-edit-modal"
               class="flex-1 py-3 px-4 rounded-xl btn-primary-gradient text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
@@ -487,6 +502,7 @@
   <script type="module" src="./js/main.js"></script>
   <script type="module">
     import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
+    import { isAdminUser } from './js/admin-config.js';
     import { uploadToCloudinary, getOptimizedImageUrl } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
@@ -780,6 +796,25 @@
         if (role === 'admin') {
           roleBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800";
         }
+      }
+
+      const isAdmin = isAdminUser(user);
+      const adminBadge = document.getElementById('badge-admin-badge');
+      const openAdminBtn = document.getElementById('btn-profile-admin-panel');
+
+      if (isAdmin) {
+        if (adminBadge) adminBadge.classList.remove('hidden');
+        if (openAdminBtn) {
+          openAdminBtn.classList.remove('hidden');
+          openAdminBtn.classList.add('flex');
+        }
+      } else {
+        if (adminBadge) adminBadge.classList.add('hidden');
+        if (openAdminBtn) {
+          openAdminBtn.classList.add('hidden');
+          openAdminBtn.classList.remove('flex');
+        }
+        console.log("Account status: Standard User.");
       }
 
       const verifiedBadge = document.getElementById('badge-email-verified');

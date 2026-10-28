@@ -13,7 +13,6 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn()
-        && request.auth.uid == "dS9uZZToHTUPP1Q3DiWiG25D3Xt2"
         && request.auth.token.email == "webworldbd.lmt@gmail.com"
         && request.auth.token.email_verified == true;
     }

@@ -238,6 +238,11 @@ function injectHeader() {
                 <span data-i18n="settings">${t('settings')}</span>
               </a>
 
+              <a id="header-dropdown-admin-link" href="./admin.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors hidden">
+                <i class="fa-solid fa-shield-halved w-4 text-center"></i>
+                <span data-i18n="adminPanel">${t('adminPanel')}</span>
+              </a>
+
               <div class="border-t border-slate-100 dark:border-slate-800/80 my-1"></div>
 
               <button
@@ -829,6 +834,8 @@ function updateAuthDependentUI() {
   }
 
   // Render Admin Link ONLY for Executive Admin User
+  const headerAdminLink = document.getElementById('header-dropdown-admin-link');
+
   if (adminLink) {
     if (currentUser && isAdminUser(currentUser)) {
       adminLink.classList.remove('hidden');
@@ -836,6 +843,16 @@ function updateAuthDependentUI() {
     } else {
       adminLink.classList.add('hidden');
       adminLink.classList.remove('flex');
+    }
+  }
+
+  if (headerAdminLink) {
+    if (currentUser && isAdminUser(currentUser)) {
+      headerAdminLink.classList.remove('hidden');
+      headerAdminLink.classList.add('flex');
+    } else {
+      headerAdminLink.classList.add('hidden');
+      headerAdminLink.classList.remove('flex');
     }
   }
 }
