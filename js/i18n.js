@@ -18,6 +18,7 @@ const translations = {
     language: 'Language',
     others: 'OTHERS',
     myProfile: 'My Profile',
+    myRequests: 'My Requests',
     whyChooseMe: 'Why Choose Me',
     workProcess: 'Work Process',
     faq: 'FAQ',
@@ -170,7 +171,7 @@ const translations = {
     dataBackupSection: "Data Backup & Export",
     systemInfoSection: "System Information",
 
-    // Start Project Page
+    // Start Project & Requests
     startProjectTitle: "Let's Build Something Great Together!",
     startProjectSubtitle: "Describe your custom project requirements, desired features, or ideas in free-text...",
     fullName: "Your Full Name",
@@ -187,18 +188,48 @@ const translations = {
     mobileNumberPlaceholder: "01XXXXXXXXX",
     emailOptional: "Email Address (Optional)",
     emailPlaceholder: "example@mail.com",
-    budgetLabel: "আনুমানিক বাজেট (ঐচ্ছিক) / Estimated Budget",
+    budgetLabel: "Estimated Budget (Optional)",
     budgetPlaceholder: "e.g. ৳15,000 - ৳30,000 or $200",
     projectCategory: "Project Category",
     selectCategory: "-- Select category --",
-    requirementsLabel: "Custom Project Requirements",
-    requirementsPlaceholder: "Describe your custom project requirements in detail...",
+    requirementsLabel: "Custom Project Requirements *",
+    requirementsPlaceholder: "Describe your custom project requirements in detail (at least 10 characters)...",
     attachFileLabel: "Attach Reference File / Requirements Document",
     attachFileNote: "(Optional - JPG, PNG, WEBP, PDF, DOCX, ZIP up to 5MB)",
     chooseAttachment: "Choose Attachment",
     sendMessageBtn: "Send Message",
     whatsappBtn: "Message on WhatsApp",
     supportContactBtn: "Support & Contact",
+
+    // My Requests Section & Status
+    myRequestsHeading: "My Project Requests",
+    myRequestsEmptyTitle: "No Project Requests Yet",
+    myRequestsEmptyDesc: "You haven't submitted any project requests yet. Start a new project with us today!",
+    requestIdLabel: "Request ID",
+    statusNew: "New",
+    statusContacted: "Contacted",
+    statusInProgress: "In Progress",
+    statusCompleted: "Completed",
+    statusRejected: "Rejected",
+    statusNewDesc: "Your request has been received and is waiting for review.",
+    statusContactedDesc: "We have reviewed your request and reached out to you.",
+    statusInProgressDesc: "Your project is currently under active development.",
+    statusCompletedDesc: "Your project development is complete and delivered.",
+    statusRejectedDesc: "This request could not be accepted at this time.",
+    viewMyRequests: "View My Requests",
+    openLiveChat: "Open Live Chat",
+
+    // Validation & Error Messages
+    errMobileReq: "Valid Bangladesh mobile number required (01XXXXXXXXX or +8801XXXXXXXXX)",
+    errCategoryReq: "Please select a project category",
+    errReqMinLength: "Project requirements must be at least 10 characters",
+    errReqMaxLength: "Project requirements cannot exceed 3000 characters",
+    errEmailFormat: "Please enter a valid email address",
+    errBudgetMaxLength: "Budget text cannot exceed 60 characters",
+    errRateLimit: "Please wait 60 seconds before submitting another request",
+    errLoginRequired: "Please sign in to send a project request.",
+    requestSuccessTitle: "Your Request Has Been Sent!",
+    requestSuccessSubtitle: "We will contact you soon.",
 
     // Settings Page
     settingsHeading: "System Settings",
@@ -279,6 +310,7 @@ const translations = {
     language: 'ভাষা',
     others: 'অন্যান্য',
     myProfile: 'আমার প্রোফাইল',
+    myRequests: 'আমার প্রজেক্ট অনুরোধসমূহ',
     whyChooseMe: 'কেন আমাকে বেছে নেবেন',
     workProcess: 'কাজ করার পদ্ধতি',
     faq: 'সাধারণ জিজ্ঞাসা (FAQ)',
@@ -431,7 +463,7 @@ const translations = {
     dataBackupSection: "ডাটা ব্যাকআপ ও এক্সপোর্ট",
     systemInfoSection: "সিস্টেম তথ্য",
 
-    // Start Project Page
+    // Start Project & Requests
     startProjectTitle: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",
     startProjectSubtitle: "আপনার কাস্টম প্রজেক্টের প্রয়োজনীয়তা, পছন্দনীয় ফিচার বা আইডিয়া বিশদভাবে বর্ণনা করুন...",
     fullName: "আপনার পুরো নাম",
@@ -448,18 +480,48 @@ const translations = {
     mobileNumberPlaceholder: "01XXXXXXXXX",
     emailOptional: "ইমেইল অ্যাড্রেস (ঐচ্ছিক)",
     emailPlaceholder: "example@mail.com",
-    budgetLabel: "আনুমানিক বাজেট (ঐচ্ছিক) / Estimated Budget",
+    budgetLabel: "আনুমানিক বাজেট (ঐচ্ছিক)",
     budgetPlaceholder: "যেমন: ৳১৫,০০০ - ৳৩০,০০০ বা $২০০",
     projectCategory: "প্রজেক্টের ক্যাটাগরি",
     selectCategory: "-- ক্যাটাগরি নির্বাচন করুন --",
-    requirementsLabel: "কাস্টম প্রজেক্ট রিকোয়ারমেন্টস",
-    requirementsPlaceholder: "আপনার কাস্টম প্রজেক্টের রিকোয়ারমেন্টস বিস্তারিত লিখুন...",
+    requirementsLabel: "কাস্টম প্রজেক্ট রিকোয়ারমেন্টস *",
+    requirementsPlaceholder: "আপনার কাস্টম প্রজেক্টের রিকোয়ারমেন্টস বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)...",
     attachFileLabel: "রেফারেন্স ফাইল / ডকুমেন্ট যুক্ত করুন",
     attachFileNote: "(ঐচ্ছিক - JPG, PNG, WEBP, PDF, DOCX, ZIP সর্বোচ্চ 5MB)",
     chooseAttachment: "ফাইল সংযুক্ত করুন",
     sendMessageBtn: "মেসেজ পাঠান",
     whatsappBtn: "হোয়াটসঅ্যাপে মেসেজ দিন",
     supportContactBtn: "সাপোর্ট ও যোগাযোগ",
+
+    // My Requests Section & Status
+    myRequestsHeading: "আমার প্রজেক্ট অনুরোধসমূহ",
+    myRequestsEmptyTitle: "এখনও কোনো প্রজেক্ট অনুরোধ জমা দেননি",
+    myRequestsEmptyDesc: "আপনি এখনও কোনো প্রজেক্ট অনুরোধ পাঠাননি। আজই আমাদের সাথে আপনার প্রজেক্ট শুরু করুন!",
+    requestIdLabel: "অনুরোধ আইডি",
+    statusNew: "নতুন",
+    statusContacted: "যোগাযোগ করা হয়েছে",
+    statusInProgress: "কাজ চলছে",
+    statusCompleted: "সম্পন্ন হয়েছে",
+    statusRejected: "বাতিল করা হয়েছে",
+    statusNewDesc: "আপনার অনুরোধটি গৃহীত হয়েছে এবং পর্যালোচনার অপেক্ষায় আছে।",
+    statusContactedDesc: "আমরা আপনার অনুরোধ পর্যালোচনা করেছি এবং আপনার সাথে যোগাযোগ করেছি।",
+    statusInProgressDesc: "আপনার প্রজেক্টের কাজ বর্তমানে চলমান আছে।",
+    statusCompletedDesc: "আপনার প্রজেক্ট সফলভাবে সম্পন্ন এবং ডেলিভারি করা হয়েছে।",
+    statusRejectedDesc: "বর্তমানে এই অনুরোধটি গ্রহণ করা সম্ভব হয়নি।",
+    viewMyRequests: "আমার অনুরোধগুলো দেখুন",
+    openLiveChat: "লাইভ চ্যাটে কথা বলুন",
+
+    // Validation & Error Messages
+    errMobileReq: "সঠিক বাংলাদেশী মোবাইল নম্বর দিন (01XXXXXXXXX বা +8801XXXXXXXXX)",
+    errCategoryReq: "দয়া করে একটি প্রজেক্ট ক্যাটাগরি নির্বাচন করুন",
+    errReqMinLength: "প্রজেক্ট রিকোয়ারমেন্টস কমপক্ষে ১০ অক্ষর হতে হবে",
+    errReqMaxLength: "প্রজেক্ট রিকোয়ারমেন্টস ৩০০০ অক্ষরের বেশি হতে পারবে না",
+    errEmailFormat: "সঠিক ইমেইল ঠিকানা প্রদান করুন",
+    errBudgetMaxLength: "বাজেট টেক্সট ৬০ অক্ষরের বেশি হতে পারবে না",
+    errRateLimit: "পরবর্তী অনুরোধের জন্য ৬০ সেকেন্ড অপেক্ষা করুন",
+    errLoginRequired: "প্রজেক্ট অনুরোধ পাঠাতে প্রথমে লগ ইন করুন।",
+    requestSuccessTitle: "আপনার অনুরোধ সফলভাবে পাঠানো হয়েছে!",
+    requestSuccessSubtitle: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।",
 
     // Settings Page
     settingsHeading: "সিস্টেম সেটিংস",
@@ -551,7 +613,9 @@ export function applyTranslations() {
   elements.forEach((el) => {
     const key = el.getAttribute('data-i18n');
     const translatedText = t(key);
-    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'email' || el.type === 'password')) {
+    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'email' || el.type === 'password' || el.type === 'tel')) {
+      el.placeholder = translatedText;
+    } else if (el.tagName === 'TEXTAREA') {
       el.placeholder = translatedText;
     } else {
       el.textContent = translatedText;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="format-detection" content="email=no, telephone=no, address=no">
   <title>Start Project | WebWorldBD</title>
-    <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
+  <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
   <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
   <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
@@ -25,13 +25,13 @@
   </script>
   <link rel="stylesheet" href="./css/style.css">
 </head>
-<body class="min-h-screen flex flex-col justify-between relative">
+<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
 
   <!-- Shared Header -->
   <div id="header-root"></div>
 
   <!-- Main Content -->
-  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+  <main class="relative z-10 flex-grow pt-8 pb-16 px-4 max-w-3xl mx-auto space-y-8 animate-fade-in-up w-full">
     <!-- Header Badge & Title -->
     <div class="text-center space-y-3">
       <span class="inline-block px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-sky-100 text-sky-600 dark:bg-sky-900/60 dark:text-sky-300" data-i18n="startProject">
@@ -47,9 +47,62 @@
       </p>
     </div>
 
+    <!-- Login Prompt Card for Logged-Out Users -->
+    <div id="login-prompt-card" class="hidden p-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-200 space-y-4 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mx-auto">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-base text-amber-300" data-i18n="chatLoginTitle">Please log in to submit a project request</h3>
+        <p class="text-xs text-slate-300 mt-1" data-i18n="chatLoginSub">Sign in to send custom project inquiries and track real-time status in your account.</p>
+      </div>
+      <a href="./login.html?next=start-project.html" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all shadow-md">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span data-i18n="logIn">Log In</span>
+      </a>
+    </div>
+
+    <!-- SUCCESS SCREEN CONTAINER (Hidden by default) -->
+    <div id="success-screen" class="hidden glass-card p-8 rounded-3xl shadow-2xl border border-emerald-500/30 text-center space-y-6">
+      <div class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-4xl mx-auto animate-bounce ring-8 ring-emerald-500/10">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="text-2xl font-black text-white" data-i18n="requestSuccessTitle">Your Request Has Been Sent!</h2>
+        <p class="text-xs md:text-sm text-slate-300 font-medium" data-i18n="requestSuccessSubtitle">We will contact you soon.</p>
+        <div class="pt-2">
+          <span class="inline-block px-4 py-1.5 rounded-full bg-slate-800 text-sky-400 font-mono text-xs font-bold border border-slate-700">
+            <span data-i18n="requestIdLabel">Request ID</span>: <strong id="success-request-id" class="text-white">WW-XXXXXX</strong>
+          </span>
+        </div>
+      </div>
+
+      <!-- Auto reply message from Admin Settings if set -->
+      <div id="success-auto-reply" class="hidden p-4 rounded-2xl bg-slate-800/80 border border-slate-700 text-xs text-slate-300 italic text-left max-w-lg mx-auto">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+        <a href="./profile.html#my-requests" class="w-full sm:w-auto px-6 py-3 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-list-check"></i>
+          <span data-i18n="viewMyRequests">View My Requests</span>
+        </a>
+        <a href="./livechat.html" class="w-full sm:w-auto px-6 py-3 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-comments"></i>
+          <span data-i18n="openLiveChat">Open Live Chat</span>
+        </a>
+        <button id="btn-submit-another" class="w-full sm:w-auto px-6 py-3 rounded-full border border-slate-300 dark:border-slate-700 hover:bg-slate-800 font-bold text-xs text-slate-300 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Submit Another Request</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Project Form Card -->
-    <div class="glass-card p-6 md:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
+    <div id="form-card" class="glass-card p-6 md:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
       <form id="start-project-form" class="space-y-5" novalidate>
+
         <!-- Full Name -->
         <div class="space-y-1.5">
           <label for="input-full-name" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="fullName">
@@ -58,10 +111,13 @@
           <input
             id="input-full-name"
             type="text"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            required
+            maxlength="80"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
             placeholder="Full Name"
             data-i18n="fullNamePlaceholder"
           />
+          <p id="err-full-name" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Mobile Number -->
@@ -73,10 +129,12 @@
             id="input-mobile-number"
             type="tel"
             required
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            maxlength="20"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
             placeholder="01XXXXXXXXX"
             data-i18n="mobileNumberPlaceholder"
           />
+          <p id="err-mobile-number" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Email Address -->
@@ -87,34 +145,39 @@
           <input
             id="input-email-address"
             type="email"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            maxlength="120"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
             placeholder="example@mail.com"
             data-i18n="emailPlaceholder"
           />
+          <p id="err-email-address" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Budget -->
         <div class="space-y-1.5">
           <label for="input-budget" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="budgetLabel">
-            আনুমানিক বাজেট (ঐচ্ছিক) / Estimated Budget
+            Estimated Budget (Optional)
           </label>
           <input
             id="input-budget"
             type="text"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            maxlength="60"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
             placeholder="e.g. ৳15,000 - ৳30,000 or $200"
             data-i18n="budgetPlaceholder"
           />
+          <p id="err-budget" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Project Category -->
         <div class="space-y-1.5">
           <label for="select-category" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="projectCategory">
-            Project Category
+            Project Category *
           </label>
           <select
             id="select-category"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all cursor-pointer"
+            required
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all cursor-pointer"
           >
             <option value="" data-i18n="selectCategory">-- Select category --</option>
             <option value="Business Website">Business Website</option>
@@ -134,20 +197,28 @@
             <option value="AI Website / Tools">AI Website / Tools</option>
             <option value="Others (Custom Project)">Others (Custom Project)</option>
           </select>
+          <p id="err-category" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Custom Project Requirements Textarea -->
         <div class="space-y-1.5">
-          <label for="textarea-requirements" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="requirementsLabel">
-            Custom Project Requirements
-          </label>
+          <div class="flex items-center justify-between">
+            <label for="textarea-requirements" class="block text-xs font-bold text-slate-700 dark:text-slate-300" data-i18n="requirementsLabel">
+              Custom Project Requirements *
+            </label>
+            <span id="requirements-char-count" class="text-[10px] text-slate-400 font-mono">0 / 3000</span>
+          </div>
           <textarea
             id="textarea-requirements"
-            rows="4"
-            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
-            placeholder="Describe your custom project requirements in detail..."
+            rows="5"
+            required
+            minlength="10"
+            maxlength="3000"
+            class="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-base focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            placeholder="Describe your custom project requirements in detail (at least 10 characters)..."
             data-i18n="requirementsPlaceholder"
           ></textarea>
+          <p id="err-requirements" class="text-[11px] font-bold text-red-500 hidden"></p>
         </div>
 
         <!-- Attachment Field -->
@@ -161,7 +232,7 @@
 
           <input type="file" id="input-attachment" class="hidden" accept=".jpg,.jpeg,.png,.webp,.pdf,.docx,.zip">
 
-          <div class="flex items-center gap-3 pt-1">
+          <div class="flex flex-wrap items-center gap-3 pt-1">
             <button
               type="button"
               id="btn-choose-file"
@@ -178,6 +249,22 @@
               </button>
             </div>
           </div>
+
+          <!-- Attachment Upload Progress Bar & Cancel Button -->
+          <div id="attachment-progress-container" class="hidden p-3 rounded-2xl bg-slate-800/50 border border-slate-700 space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-sky-400">
+              <span id="attachment-progress-status">Uploading file to Cloudinary...</span>
+              <span id="attachment-progress-pct">0%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-700 overflow-hidden">
+              <div id="attachment-progress-bar" class="h-full bg-sky-500 transition-all duration-200" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" id="btn-cancel-upload" class="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-[10px] font-bold transition-colors">
+                Cancel Upload
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Action Buttons Grid -->
@@ -185,7 +272,7 @@
           <button
             type="submit"
             id="btn-send-message"
-            class="w-full sm:w-auto px-6 py-3.5 rounded-full btn-primary-gradient font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
+            class="w-full sm:w-auto px-6 py-3.5 rounded-full btn-primary-gradient font-bold text-xs md:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <i class="fa-solid fa-paper-plane"></i>
             <span id="btn-send-text" data-i18n="sendMessageBtn">Send Message</span>
@@ -217,31 +304,72 @@
 
   <script type="module" src="./js/main.js"></script>
   <script type="module">
-    import { db, storage } from './js/firebase-config.js';
+    import { db } from './js/firebase-config.js';
     import { subscribeAuthState } from './js/auth.js';
+    import { uploadToCloudinary } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
-    import { getLanguage } from './js/i18n.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { getLanguage, t } from './js/i18n.js';
+    import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let currentUser = null;
+    let currentUserData = null;
     let selectedFile = null;
+    let cancelUploadFn = null;
+    let isSubmitting = false;
+    let lastSubmitTime = 0;
+    let rateLimitCountdown = 0;
+    let countdownInterval = null;
+
+    function generateRequestId() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return 'WW-' + code;
+    }
+
+    function prefillForm() {
+      if (!currentUser) return;
+      const nameInput = document.getElementById('input-full-name');
+      const emailInput = document.getElementById('input-email-address');
+      const phoneInput = document.getElementById('input-mobile-number');
+
+      if (nameInput && !nameInput.value) {
+        nameInput.value = currentUserData?.name || currentUser.displayName || '';
+      }
+      if (emailInput && !emailInput.value) {
+        emailInput.value = currentUser.email || '';
+      }
+      if (phoneInput && !phoneInput.value && currentUserData?.phone) {
+        phoneInput.value = currentUserData.phone;
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       subscribeAuthState((user, userData) => {
         currentUser = user;
-        if (user) {
-          const nameInput = document.getElementById('input-full-name');
-          const emailInput = document.getElementById('input-email-address');
-          if (nameInput && !nameInput.value) {
-            nameInput.value = userData?.name || user.displayName || '';
-          }
-          if (emailInput && !emailInput.value) {
-            emailInput.value = user.email || '';
-          }
+        currentUserData = userData;
+
+        const loginPrompt = document.getElementById('login-prompt-card');
+        const sendBtn = document.getElementById('btn-send-message');
+
+        if (!user) {
+          loginPrompt?.classList.remove('hidden');
+        } else {
+          loginPrompt?.classList.add('hidden');
+          prefillForm();
         }
       });
 
+      // Requirements character counter
+      const reqTextarea = document.getElementById('textarea-requirements');
+      const reqCounter = document.getElementById('requirements-char-count');
+      reqTextarea?.addEventListener('input', () => {
+        if (reqCounter) reqCounter.textContent = `${reqTextarea.value.length} / 3000`;
+      });
+
+      // Attachment logic
       const fileInput = document.getElementById('input-attachment');
       const chooseFileBtn = document.getElementById('btn-choose-file');
       const filePill = document.getElementById('selected-file-pill');
@@ -260,12 +388,11 @@
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           'application/zip', 'application/x-zip-compressed'
         ];
-
-        const ext = file.name.split('.').pop().toLowerCase();
-        const validExts = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'docx', 'zip'];
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        const validExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.docx', '.zip'];
 
         if (!allowedTypes.includes(file.type) && !validExts.includes(ext)) {
-          showToast(getLanguage() === 'en' ? 'Invalid file type. Please upload JPG, PNG, WEBP, PDF, DOCX, or ZIP.' : 'অকার্যকর ফাইল ফরম্যাট। JPG, PNG, WEBP, PDF, DOCX, বা ZIP ফাইল আপলোড করুন।', 'error');
+          showToast(getLanguage() === 'en' ? 'Allowed files: JPG, PNG, WEBP, PDF, DOCX, ZIP.' : 'অনুমোদিত ফাইল: JPG, PNG, WEBP, PDF, DOCX, ZIP।', 'error');
           fileInput.value = '';
           return;
         }
@@ -289,9 +416,31 @@
         filePill?.classList.remove('flex');
       });
 
+      document.getElementById('btn-cancel-upload')?.addEventListener('click', () => {
+        if (cancelUploadFn) {
+          cancelUploadFn();
+          showToast(getLanguage() === 'en' ? 'Attachment upload cancelled.' : 'ফাইল আপলোড বাতিল করা হয়েছে।', 'info');
+        }
+      });
+
+      // Submit Form
       const form = document.getElementById('start-project-form');
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (!currentUser) {
+          showToast(t('errLoginRequired'), 'error');
+          window.location.href = './login.html?next=start-project.html';
+          return;
+        }
+
+        if (isSubmitting) return;
+
+        // Clear previous error messages
+        ['full-name', 'mobile-number', 'email-address', 'budget', 'category', 'requirements'].forEach(id => {
+          const el = document.getElementById(`err-${id}`);
+          if (el) { el.textContent = ''; el.classList.add('hidden'); }
+        });
 
         const name = document.getElementById('input-full-name')?.value.trim() || '';
         const mobile = document.getElementById('input-mobile-number')?.value.trim() || '';
@@ -300,58 +449,235 @@
         const category = document.getElementById('select-category')?.value || '';
         const requirements = document.getElementById('textarea-requirements')?.value.trim() || '';
 
-        // Validate Bangladesh mobile number format: 013-019 followed by 8 digits (11 digits total)
-        const bdPhoneRegex = /^01[3-9]\d{8}$/;
-        if (!mobile || !bdPhoneRegex.test(mobile)) {
-          showToast(getLanguage() === 'en' ? 'Please enter a valid Bangladesh mobile number (e.g. 01XXXXXXXXX).' : 'দয়া করে সঠিক বাংলাদেশী মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)।', 'error');
+        let hasError = false;
+
+        // Mobile Validation
+        const bdRegex = /^(?:\+8801|8801|01)[3-9]\d{8}$/;
+        if (!mobile || !bdRegex.test(mobile.replace(/\s+/g, ""))) {
+          const errEl = document.getElementById('err-mobile-number');
+          if (errEl) { errEl.textContent = t('errMobileReq'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        }
+
+        // Category Validation
+        if (!category) {
+          const errEl = document.getElementById('err-category');
+          if (errEl) { errEl.textContent = t('errCategoryReq'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        }
+
+        // Requirements Validation
+        if (!requirements || requirements.length < 10) {
+          const errEl = document.getElementById('err-requirements');
+          if (errEl) { errEl.textContent = t('errReqMinLength'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        } else if (requirements.length > 3000) {
+          const errEl = document.getElementById('err-requirements');
+          if (errEl) { errEl.textContent = t('errReqMaxLength'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        }
+
+        // Email Validation (if filled)
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          const errEl = document.getElementById('err-email-address');
+          if (errEl) { errEl.textContent = t('errEmailFormat'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        }
+
+        // Budget Validation
+        if (budget.length > 60) {
+          const errEl = document.getElementById('err-budget');
+          if (errEl) { errEl.textContent = t('errBudgetMaxLength'); errEl.classList.remove('hidden'); }
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Rate limit check (60 seconds)
+        const now = Date.now();
+        if (now - lastSubmitTime < 60000) {
+          showToast(t('errRateLimit'), 'error');
           return;
         }
 
+        isSubmitting = true;
         const sendBtn = document.getElementById('btn-send-message');
         const sendText = document.getElementById('btn-send-text');
 
-        try {
-          if (sendBtn) sendBtn.disabled = true;
-          if (sendText) sendText.innerHTML = `<span class="spinner"></span> ${getLanguage() === 'en' ? 'Sending...' : 'পাঠানো হচ্ছে...'}`;
+        if (sendBtn) sendBtn.disabled = true;
+        if (sendText) sendText.innerHTML = `<span class="spinner w-4 h-4 border-2 border-white border-top-transparent"></span> ${getLanguage() === 'en' ? 'Sending...' : 'পাঠানো হচ্ছে...'}`;
 
-          let attachmentURL = '';
-          if (selectedFile) {
-            const fileRef = ref(storage, `projectAttachments/${Date.now()}_${selectedFile.name}`);
-            const uploadRes = await uploadBytes(fileRef, selectedFile);
-            attachmentURL = await getDownloadURL(uploadRes.ref);
+        let attachmentData = null;
+
+        // Upload attachment if present
+        if (selectedFile) {
+          const progressContainer = document.getElementById('attachment-progress-container');
+          const progressBar = document.getElementById('attachment-progress-bar');
+          const progressPct = document.getElementById('attachment-progress-pct');
+
+          progressContainer?.classList.remove('hidden');
+
+          try {
+            const uploadRes = await uploadToCloudinary(selectedFile, {
+              folder: "webworldbd_uploads/requests",
+              uploadPreset: "webworldbd",
+              onProgress: (pct) => {
+                if (progressBar) progressBar.style.width = `${pct}%`;
+                if (progressPct) progressPct.textContent = `${pct}%`;
+              },
+              registerCancel: (cancelFn) => { cancelUploadFn = cancelFn; }
+            });
+
+            attachmentData = {
+              url: uploadRes.secure_url,
+              name: selectedFile.name,
+              size: selectedFile.size,
+              type: selectedFile.type || 'application/octet-stream'
+            };
+          } catch (uploadErr) {
+            console.error('Attachment upload failed:', uploadErr);
+            progressContainer?.classList.add('hidden');
+            if (uploadErr.message === 'UPLOAD_ABORTED') {
+              isSubmitting = false;
+              if (sendBtn) sendBtn.disabled = false;
+              if (sendText) sendText.textContent = t('sendMessageBtn');
+              return;
+            }
+
+            const sendWithoutFile = confirm(getLanguage() === 'en'
+              ? 'Attachment upload failed. Would you like to send the request without the file?'
+              : 'ফাইল আপলোড ব্যর্থ হয়েছে। আপনি কি ফাইল ছাড়াই অনুরোধ পাঠাতে চান?');
+            if (!sendWithoutFile) {
+              isSubmitting = false;
+              if (sendBtn) sendBtn.disabled = false;
+              if (sendText) sendText.textContent = t('sendMessageBtn');
+              return;
+            }
+          } finally {
+            progressContainer?.classList.add('hidden');
+          }
+        }
+
+        const requestId = generateRequestId();
+        const nowIso = new Date().toISOString();
+
+        const requestDocData = {
+          requestId: requestId,
+          name: name,
+          mobile: mobile,
+          email: email || null,
+          budget: budget || null,
+          category: category,
+          requirements: requirements,
+          attachment: attachmentData,
+          userId: currentUser.uid,
+          userName: currentUserData?.name || currentUser.displayName || name,
+          username: currentUserData?.username || '',
+          userEmail: currentUser.email || '',
+          userPhoto: currentUserData?.photoURL || currentUser.photoURL || '',
+          status: 'new',
+          seenByAdmin: false,
+          adminNote: '',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          language: getLanguage(),
+          source: 'website'
+        };
+
+        try {
+          // Write to projectRequests/{requestId}
+          const requestRef = doc(db, 'projectRequests', requestId);
+          await setDoc(requestRef, requestDocData);
+
+          // Ensure chats/{uid} stub document exists
+          try {
+            const chatRef = doc(db, 'chats', currentUser.uid);
+            const chatSnap = await getDoc(chatRef);
+            if (!chatSnap.exists()) {
+              await setDoc(chatRef, {
+                uid: currentUser.uid,
+                userName: currentUserData?.name || currentUser.displayName || name,
+                userEmail: currentUser.email || '',
+                userPhoto: currentUserData?.photoURL || currentUser.photoURL || '',
+                username: currentUserData?.username || '',
+                phone: mobile || currentUserData?.phone || '',
+                lastMessage: `[Project Request ${requestId}] ${category}`,
+                lastMessageAt: nowIso,
+                lastSender: 'user',
+                unreadForAdmin: 1,
+                unreadForUser: 0,
+                status: 'open',
+                pinned: false,
+                blocked: false,
+                userTyping: false,
+                adminTyping: false,
+                userLastSeen: nowIso,
+                createdAt: nowIso,
+                tags: ['project-request'],
+                adminNote: ''
+              });
+            }
+          } catch (chatErr) {
+            console.warn('Chat stub creation warning:', chatErr);
           }
 
-          const requestData = {
-            name,
-            mobile,
-            email,
-            budget,
-            category,
-            requirements,
-            attachmentURL,
-            userId: currentUser ? currentUser.uid : null,
-            createdAt: new Date().toISOString(),
-            status: 'new'
-          };
+          lastSubmitTime = Date.now();
 
-          await addDoc(collection(db, 'projectRequests'), requestData);
+          // Fetch auto reply message from Admin Settings if available
+          try {
+            const settingsSnap = await getDoc(doc(db, 'adminSettings', 'main'));
+            if (settingsSnap.exists() && settingsSnap.data().autoReplyText) {
+              const autoReplyEl = document.getElementById('success-auto-reply');
+              if (autoReplyEl) {
+                autoReplyEl.textContent = `"${settingsSnap.data().autoReplyText}"`;
+                autoReplyEl.classList.remove('hidden');
+              }
+            }
+          } catch (sErr) {}
 
-          showToast(getLanguage() === 'en' ? 'Your project request has been submitted successfully!' : 'আপনার প্রজেক্টের অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!', 'success');
+          // Show Success Screen
+          document.getElementById('form-card')?.classList.add('hidden');
+          const successScreen = document.getElementById('success-screen');
+          document.getElementById('success-request-id').textContent = requestId;
+          successScreen?.classList.remove('hidden');
 
+          showToast(getLanguage() === 'en' ? 'Project request sent successfully!' : 'প্রজেক্টের অনুরোধ সফলভাবে পাঠানো হয়েছে!', 'success');
+
+          // Clear form & prefill name/email/phone for next time
           form.reset();
           selectedFile = null;
+          if (fileInput) fileInput.value = '';
           filePill?.classList.add('hidden');
           filePill?.classList.remove('flex');
+          prefillForm();
+
+          // Start 60s rate-limit countdown
+          startRateLimitCountdown(60);
 
         } catch (err) {
-          console.error('Submission error:', err);
-          showToast(getLanguage() === 'en' ? 'Failed to submit request. Please try again.' : 'অনুরোধ জমা দেওয়া সম্ভব হয়নি। আবার চেষ্টা করুন।', 'error');
+          console.error('Request submission error:', err);
+          let friendlyMsg = getLanguage() === 'en' ? 'Failed to send request. Please try again.' : 'অনুরোধ পাঠানো সম্ভব হয়নি। আবার চেষ্টা করুন।';
+          if (err.code === 'permission-denied') {
+            friendlyMsg = getLanguage() === 'en' ? 'Permission denied. Please make sure you are logged in.' : 'অনুমতি মেলেনি। অনুগ্রহ করে নিশ্চিত করুন যে আপনি লগ ইন আছেন।';
+          } else if (err.message && err.message.includes('offline')) {
+            friendlyMsg = getLanguage() === 'en' ? 'You appear to be offline. Check your internet connection.' : 'আপনি অফলাইনে আছেন। ইন্টারনেট সংযোগ পরীক্ষা করুন।';
+          }
+          showToast(friendlyMsg, 'error');
         } finally {
+          isSubmitting = false;
           if (sendBtn) sendBtn.disabled = false;
-          if (sendText) sendText.textContent = getLanguage() === 'en' ? 'Send Message' : 'মেসেজ পাঠান';
+          if (sendText) sendText.textContent = t('sendMessageBtn');
         }
       });
 
+      // Submit Another Request Button Listener
+      document.getElementById('btn-submit-another')?.addEventListener('click', () => {
+        document.getElementById('success-screen')?.classList.add('hidden');
+        document.getElementById('form-card')?.classList.remove('hidden');
+        prefillForm();
+      });
+
+      // Message on WhatsApp button
       document.getElementById('btn-whatsapp-message')?.addEventListener('click', () => {
         const name = document.getElementById('input-full-name')?.value.trim() || 'N/A';
         const mobile = document.getElementById('input-mobile-number')?.value.trim() || 'N/A';
@@ -372,6 +698,26 @@
         window.open(waUrl, '_blank');
       });
     });
+
+    function startRateLimitCountdown(seconds) {
+      rateLimitCountdown = seconds;
+      const sendBtn = document.getElementById('btn-send-message');
+      const sendText = document.getElementById('btn-send-text');
+
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      countdownInterval = setInterval(() => {
+        rateLimitCountdown--;
+        if (rateLimitCountdown <= 0) {
+          clearInterval(countdownInterval);
+          if (sendBtn) sendBtn.disabled = false;
+          if (sendText) sendText.textContent = t('sendMessageBtn');
+        } else {
+          if (sendBtn) sendBtn.disabled = true;
+          if (sendText) sendText.textContent = `${t('sendMessageBtn')} (${rateLimitCountdown}s)`;
+        }
+      }, 1000);
+    }
   </script>
 </body>
 </html>
