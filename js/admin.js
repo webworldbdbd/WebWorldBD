@@ -68,13 +68,15 @@ function clearCachesAndServiceWorkers() {
 }
 
 function initAdminGuard() {
-  subscribeAuthState((user, userData) => {
+  const handleAuthReady = (e) => {
+    const { user, isAdmin } = e.detail || {};
+
     if (!user) {
       window.location.replace('./login.html?next=admin.html');
       return;
     }
 
-    if (!isAdminUser(user)) {
+    if (!isAdmin || !isAdminUser(user)) {
       window.location.replace('./index.html');
       return;
     }
@@ -88,6 +90,17 @@ function initAdminGuard() {
     subscribeDashboardData();
     subscribeSiteConfig();
     subscribeAdminLogs();
+  };
+
+  document.addEventListener('auth-ready', handleAuthReady, { once: true });
+
+  // Backup trigger if auth state changed before listener attached
+  subscribeAuthState((user, userData) => {
+    if (user && !isAdminUser(user)) {
+      window.location.replace('./index.html');
+    } else if (!user) {
+      window.location.replace('./login.html?next=admin.html');
+    }
   });
 }
 

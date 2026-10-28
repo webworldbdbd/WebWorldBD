@@ -24,6 +24,18 @@ import { auth, googleProvider, db } from "./firebase-config.js";
 
 export const ADMIN_EMAIL = "webworldbd.lmt@gmail.com";
 
+/**
+ * Checks if the given user object meets admin credentials based on email and emailVerified status.
+ * @param {Object} user - Firebase User object
+ * @returns {boolean}
+ */
+export function isAdminUser(user) {
+  if (!user) return false;
+  const email = (user.email || '').trim().toLowerCase();
+  const targetEmail = ADMIN_EMAIL.trim().toLowerCase();
+  return email === targetEmail && user.emailVerified === true;
+}
+
 export const RESERVED_USERNAMES = [
   "admin", "administrator", "root", "support", "webworldbd",
   "official", "system", "moderator", "help", "api", "null", "undefined"
@@ -310,9 +322,22 @@ export function subscribeAuthState(callback) {
           firestoreError: err
         };
       }
+
+      const isAdmin = isAdminUser(user);
+      document.body.dataset.role = isAdmin ? "admin" : "user";
+
       callback(user, userData);
+
+      document.dispatchEvent(new CustomEvent('auth-ready', {
+        detail: { user, userData, isAdmin }
+      }));
     } else {
+      document.body.dataset.role = "guest";
       callback(null, null);
+
+      document.dispatchEvent(new CustomEvent('auth-ready', {
+        detail: { user: null, userData: null, isAdmin: false }
+      }));
     }
   });
 }

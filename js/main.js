@@ -171,41 +171,41 @@ function injectHeader() {
   const isDark = document.body.classList.contains('dark');
 
   headerContainer.innerHTML = `
-    <header class="sticky top-0 z-40 w-full glass-nav px-4 py-3 transition-colors duration-200">
-      <div class="max-w-6xl mx-auto flex items-center justify-between">
+    <header class="sticky top-0 z-40 w-full glass-nav px-2.5 sm:px-4 py-2.5 transition-colors duration-200">
+      <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
         <!-- Left Section: Hamburger + Brand Logo -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             id="btn-open-sidebar"
             aria-label="Open Navigation Menu"
-            class="btn-flat-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-flat-header-round w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
-            <i class="fa-solid fa-bars text-lg"></i>
+            <i class="fa-solid fa-bars text-base sm:text-lg"></i>
           </button>
 
-          <a href="./index.html" class="flex items-center gap-2.5 group">
+          <a href="./index.html" class="flex items-center gap-2 group">
             <img
               src="./assets/logo.png?v=2"
               alt="WebWorldBD"
-              width="44"
-              height="44"
-              class="h-10 md:h-11 w-auto object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform"
+              width="36"
+              height="36"
+              class="h-9 sm:h-10 w-auto object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform"
               onerror="this.style.display='none';"
             />
-            <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+            <span class="header-brand-text font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
               <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
             </span>
           </a>
         </div>
 
         <!-- Right Section: Header Avatar Dropdown + Theme Toggle + Language Toggle Pill -->
-        <div class="flex items-center gap-2 md:gap-2.5">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           <!-- Header User Avatar Dropdown (Hidden when logged out) -->
           <div id="header-user-wrapper" class="relative hidden">
             <button
               id="btn-header-avatar"
               aria-label="User Menu"
-              class="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 rounded-full cursor-pointer focus:outline-hidden ring-2 ring-sky-300 dark:ring-sky-900 transition-transform hover:scale-105"
+              class="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 rounded-full cursor-pointer focus:outline-hidden ring-2 ring-sky-300 dark:ring-sky-900 transition-transform hover:scale-105"
             >
               <div class="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center">
                 <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Profile">
@@ -223,6 +223,9 @@ function injectHeader() {
                 <p id="header-dropdown-username" class="text-[10px] text-sky-500 dark:text-sky-400 font-semibold truncate">@username</p>
               </div>
 
+              <!-- Admin Link placeholder container (dynamically populated) -->
+              <div id="header-dropdown-admin-container"></div>
+
               <a href="./profile.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors">
                 <i class="fa-solid fa-user text-sky-500 w-4 text-center"></i>
                 <span data-i18n="myProfile">${t('myProfile')}</span>
@@ -236,11 +239,6 @@ function injectHeader() {
               <a href="./settings.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors">
                 <i class="fa-solid fa-gear text-sky-500 w-4 text-center"></i>
                 <span data-i18n="settings">${t('settings')}</span>
-              </a>
-
-              <a id="header-dropdown-admin-link" href="./admin.html" class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors hidden">
-                <i class="fa-solid fa-shield-halved w-4 text-center"></i>
-                <span data-i18n="adminPanel">${t('adminPanel')}</span>
               </a>
 
               <div class="border-t border-slate-100 dark:border-slate-800/80 my-1"></div>
@@ -258,7 +256,7 @@ function injectHeader() {
           <button
             id="btn-toggle-theme"
             aria-label="Toggle Light/Dark Theme"
-            class="btn-flat-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-flat-header-round w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <i class="fa-solid fa-sun text-amber-500 theme-icon-sun" style="display:${isDark ? 'none' : 'inline-block'};"></i>
             <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:${isDark ? 'inline-block' : 'none'};"></i>
@@ -267,7 +265,7 @@ function injectHeader() {
           <button
             id="btn-toggle-lang"
             aria-label="Toggle Language"
-            class="btn-flat-header-pill px-3.5 py-2 rounded-full flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
+            class="btn-flat-header-pill px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full flex items-center gap-1 sm:gap-1.5 font-semibold text-xs cursor-pointer"
           >
             <i class="fa-solid fa-globe text-sky-500"></i>
             <span class="lang-toggle-text">${getLanguage() === 'en' ? 'BN' : 'EN'}</span>
@@ -829,27 +827,72 @@ function updateAuthDependentUI() {
   }
 
   // Render Admin Link ONLY for Executive Admin User
-  const headerAdminLink = document.getElementById('header-dropdown-admin-link');
+  const headerAdminContainer = document.getElementById('header-dropdown-admin-container');
+  const sidebarNavList = document.querySelector('#sidebar-drawer .sidebar-nav-list');
+  const existingDynamicSidebarBtn = document.getElementById('dynamic-sidebar-admin-btn');
+  const existingDynamicHeaderBtn = document.getElementById('dynamic-header-admin-btn');
 
-  if (adminLink) {
-    if (currentUser && isAdminUser(currentUser)) {
-      adminLink.classList.remove('hidden');
-      adminLink.classList.add('flex');
-    } else {
-      adminLink.classList.add('hidden');
-      adminLink.classList.remove('flex');
+  const isAdmin = currentUser && isAdminUser(currentUser);
+
+  if (isAdmin) {
+    // 1. One-time Welcome Toast for Admin
+    if (!sessionStorage.getItem('admin_welcomed')) {
+      sessionStorage.setItem('admin_welcomed', 'true');
+      const welcomeMsg = getLanguage() === 'en' ? 'Welcome back, Admin' : 'আবার স্বাগতম, এডমিন';
+      showToast(welcomeMsg, 'success');
     }
+
+    // 2. Admin Dashboard Button in Sidebar (Very TOP of MAIN MENU)
+    if (sidebarNavList && !existingDynamicSidebarBtn) {
+      const adminSidebarBtn = document.createElement('a');
+      adminSidebarBtn.id = 'dynamic-sidebar-admin-btn';
+      adminSidebarBtn.href = './admin.html';
+      adminSidebarBtn.className = 'sidebar-nav-item sidebar-card-flat bg-gradient-to-r from-purple-600/10 via-sky-500/10 to-purple-600/10 border-purple-500/40 font-bold mb-1';
+      adminSidebarBtn.setAttribute('data-path', 'admin.html');
+      adminSidebarBtn.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="sidebar-icon-tile bg-purple-500/20 text-purple-600 dark:text-purple-400">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <span class="sidebar-item-text text-purple-700 dark:text-purple-300 font-extrabold flex items-center gap-2">
+            Admin Dashboard
+            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-gradient-to-r from-purple-600 to-sky-500 text-white shadow-xs">ADMIN</span>
+          </span>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-purple-500 opacity-0 active-chevron transition-opacity"></i>
+      `;
+      adminSidebarBtn.addEventListener('click', closeSidebar);
+      sidebarNavList.insertBefore(adminSidebarBtn, sidebarNavList.firstChild);
+    }
+
+    // 3. Admin Dashboard Link as first item in Header Dropdown
+    if (headerAdminContainer && !existingDynamicHeaderBtn) {
+      headerAdminContainer.innerHTML = `
+        <a id="dynamic-header-admin-btn" href="./admin.html" class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-extrabold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors">
+          <i class="fa-solid fa-shield-halved w-4 text-center text-purple-500"></i>
+          <span class="flex items-center gap-1.5">
+            Admin Dashboard
+            <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-purple-600 text-white">ADMIN</span>
+          </span>
+        </a>
+      `;
+    }
+
+    // 4. Update sidebar card tag for Admin
+    if (userCard) {
+      const cardTitle = userCard.querySelector('h4');
+      if (cardTitle && !userCard.querySelector('.admin-tag')) {
+        cardTitle.insertAdjacentHTML('beforeend', ` <span class="admin-tag ml-1 px-1.5 py-0.5 rounded-md bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-bold">Admin</span>`);
+      }
+    }
+  } else {
+    // Non-admin / Logged out: remove dynamically created elements
+    if (existingDynamicSidebarBtn) existingDynamicSidebarBtn.remove();
+    if (headerAdminContainer) headerAdminContainer.innerHTML = '';
   }
 
-  if (headerAdminLink) {
-    if (currentUser && isAdminUser(currentUser)) {
-      headerAdminLink.classList.remove('hidden');
-      headerAdminLink.classList.add('flex');
-    } else {
-      headerAdminLink.classList.add('hidden');
-      headerAdminLink.classList.remove('flex');
-    }
-  }
+  // Ensure legacy hidden admin links remain hidden
+  if (adminLink) adminLink.classList.add('hidden');
 }
 
 /* ================= FOOTER INJECTION ================= */
