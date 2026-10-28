@@ -41,12 +41,12 @@ service cloud.firestore {
 
       // Separate create and update rules to avoid resource.data null errors on document creation
       allow create: if (isOwner(uid) && request.resource.data.keys().hasOnly([
-        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'lastMessage', 'lastMessageAt',
+        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'phone', 'lastMessage', 'lastMessageAt',
         'lastSender', 'unreadForAdmin', 'unreadForUser', 'userTyping', 'adminTyping', 'userLastSeen', 'createdAt', 'status', 'pinned', 'blocked', 'tags', 'adminNote'
       ])) || isAdmin();
 
       allow update: if (isOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'lastMessage', 'lastMessageAt',
+        'uid', 'userName', 'userEmail', 'userPhoto', 'username', 'phone', 'lastMessage', 'lastMessageAt',
         'lastSender', 'unreadForAdmin', 'unreadForUser', 'userTyping', 'userLastSeen', 'createdAt', 'status'
       ])) || isAdmin();
 
@@ -83,6 +83,11 @@ service cloud.firestore {
     match /siteConfig/{docId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // Admin Settings - Admin Only
+    match /adminSettings/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // Admin Activity Audit Logs - Admin Read/Write Only

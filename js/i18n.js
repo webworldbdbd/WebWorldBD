@@ -159,6 +159,16 @@ const translations = {
     passwordProviderText: "Email & Password",
     adminTitle: "Admin Management Dashboard",
     accessDenied: "Access Denied. Admin privilege required.",
+    adminProfileSection: "Admin Profile & Credentials",
+    appearanceSection: "Appearance & Theme Options",
+    notificationSection: "Notification & Alert Sounds",
+    liveChatSettingsSection: "Live Chat System Controls",
+    userManagementSettingsSection: "User Signup & Access Rules",
+    projectRequestsSettingsSection: "Project Requests Configuration",
+    websiteSettingsSection: "Public Website Settings",
+    securitySection: "Security Controls",
+    dataBackupSection: "Data Backup & Export",
+    systemInfoSection: "System Information",
 
     // Start Project Page
     startProjectTitle: "Let's Build Something Great Together!",
@@ -410,6 +420,16 @@ const translations = {
     passwordProviderText: "ইমেইল ও পাসওয়ার্ড",
     adminTitle: "এডমিন ম্যানেজমেন্ট ড্যাশবোর্ড",
     accessDenied: "প্রবেশাধিকার সংরক্ষিত। এডমিন অনুমতি প্রয়োজন।",
+    adminProfileSection: "এডমিন প্রোফাইল ও ক্রেডেনশিয়াল",
+    appearanceSection: "অ্যাপিয়ারেন্স ও থিম অপশন",
+    notificationSection: "নোটিফিকেশন ও অ্যালার্ট সাউন্ড",
+    liveChatSettingsSection: "লাইভ চ্যাট সিস্টেম কন্ট্রোল",
+    userManagementSettingsSection: "ব্যবহারকারী সাইনআপ ও এক্সেস রুলস",
+    projectRequestsSettingsSection: "প্রজেক্ট রিকোয়েস্ট কনফিগারেশন",
+    websiteSettingsSection: "পাবলিক ওয়েবসাইট সেটিংস",
+    securitySection: "সিকিউরিটি কন্ট্রোলস",
+    dataBackupSection: "ডাটা ব্যাকআপ ও এক্সপোর্ট",
+    systemInfoSection: "সিস্টেম তথ্য",
 
     // Start Project Page
     startProjectTitle: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",

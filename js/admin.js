@@ -90,6 +90,9 @@ function initAdminGuard() {
     subscribeDashboardData();
     subscribeSiteConfig();
     subscribeAdminLogs();
+
+    // One-time safe backfill of missing chats/{uid} docs for existing users
+    runOneTimeChatsBackfill();
   };
 
   document.addEventListener('auth-ready', handleAuthReady, { once: true });
@@ -128,12 +131,51 @@ function setupInactivityTimers() {
 }
 
 function initAdminUI() {
+  // Mobile Drawer Toggle Listeners
+  const openDrawerBtn = document.getElementById('btn-open-mobile-drawer');
+  const closeDrawerBtn = document.getElementById('btn-close-mobile-drawer');
+  const drawerOverlay = document.getElementById('admin-mobile-drawer-overlay');
+  const sidebar = document.getElementById('admin-sidebar');
+
+  const openDrawer = () => {
+    sidebar?.classList.remove('-translate-x-full');
+    drawerOverlay?.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  };
+
+  const closeDrawer = () => {
+    sidebar?.classList.add('-translate-x-full');
+    drawerOverlay?.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  };
+
+  openDrawerBtn?.addEventListener('click', openDrawer);
+  closeDrawerBtn?.addEventListener('click', closeDrawer);
+  drawerOverlay?.addEventListener('click', closeDrawer);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
+
   // Navigation Tabs
   document.querySelectorAll('.admin-nav-btn, .mobile-admin-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetSection = btn.getAttribute('data-section');
-      if (targetSection) switchSection(targetSection);
+      if (targetSection) {
+        switchSection(targetSection);
+        if (window.innerWidth < 768) closeDrawer();
+      }
     });
+  });
+
+  // Global Search Input
+  const searchInput = document.getElementById('admin-global-search');
+  searchInput?.addEventListener('input', handleGlobalSearch);
+
+  // Quick Export in Drawer
+  document.getElementById('btn-quick-export')?.addEventListener('click', () => {
+    exportUsersCSV();
+    exportRequestsCSV();
   });
 
   // Action Buttons
@@ -158,6 +200,12 @@ function initAdminUI() {
       e.target.classList.add('active', 'bg-slate-800', 'text-white');
       renderChatConversationsList();
     });
+  });
+
+  // "New Message" Button Listener in Chat Panel
+  document.getElementById('btn-new-chat-message')?.addEventListener('click', openNewChatModal);
+  document.getElementById('btn-close-new-chat-modal')?.addEventListener('click', () => {
+    document.getElementById('admin-new-chat-modal')?.classList.add('hidden');
   });
 
   // Chat Composer Send
@@ -192,6 +240,22 @@ function initAdminUI() {
   document.getElementById('btn-export-requests-csv')?.addEventListener('click', exportRequestsCSV);
   document.getElementById('btn-export-users-csv')?.addEventListener('click', exportUsersCSV);
 
+  // Users Manager Search, Filters, and Sorting Listeners
+  document.getElementById('users-search-input')?.addEventListener('input', renderUsersTable);
+  document.getElementById('users-sort-select')?.addEventListener('change', renderUsersTable);
+
+  document.querySelectorAll('.user-filter-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      document.querySelectorAll('.user-filter-tab').forEach(t => t.classList.remove('active', 'bg-slate-800', 'text-white'));
+      e.target.classList.add('active', 'bg-slate-800', 'text-white');
+      renderUsersTable();
+    });
+  });
+
+  // User Detail Drawer Close Listeners
+  document.getElementById('btn-close-user-detail')?.addEventListener('click', closeUserDetailModal);
+  document.getElementById('admin-user-detail-backdrop')?.addEventListener('click', closeUserDetailModal);
+
   // Content Manager Save Button
   document.getElementById('btn-save-site-config')?.addEventListener('click', saveContentManagerChanges);
 
@@ -202,6 +266,58 @@ function initAdminUI() {
 
   // Clear Logs
   document.getElementById('btn-clear-old-logs')?.addEventListener('click', clearOldAdminLogs);
+
+  // Save Settings Suite Listener
+  document.getElementById('btn-save-all-settings')?.addEventListener('click', saveExecutiveSettingsSuite);
+}
+
+async function saveExecutiveSettingsSuite() {
+  const adminName = document.getElementById('set-admin-name')?.value.trim() || 'SHAFAET HOSSEN SARIP';
+  const theme = document.getElementById('set-panel-theme')?.value || 'dark';
+  const accent = document.getElementById('set-accent-color')?.value || 'sky';
+  const lang = document.getElementById('set-panel-lang')?.value || 'en';
+  const soundEnabled = document.getElementById('set-sound-enabled')?.checked !== false;
+  const signupAlerts = document.getElementById('set-signup-alerts')?.checked !== false;
+  const chatEnabled = document.getElementById('set-chat-enabled')?.checked !== false;
+  const allowSignups = document.getElementById('set-allow-signups')?.checked !== false;
+  const reservedUsernamesStr = document.getElementById('set-reserved-usernames')?.value || '';
+  const requestCategoriesStr = document.getElementById('set-request-categories')?.value || '';
+  const stat1 = document.getElementById('set-stat-1')?.value || '';
+  const stat2 = document.getElementById('set-stat-2')?.value || '';
+
+  const reservedUsernames = reservedUsernamesStr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  const categories = requestCategoriesStr.split(',').map(s => s.trim()).filter(Boolean);
+
+  try {
+    const siteConfigRef = doc(db, 'siteConfig', 'main');
+    await setDoc(siteConfigRef, {
+      ...currentSiteConfig,
+      allowSignups: allowSignups,
+      allowChat: chatEnabled,
+      requestCategories: categories,
+      stat1: stat1,
+      stat2: stat2,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+
+    const adminSettingsRef = doc(db, 'adminSettings', 'main');
+    await setDoc(adminSettingsRef, {
+      adminName: adminName,
+      theme: theme,
+      accent: accent,
+      lang: lang,
+      soundEnabled: soundEnabled,
+      signupAlerts: signupAlerts,
+      reservedUsernames: reservedUsernames,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+
+    showToast("Settings suite saved and applied!", "success");
+    logAdminAction("SAVE_SETTINGS", "adminSettings", "Saved executive panel and site settings suite");
+  } catch (err) {
+    console.error("Error saving settings suite:", err);
+    showToast("Failed to save settings.", "error");
+  }
 }
 
 function switchSection(sectionId) {
@@ -522,15 +638,21 @@ function subscribeDashboardData() {
     document.getElementById('stat-open-chats').textContent = openCount;
     document.getElementById('stat-unread-msgs').textContent = totalUnread;
 
+    // Update unread badges across header, sidebar, and mobile nav
     const unreadBadge = document.getElementById('nav-chat-unread-badge');
-    if (unreadBadge) {
-      if (totalUnread > 0) {
-        unreadBadge.textContent = totalUnread;
-        unreadBadge.classList.remove('hidden');
-      } else {
-        unreadBadge.classList.add('hidden');
+    const topbarBadge = document.getElementById('topbar-unread-badge');
+    const mobileChatBadge = document.getElementById('mobile-chat-badge');
+
+    [unreadBadge, topbarBadge, mobileChatBadge].forEach(badge => {
+      if (badge) {
+        if (totalUnread > 0) {
+          badge.textContent = totalUnread;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
       }
-    }
+    });
 
     renderRecentChatsWidget();
     renderChatConversationsList();
@@ -555,14 +677,18 @@ function subscribeDashboardData() {
     document.getElementById('stat-total-requests').textContent = allRequestsData.length;
 
     const reqsBadge = document.getElementById('nav-requests-badge');
-    if (reqsBadge) {
-      if (newCount > 0) {
-        reqsBadge.textContent = newCount;
-        reqsBadge.classList.remove('hidden');
-      } else {
-        reqsBadge.classList.add('hidden');
+    const mobileReqBadge = document.getElementById('mobile-req-badge');
+
+    [reqsBadge, mobileReqBadge].forEach(badge => {
+      if (badge) {
+        if (newCount > 0) {
+          badge.textContent = newCount;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
       }
-    }
+    });
 
     renderRecentRequestsWidget();
     renderRequestsTable();
@@ -669,6 +795,138 @@ function renderRecentUsersWidget() {
 
 /* ================= LIVE CHAT INBOX ================= */
 
+/* ================= SAFE BACKFILL & NEW CHAT MODAL ================= */
+
+async function runOneTimeChatsBackfill() {
+  if (sessionStorage.getItem('admin_chats_backfilled')) return;
+
+  try {
+    const existingChatUids = new Set(allChatsData.map(c => c.uid));
+    const usersNeedingChat = allUsersData.filter(u => !existingChatUids.has(u.uid));
+
+    if (usersNeedingChat.length > 0) {
+      const batch = writeBatch(db);
+      const nowIso = new Date().toISOString();
+
+      usersNeedingChat.slice(0, 50).forEach(u => {
+        const chatRef = doc(db, 'chats', u.uid);
+        batch.set(chatRef, {
+          uid: u.uid,
+          userName: u.name || 'User',
+          userEmail: u.email || '',
+          userPhoto: u.photoURL || '',
+          username: u.username || '',
+          phone: u.phone || '',
+          lastMessage: '',
+          lastMessageAt: nowIso,
+          lastSender: 'user',
+          unreadForAdmin: 0,
+          unreadForUser: 0,
+          status: 'new',
+          pinned: false,
+          blocked: false,
+          userTyping: false,
+          adminTyping: false,
+          userLastSeen: nowIso,
+          createdAt: u.createdAt || nowIso,
+          tags: [],
+          adminNote: ''
+        });
+      });
+
+      await batch.commit();
+      console.log(`Safely backfilled ${usersNeedingChat.length} chat stubs.`);
+    }
+    sessionStorage.setItem('admin_chats_backfilled', 'true');
+  } catch (err) {
+    console.warn('Chats backfill warning:', err);
+  }
+}
+
+window.openNewChatModal = function() {
+  const modal = document.getElementById('admin-new-chat-modal');
+  modal?.classList.remove('hidden');
+  renderNewChatUserList('');
+};
+
+window.renderNewChatUserList = function(searchTerm = '') {
+  const container = document.getElementById('new-chat-user-list');
+  if (!container) return;
+
+  const queryVal = searchTerm.toLowerCase().trim();
+
+  let users = [...allUsersData];
+  if (queryVal) {
+    users = users.filter(u =>
+      (u.name && u.name.toLowerCase().includes(queryVal)) ||
+      (u.username && u.username.toLowerCase().includes(queryVal)) ||
+      (u.email && u.email.toLowerCase().includes(queryVal)) ||
+      (u.phone && u.phone.includes(queryVal))
+    );
+  }
+
+  if (users.length === 0) {
+    container.innerHTML = `<div class="p-4 text-center text-slate-500 text-xs italic">No matching users found.</div>`;
+    return;
+  }
+
+  container.innerHTML = users.map(u => `
+    <div onclick="startAdminChatWithUser('${u.uid}')" class="p-2.5 flex items-center justify-between hover:bg-slate-800 rounded-xl cursor-pointer transition-colors">
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <div class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0">
+          <img src="${u.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
+        </div>
+        <div class="overflow-hidden">
+          <p class="font-bold text-white text-xs truncate">${u.name || 'User'}</p>
+          <p class="text-[10px] text-slate-400 truncate">${u.email || ''} ${u.phone ? '• ' + u.phone : ''}</p>
+        </div>
+      </div>
+      <button class="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-400 font-bold text-[10px] hover:bg-sky-500/30">Start chat</button>
+    </div>
+  `).join('');
+};
+
+window.startAdminChatWithUser = async function(uid) {
+  document.getElementById('admin-new-chat-modal')?.classList.add('hidden');
+
+  let chat = allChatsData.find(c => c.uid === uid);
+  const u = allUsersData.find(user => user.uid === uid);
+
+  if (!chat && u) {
+    // Create new chat stub doc
+    const chatRef = doc(db, 'chats', uid);
+    const nowIso = new Date().toISOString();
+    try {
+      await setDoc(chatRef, {
+        uid: uid,
+        userName: u.name || 'User',
+        userEmail: u.email || '',
+        userPhoto: u.photoURL || '',
+        username: u.username || '',
+        phone: u.phone || '',
+        lastMessage: '',
+        lastMessageAt: nowIso,
+        lastSender: 'admin',
+        unreadForAdmin: 0,
+        unreadForUser: 0,
+        status: 'open',
+        pinned: false,
+        blocked: false,
+        userTyping: false,
+        adminTyping: false,
+        userLastSeen: nowIso,
+        createdAt: nowIso,
+        tags: [],
+        adminNote: ''
+      });
+    } catch (e) {
+      console.warn('Error setting chat stub on new message:', e);
+    }
+  }
+
+  openAdminChat(uid);
+};
+
 function renderChatConversationsList() {
   const container = document.getElementById('admin-chat-conversations');
   if (!container) return;
@@ -679,20 +937,42 @@ function renderChatConversationsList() {
 
   const searchTerm = document.getElementById('chat-search-input')?.value.toLowerCase().trim() || '';
 
-  let filtered = allChatsData.filter(chat => {
-    if (filter === 'unread') return chat.unreadForAdmin > 0;
-    if (filter === 'open') return chat.status === 'open';
-    if (filter === 'closed') return chat.status === 'closed';
-    if (filter === 'pinned') return chat.pinned === true;
-    if (filter === 'blocked') return chat.blocked === true;
-    return true;
-  });
+  let filtered = [...allChatsData];
+
+  if (filter === 'all-users') {
+    // Merge all registered users so even users without active messages show in list
+    const existingChatUids = new Set(allChatsData.map(c => c.uid));
+    allUsersData.forEach(u => {
+      if (!existingChatUids.has(u.uid)) {
+        filtered.push({
+          uid: u.uid,
+          userName: u.name || 'User',
+          userEmail: u.email || '',
+          userPhoto: u.photoURL || '',
+          username: u.username || '',
+          phone: u.phone || '',
+          lastMessage: '',
+          status: 'new'
+        });
+      }
+    });
+  } else {
+    filtered = filtered.filter(chat => {
+      if (filter === 'unread') return chat.unreadForAdmin > 0;
+      if (filter === 'open') return chat.status === 'open';
+      if (filter === 'closed') return chat.status === 'closed';
+      if (filter === 'pinned') return chat.pinned === true;
+      if (filter === 'blocked') return chat.blocked === true;
+      return true;
+    });
+  }
 
   if (searchTerm) {
     filtered = filtered.filter(chat =>
       (chat.userName && chat.userName.toLowerCase().includes(searchTerm)) ||
       (chat.userEmail && chat.userEmail.toLowerCase().includes(searchTerm)) ||
       (chat.username && chat.username.toLowerCase().includes(searchTerm)) ||
+      (chat.phone && chat.phone.includes(searchTerm)) ||
       (chat.lastMessage && chat.lastMessage.toLowerCase().includes(searchTerm))
     );
   }
@@ -714,12 +994,13 @@ function renderChatConversationsList() {
             <h5 class="font-bold text-xs text-white truncate">${c.userName || 'User'}</h5>
             ${c.username ? `<span class="text-[10px] text-sky-400">@${c.username}</span>` : ''}
           </div>
-          <p class="text-[11px] text-slate-400 truncate mt-0.5">${c.lastMessage || '...'}</p>
+          <p class="text-[11px] text-slate-400 truncate mt-0.5">${c.lastMessage || '<span class="italic text-slate-500">No messages yet</span>'}</p>
         </div>
       </div>
       <div class="flex flex-col items-end gap-1 shrink-0">
         <span class="text-[9px] text-slate-500">${c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
         ${c.unreadForAdmin > 0 ? `<span class="px-2 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px]">${c.unreadForAdmin}</span>` : ''}
+        ${!c.lastMessage ? `<span class="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-400 font-bold text-[9px]">Start chat</span>` : ''}
       </div>
     </div>
   `).join('');
@@ -1001,44 +1282,163 @@ window.deleteProjectRequest = async function(id) {
   }
 };
 
-/* ================= USERS TABLE ================= */
+/* ================= USERS TABLE & DETAIL DRAWER ================= */
 
 function renderUsersTable() {
   const container = document.getElementById('users-table-body');
   if (!container) return;
 
-  if (allUsersData.length === 0) {
-    container.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No users registered yet.</td></tr>`;
+  const countBadge = document.getElementById('users-count-badge');
+  const searchVal = document.getElementById('users-search-input')?.value.toLowerCase().trim() || '';
+  const sortVal = document.getElementById('users-sort-select')?.value || 'newest';
+
+  let filterVal = 'all';
+  const activeTab = document.querySelector('.user-filter-tab.active');
+  if (activeTab) filterVal = activeTab.getAttribute('data-user-filter');
+
+  let filtered = [...allUsersData];
+
+  // 1. Filters
+  if (filterVal === 'active') filtered = filtered.filter(u => !u.blocked);
+  if (filterVal === 'blocked') filtered = filtered.filter(u => u.blocked);
+  if (filterVal === 'verified') filtered = filtered.filter(u => u.emailVerified);
+  if (filterVal === 'has-phone') filtered = filtered.filter(u => u.phone && u.phone.trim().length > 0);
+
+  // 2. Search
+  if (searchVal) {
+    filtered = filtered.filter(u =>
+      (u.name && u.name.toLowerCase().includes(searchVal)) ||
+      (u.username && u.username.toLowerCase().includes(searchVal)) ||
+      (u.email && u.email.toLowerCase().includes(searchVal)) ||
+      (u.phone && u.phone.includes(searchVal))
+    );
+  }
+
+  // 3. Sorting
+  if (sortVal === 'newest') {
+    filtered.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  } else if (sortVal === 'lastLogin') {
+    filtered.sort((a, b) => new Date(b.lastLoginAt || 0) - new Date(a.lastLoginAt || 0));
+  } else if (sortVal === 'name') {
+    filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }
+
+  if (countBadge) countBadge.textContent = `${filtered.length} Users`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 italic">No registered users match the search criteria.</td></tr>`;
     return;
   }
 
-  container.innerHTML = allUsersData.map(u => `
+  container.innerHTML = filtered.map(u => `
     <tr class="hover:bg-slate-800/40 transition-colors">
       <td class="p-3.5">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0">
-            <img src="${u.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
+          <div class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-slate-700">
+            <img src="${u.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover" onerror="this.src='./assets/logo.png?v=2';">
           </div>
-          <div>
-            <p class="font-bold text-white">${u.name || 'User'}</p>
-            <p class="text-[10px] text-slate-400">${u.email || ''}</p>
+          <div class="overflow-hidden">
+            <p class="font-bold text-white truncate max-w-[140px]">${u.name || 'User'}</p>
+            <span class="text-[10px] text-slate-400 font-mono block truncate">${u.uid?.slice(0, 8)}...</span>
           </div>
         </div>
       </td>
-      <td class="p-3.5 font-mono text-sky-400">@${u.username || ''}</td>
-      <td class="p-3.5 text-slate-400 capitalize">${u.provider || 'password'}</td>
-      <td class="p-3.5 text-slate-400">${new Date(u.createdAt).toLocaleDateString()}</td>
       <td class="p-3.5">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.blocked ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}">
+        <p class="font-mono text-sky-400 font-bold">@${u.username || 'user'}</p>
+        <p class="text-[10px] text-slate-400 truncate max-w-[160px]">${u.email || ''}</p>
+      </td>
+      <td class="p-3.5">
+        ${u.phone ? `<span class="font-bold text-emerald-400">${u.phone}</span>` : `<span class="text-slate-500 italic">Not added</span>`}
+      </td>
+      <td class="p-3.5 text-slate-300 capitalize font-semibold">
+        ${u.provider === 'google' ? `<span class="text-sky-400"><i class="fa-brands fa-google text-xs mr-1"></i>Google</span>` : `<span class="text-indigo-400"><i class="fa-solid fa-key text-xs mr-1"></i>Password</span>`}
+      </td>
+      <td class="p-3.5 text-slate-400">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}</td>
+      <td class="p-3.5">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.blocked ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
           ${u.blocked ? 'Blocked' : 'Active'}
         </span>
       </td>
-      <td class="p-3.5 text-right space-x-2">
-        <button onclick="openAdminChat('${u.uid}')" class="px-2.5 py-1.5 rounded-lg bg-sky-500/10 text-sky-400 font-bold hover:bg-sky-500/20"><i class="fa-solid fa-comments"></i> Chat</button>
-        <button onclick="deleteUserData('${u.uid}', '${u.username}')" class="px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 font-bold hover:bg-red-500/20"><i class="fa-solid fa-user-xmark"></i> Delete</button>
+      <td class="p-3.5 text-right space-x-1.5">
+        <button onclick="viewUserDetail('${u.uid}')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors"><i class="fa-solid fa-eye"></i> Details</button>
+        <button onclick="openAdminChat('${u.uid}')" class="px-2.5 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold transition-colors"><i class="fa-solid fa-comments"></i> Chat</button>
       </td>
     </tr>
   `).join('');
+}
+
+window.viewUserDetail = function(uid) {
+  const u = allUsersData.find(user => user.uid === uid);
+  if (!u) return;
+
+  const modal = document.getElementById('admin-user-detail-modal');
+  const body = document.getElementById('user-detail-modal-body');
+  if (!modal || !body) return;
+
+  const userReqs = allRequestsData.filter(r => r.email === u.email || r.mobileNumber === u.phone);
+
+  body.innerHTML = `
+    <div class="text-center space-y-2">
+      <div class="w-20 h-20 rounded-full bg-slate-800 overflow-hidden mx-auto ring-2 ring-sky-400 shadow-xl">
+        <img src="${u.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
+      </div>
+      <h3 class="font-extrabold text-base text-white">${u.name || 'User'}</h3>
+      <p class="text-xs font-mono text-sky-400">@${u.username || 'user'}</p>
+      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${u.emailVerified ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+        ${u.emailVerified ? '✓ Email Verified' : '⚠ Email Unverified'}
+      </span>
+    </div>
+
+    <!-- Quick Copy Action Bar -->
+    <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-slate-400">Email:</span>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-white truncate max-w-[180px]">${u.email || ''}</span>
+          <button onclick="navigator.clipboard.writeText('${u.email}'); showToast('Email copied', 'success');" class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-400 hover:bg-slate-700"><i class="fa-regular fa-copy"></i></button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-slate-400">Phone:</span>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-emerald-400">${u.phone || 'Not added'}</span>
+          ${u.phone ? `<button onclick="navigator.clipboard.writeText('${u.phone}'); showToast('Phone copied', 'success');" class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 hover:bg-slate-700"><i class="fa-regular fa-copy"></i></button>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact & Action Buttons -->
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="openAdminChat('${u.uid}'); closeUserDetailModal();" class="py-2 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold flex items-center justify-center gap-2 shadow-md">
+        <i class="fa-solid fa-paper-plane"></i> Send Message
+      </button>
+      ${u.phone ? `<a href="https://wa.me/880${u.phone.replace(/^0/, '')}" target="_blank" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : `<button disabled class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-bold flex items-center justify-center gap-2 cursor-not-allowed"><i class="fa-brands fa-whatsapp"></i> No Phone</button>`}
+    </div>
+
+    <!-- User Profile Details Card -->
+    <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-slate-300">
+      <p><strong>Bio:</strong> <span class="italic text-slate-400">${u.bio || 'No bio written.'}</span></p>
+      <p><strong>Joined:</strong> ${u.createdAt ? new Date(u.createdAt).toLocaleString() : 'N/A'}</p>
+      <p><strong>Last Login:</strong> ${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : 'Just now'}</p>
+      <p><strong>Project Requests:</strong> <span class="text-purple-400 font-bold">${userReqs.length} submitted</span></p>
+    </div>
+
+    <!-- Danger Zone Actions -->
+    <div class="pt-2 border-t border-slate-800 space-y-2">
+      <button onclick="toggleBlockUser('${u.uid}', ${!u.blocked}); closeUserDetailModal();" class="w-full py-2 rounded-xl font-bold text-xs ${u.blocked ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30'}">
+        ${u.blocked ? 'Unblock User' : 'Block User Account'}
+      </button>
+      <button onclick="deleteUserData('${u.uid}', '${u.username}'); closeUserDetailModal();" class="w-full py-2 rounded-xl font-bold text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30">
+        Delete User Data
+      </button>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+};
+
+function closeUserDetailModal() {
+  document.getElementById('admin-user-detail-modal')?.classList.add('hidden');
 }
 
 window.deleteUserData = async function(uid, username) {
@@ -1073,13 +1473,13 @@ function exportRequestsCSV() {
 function exportUsersCSV() {
   if (allUsersData.length === 0) return showToast('No users to export.', 'info');
 
-  let csv = 'UID,Name,Email,Username,Provider,JoinedDate\n';
+  let csv = 'UID,Name,Email,Phone,Username,Provider,EmailVerified,JoinedDate,LastLogin,Blocked\n';
   allUsersData.forEach(u => {
-    csv += `"${u.uid}","${u.name || ''}","${u.email || ''}","${u.username || ''}","${u.provider || ''}","${u.createdAt || ''}"\n`;
+    csv += `"${u.uid}","${u.name || ''}","${u.email || ''}","${u.phone || ''}","${u.username || ''}","${u.provider || ''}","${u.emailVerified || false}","${u.createdAt || ''}","${u.lastLoginAt || ''}","${u.blocked || false}"\n`;
   });
 
   downloadCSV(csv, 'webworldbd_users.csv');
-  logAdminAction("EXPORT_CSV", "users", "Exported users CSV");
+  logAdminAction("EXPORT_CSV", "users", "Exported full users CSV");
 }
 
 function downloadCSV(csvContent, filename) {
@@ -1092,3 +1492,102 @@ function downloadCSV(csvContent, filename) {
   link.click();
   document.body.removeChild(link);
 }
+
+/* ================= GLOBAL SEARCH HANDLER ================= */
+
+function handleGlobalSearch(e) {
+  const queryVal = e.target.value.toLowerCase().trim();
+  const dropdown = document.getElementById('admin-search-results-dropdown');
+  if (!dropdown) return;
+
+  if (queryVal.length < 2) {
+    dropdown.classList.add('hidden');
+    return;
+  }
+
+  // 1. Search Users
+  const matchedUsers = allUsersData.filter(u =>
+    (u.name && u.name.toLowerCase().includes(queryVal)) ||
+    (u.username && u.username.toLowerCase().includes(queryVal)) ||
+    (u.email && u.email.toLowerCase().includes(queryVal)) ||
+    (u.phone && u.phone.includes(queryVal))
+  ).slice(0, 4);
+
+  // 2. Search Chats
+  const matchedChats = allChatsData.filter(c =>
+    (c.userName && c.userName.toLowerCase().includes(queryVal)) ||
+    (c.userEmail && c.userEmail.toLowerCase().includes(queryVal)) ||
+    (c.lastMessage && c.lastMessage.toLowerCase().includes(queryVal))
+  ).slice(0, 4);
+
+  // 3. Search Requests
+  const matchedRequests = allRequestsData.filter(r =>
+    (r.fullName && r.fullName.toLowerCase().includes(queryVal)) ||
+    (r.email && r.email.toLowerCase().includes(queryVal)) ||
+    (r.mobileNumber && r.mobileNumber.includes(queryVal)) ||
+    (r.projectCategory && r.projectCategory.toLowerCase().includes(queryVal))
+  ).slice(0, 4);
+
+  if (matchedUsers.length === 0 && matchedChats.length === 0 && matchedRequests.length === 0) {
+    dropdown.innerHTML = `<div class="p-4 text-center text-slate-500 italic">No search results found</div>`;
+    dropdown.classList.remove('hidden');
+    return;
+  }
+
+  let html = '';
+
+  if (matchedUsers.length > 0) {
+    html += `<div class="p-2 bg-slate-950 font-bold text-[10px] text-sky-400 uppercase tracking-wider">Users</div>`;
+    matchedUsers.forEach(u => {
+      html += `
+        <div onclick="openAdminChat('${u.uid}'); document.getElementById('admin-search-results-dropdown').classList.add('hidden');" class="p-2.5 hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+          <div class="overflow-hidden">
+            <p class="font-bold text-white truncate">${u.name || 'User'}</p>
+            <p class="text-[10px] text-slate-400 truncate">${u.email} ${u.phone ? '• ' + u.phone : ''}</p>
+          </div>
+          <span class="text-[10px] text-sky-400 font-bold">@${u.username || 'user'}</span>
+        </div>
+      `;
+    });
+  }
+
+  if (matchedChats.length > 0) {
+    html += `<div class="p-2 bg-slate-950 font-bold text-[10px] text-emerald-400 uppercase tracking-wider">Live Chats</div>`;
+    matchedChats.forEach(c => {
+      html += `
+        <div onclick="openAdminChat('${c.uid}'); document.getElementById('admin-search-results-dropdown').classList.add('hidden');" class="p-2.5 hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+          <div class="overflow-hidden">
+            <p class="font-bold text-white truncate">${c.userName || 'User'}</p>
+            <p class="text-[10px] text-slate-400 truncate">${c.lastMessage || '...'}</p>
+          </div>
+          <i class="fa-solid fa-comments text-emerald-400"></i>
+        </div>
+      `;
+    });
+  }
+
+  if (matchedRequests.length > 0) {
+    html += `<div class="p-2 bg-slate-950 font-bold text-[10px] text-purple-400 uppercase tracking-wider">Project Requests</div>`;
+    matchedRequests.forEach(r => {
+      html += `
+        <div onclick="switchSection('requests'); document.getElementById('admin-search-results-dropdown').classList.add('hidden');" class="p-2.5 hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+          <div class="overflow-hidden">
+            <p class="font-bold text-white truncate">${r.fullName || 'Inquiry'}</p>
+            <p class="text-[10px] text-slate-400 truncate">${r.projectCategory || ''} • ${r.mobileNumber || ''}</p>
+          </div>
+          <span class="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-400 font-bold text-[9px]">${r.status || 'New'}</span>
+        </div>
+      `;
+    });
+  }
+
+  dropdown.innerHTML = html;
+  dropdown.classList.remove('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  const searchWrapper = document.getElementById('admin-global-search')?.parentElement;
+  if (searchWrapper && !searchWrapper.contains(e.target)) {
+    document.getElementById('admin-search-results-dropdown')?.classList.add('hidden');
+  }
+});
