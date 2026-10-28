@@ -58,7 +58,7 @@ service cloud.firestore {
 
         // User can create messages only if chat is not blocked, sender is user, senderId matches auth uid, and text length <= 2000
         allow create: if (isOwner(uid)
-          && get(/databases/$(database)/documents/chats/$(uid)).data.blocked != true
+          && (!exists(/databases/$(database)/documents/chats/$(uid)) || get(/databases/$(database)/documents/chats/$(uid)).data.blocked != true)
           && request.resource.data.sender == "user"
           && request.resource.data.senderId == request.auth.uid
           && (request.resource.data.text == null || request.resource.data.text.size() <= 2000)

@@ -171,6 +171,7 @@ async function startChatSession() {
   const userEmail = currentUser.email || '';
   const userPhoto = currentUserData?.photoURL || currentUser.photoURL || '';
   const username = currentUserData?.username || '';
+  const phone = currentUserData?.phone || '';
 
   try {
     const snap = await getDoc(chatRef);
@@ -181,7 +182,8 @@ async function startChatSession() {
         userEmail: userEmail,
         userPhoto: userPhoto,
         username: username,
-        lastMessage: 'Chat initialized',
+        phone: phone,
+        lastMessage: '',
         lastMessageAt: now,
         lastSender: 'user',
         unreadForAdmin: 0,
@@ -202,6 +204,7 @@ async function startChatSession() {
         userEmail: userEmail,
         userPhoto: userPhoto,
         username: username,
+        phone: phone,
         userLastSeen: now
       });
     }
@@ -566,7 +569,11 @@ async function handleSendMessage(e) {
 
   lastSentTime = now;
   const sendBtn = document.getElementById('btn-send-message');
-  if (sendBtn) sendBtn.disabled = true;
+  const originalBtnHTML = sendBtn ? sendBtn.innerHTML : '<i class="fa-solid fa-paper-plane"></i>';
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+  }
 
   let uploadedFile = null;
 
@@ -595,7 +602,10 @@ async function handleSendMessage(e) {
     } catch (err) {
       console.error('File upload error:', err);
       progressCard?.classList.add('hidden');
-      if (sendBtn) sendBtn.disabled = false;
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalBtnHTML;
+      }
       showToast(getLanguage() === 'en' ? 'File upload failed. Please try again.' : 'ফাইল আপলোড ব্যর্থ হয়েছে। পুনরায় চেষ্টা করুন।', 'error');
       return;
     } finally {
@@ -617,10 +627,17 @@ async function handleSendMessage(e) {
   const messagesRef = collection(db, 'chats', uid, 'messages');
   const chatRef = doc(db, 'chats', uid);
   const isoTime = new Date().toISOString();
+  const userName = currentUserData?.name || currentUser.displayName || 'User';
+  const userEmail = currentUser.email || '';
+  const userPhoto = currentUserData?.photoURL || currentUser.photoURL || '';
+  const username = currentUserData?.username || '';
+  const phone = currentUserData?.phone || '';
 
   const messageData = {
     sender: 'user',
+    senderRole: 'user',
     senderId: uid,
+    conversationId: uid,
     text: text,
     type: msgType,
     fileUrl: uploadedFile ? uploadedFile.secure_url : '',
@@ -635,19 +652,51 @@ async function handleSendMessage(e) {
   };
 
   try {
-    // Add message doc
+    // Save message doc to chats/{uid}/messages
     await addDoc(messagesRef, messageData);
 
-    // Update parent chat document atomically/batch
+    // Update or create parent chat document
     const lastMsgPreview = text || (uploadedFile ? `📎 ${pendingFile.name}` : 'File');
-    await updateDoc(chatRef, {
-      lastMessage: lastMsgPreview,
-      lastMessageAt: isoTime,
-      lastSender: 'user',
-      unreadForAdmin: (currentChatDoc?.unreadForAdmin || 0) + 1,
-      userTyping: false,
-      userLastSeen: isoTime
-    });
+    const chatSnap = await getDoc(chatRef);
+
+    if (!chatSnap.exists()) {
+      await setDoc(chatRef, {
+        uid: uid,
+        userName: userName,
+        userEmail: userEmail,
+        userPhoto: userPhoto,
+        username: username,
+        phone: phone,
+        lastMessage: lastMsgPreview,
+        lastMessageAt: isoTime,
+        lastSender: 'user',
+        unreadForAdmin: 1,
+        unreadForUser: 0,
+        status: 'open',
+        pinned: false,
+        blocked: false,
+        userTyping: false,
+        adminTyping: false,
+        userLastSeen: isoTime,
+        createdAt: isoTime,
+        tags: [],
+        adminNote: ''
+      });
+    } else {
+      await updateDoc(chatRef, {
+        userName: userName,
+        userEmail: userEmail,
+        userPhoto: userPhoto,
+        username: username,
+        phone: phone,
+        lastMessage: lastMsgPreview,
+        lastMessageAt: isoTime,
+        lastSender: 'user',
+        unreadForAdmin: (currentChatDoc?.unreadForAdmin || 0) + 1,
+        userTyping: false,
+        userLastSeen: isoTime
+      });
+    }
 
     // Reset Input Fields
     if (textarea) {
@@ -660,7 +709,10 @@ async function handleSendMessage(e) {
     console.error('Error sending message:', err);
     showToast(getLanguage() === 'en' ? 'Failed to send message.' : 'মেসেজ পাঠাতে ব্যর্থ হয়েছে।', 'error');
   } finally {
-    if (sendBtn) sendBtn.disabled = false;
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnHTML;
+    }
   }
 }
 
