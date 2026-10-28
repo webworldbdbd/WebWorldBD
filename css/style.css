@@ -1048,7 +1048,9 @@ body.dark ::-webkit-scrollbar-thumb {
 }
 
 body.drawer-open #floating-buttons-root,
-body:has(#modal-dialog-root:not(.hidden)) #floating-buttons-root {
+body:has(#modal-dialog-root:not(.hidden)) #floating-buttons-root,
+body:has(#edit-profile-modal:not(.hidden)) #floating-buttons-root,
+body:has(#crop-modal:not(.hidden)) #floating-buttons-root {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translateY(20px);
@@ -1071,6 +1073,8 @@ body:has(#modal-dialog-root:not(.hidden)) #floating-buttons-root {
 /* Hide bar on drawer open, modal open, or virtual keyboard open */
 body.drawer-open .bottom-nav-container,
 body:has(#modal-dialog-root:not(.hidden)) .bottom-nav-container,
+body:has(#edit-profile-modal:not(.hidden)) .bottom-nav-container,
+body:has(#crop-modal:not(.hidden)) .bottom-nav-container,
 .bottom-nav-container.is-keyboard-open {
   opacity: 0 !important;
   pointer-events: none !important;
