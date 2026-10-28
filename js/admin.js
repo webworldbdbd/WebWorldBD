@@ -268,9 +268,47 @@ function initAdminUI() {
   // Chat Composer Send
   document.getElementById('admin-chat-composer')?.addEventListener('submit', handleAdminSendMessage);
 
+  // Hash route change listener
+  window.addEventListener('hashchange', handleHashRouting);
+
+  // Attachment Sheet popup toggles
+  document.getElementById('btn-composer-attach-plus')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('composer-attach-popup')?.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#btn-composer-attach-plus') && !e.target.closest('#composer-attach-popup')) {
+      document.getElementById('composer-attach-popup')?.classList.add('hidden');
+    }
+    if (!e.target.closest('#btn-composer-emoji') && !e.target.closest('#composer-emoji-picker-drawer')) {
+      document.getElementById('composer-emoji-picker-drawer')?.classList.add('hidden');
+    }
+    if (!e.target.closest('#btn-chat-header-menu') && !e.target.closest('#chat-header-menu-dropdown')) {
+      document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+    }
+    if (!e.target.closest('#bubble-action-menu')) {
+      document.getElementById('bubble-action-menu')?.classList.add('hidden');
+    }
+  });
+
+  // Emoji picker setup
+  initEmojiPicker();
+
+  // File Inputs
+  document.getElementById('chat-file-input-media')?.addEventListener('change', handleAdminFileSelect);
+  document.getElementById('chat-file-input-doc')?.addEventListener('change', handleAdminFileSelect);
+  document.getElementById('chat-file-input-camera')?.addEventListener('change', handleAdminFileSelect);
+
+  // Lightning Quick Replies Button
+  document.getElementById('btn-composer-quick-replies')?.addEventListener('click', () => {
+    renderQuickReplyDrawer();
+  });
+
   // Quick Reply trigger on '/'
   const adminTextarea = document.getElementById('admin-chat-textarea');
   adminTextarea?.addEventListener('input', (e) => {
+    autoResizeTextarea(e.target);
     if (e.target.value.startsWith('/')) {
       renderQuickReplyDrawer();
     } else {
@@ -278,10 +316,97 @@ function initAdminUI() {
     }
   });
 
+  adminTextarea?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
+      e.preventDefault();
+      document.getElementById('admin-chat-composer')?.requestSubmit();
+    }
+  });
+
+  // Header Dropdown Menu Toggle
+  document.getElementById('btn-chat-header-menu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('chat-header-menu-dropdown')?.classList.toggle('hidden');
+  });
+
+  // Header Actions
+  document.getElementById('menu-act-pin')?.addEventListener('click', () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    togglePinChat(activeChatUid, !chat?.pinned);
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-unread')?.addEventListener('click', async () => {
+    if (!activeChatUid) return;
+    try {
+      const chatRef = doc(db, 'chats', activeChatUid);
+      await updateDoc(chatRef, { unreadForAdmin: 1 });
+      showToast('Marked conversation as unread', 'info');
+      if (window.innerWidth < 900) closeAdminChatView();
+    } catch (e) {}
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-close')?.addEventListener('click', async () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    const newStatus = chat?.status === 'closed' ? 'open' : 'closed';
+    try {
+      const chatRef = doc(db, 'chats', activeChatUid);
+      await updateDoc(chatRef, { status: newStatus });
+      showToast(`Conversation marked as ${newStatus}`, 'success');
+      renderUserInfoDrawer(allChatsData.find(c => c.uid === activeChatUid) || {});
+    } catch (e) {}
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-block')?.addEventListener('click', () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    toggleBlockUser(activeChatUid, !chat?.blocked);
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-export')?.addEventListener('click', exportActiveChatHistory);
+  document.getElementById('menu-act-clear')?.addEventListener('click', () => {
+    const msgContainer = document.getElementById('admin-chat-messages');
+    if (msgContainer) msgContainer.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">View cleared for this session.</div>';
+    showToast('Chat view cleared.', 'info');
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-delete')?.addEventListener('click', deleteActiveConversation);
+
+  // Scroll to Latest Button
+  const msgContainer = document.getElementById('admin-chat-messages');
+  msgContainer?.addEventListener('scroll', () => {
+    if (!msgContainer) return;
+    const distFromBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight;
+    const scrollBtn = document.getElementById('btn-admin-scroll-latest');
+    if (distFromBottom > 150) {
+      scrollBtn?.classList.remove('hidden');
+    } else {
+      scrollBtn?.classList.add('hidden');
+      document.getElementById('admin-unread-scroll-badge')?.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('btn-admin-scroll-latest')?.addEventListener('click', () => {
+    if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+  });
+
+  // Cancel Quoted Reply
+  document.getElementById('btn-cancel-quoted-reply')?.addEventListener('click', cancelQuotedReply);
+
+  // Media Viewer Close
+  document.getElementById('btn-close-media-viewer')?.addEventListener('click', () => {
+    document.getElementById('admin-media-viewer-modal')?.classList.add('hidden');
+  });
+
   // Back button for mobile messenger
   document.getElementById('btn-back-chat-list')?.addEventListener('click', () => {
-    document.getElementById('admin-chat-list-panel')?.classList.remove('hidden');
-    document.getElementById('admin-chat-view-panel')?.classList.add('hidden');
+    closeAdminChatView();
   });
 
   // Toggle User Info Drawer
@@ -1273,23 +1398,141 @@ function renderChatConversationsList() {
   }).join('');
 }
 
-window.openAdminChat = function(uid) {
+let quotedMessage = null;
+let pendingAdminFile = null;
+
+const EMOJI_LIST = ['😊', '😂', '👍', '❤️', '🔥', '🎉', '🙏', '😍', '👋', '🚀', '💯', '✨', '👌', '🤝', '💼', '📱', '💻', '⭐', '⚡', '✅'];
+
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  const maxHeight = 120;
+  el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+}
+
+function initEmojiPicker() {
+  const drawer = document.getElementById('composer-emoji-picker-drawer');
+  if (!drawer) return;
+
+  drawer.innerHTML = EMOJI_LIST.map(emoji => `
+    <button type="button" class="btn-emoji hover:scale-125 p-1.5 transition-transform cursor-pointer" data-emoji="${emoji}">
+      ${emoji}
+    </button>
+  `).join('');
+
+  drawer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-emoji');
+    if (btn) {
+      const emoji = btn.getAttribute('data-emoji');
+      const textarea = document.getElementById('admin-chat-textarea');
+      if (textarea && emoji) {
+        textarea.value += emoji;
+        textarea.focus();
+        autoResizeTextarea(textarea);
+      }
+    }
+  });
+
+  document.getElementById('btn-composer-emoji')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    drawer.classList.toggle('hidden');
+  });
+}
+
+function handleHashRouting() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#chat/')) {
+    const uid = hash.substring(6).trim();
+    if (uid && uid.length > 2) {
+      openAdminChat(uid, false);
+    }
+  } else if (activeSection === 'chat' && activeChatUid) {
+    closeAdminChatView(false);
+  }
+}
+
+window.openAdminChat = function(uid, updateHash = true) {
   activeChatUid = uid;
   switchSection('chat');
 
-  if (window.innerWidth < 768) {
-    document.getElementById('admin-chat-list-panel')?.classList.add('hidden');
-    document.getElementById('admin-chat-view-panel')?.classList.remove('hidden');
+  if (updateHash && window.location.hash !== `#chat/${uid}`) {
+    history.pushState(null, '', `#chat/${uid}`);
+  }
+
+  const chatViewPanel = document.getElementById('admin-chat-view-panel');
+  const chatListPanel = document.getElementById('admin-chat-list-panel');
+
+  if (window.innerWidth < 900) {
+    document.body.classList.add('admin-chat-open');
+    chatViewPanel?.classList.add('mobile-fullscreen');
+    chatListPanel?.classList.add('hidden');
+    chatViewPanel?.classList.remove('hidden');
+  } else {
+    chatViewPanel?.classList.remove('hidden');
+    chatListPanel?.classList.remove('hidden');
   }
 
   renderChatConversationsList();
 
-  const chat = allChatsData.find(c => c.uid === uid);
-  if (!chat) return;
+  const chat = allChatsData.find(c => c.uid === uid) || { uid: uid, userName: 'User' };
 
+  // Set Chat Header Meta
   document.getElementById('admin-active-user-name').textContent = chat.userName || 'User';
-  document.getElementById('admin-active-user-email').textContent = chat.userEmail || '@' + chat.username;
   document.getElementById('admin-active-user-avatar').src = chat.userPhoto || './assets/logo.png?v=2';
+
+  const handleEl = document.getElementById('admin-active-user-handle');
+  if (handleEl) handleEl.textContent = chat.username ? `@${chat.username}` : '';
+
+  const onlineDot = document.getElementById('admin-active-online-dot');
+  if (onlineDot) onlineDot.style.display = chat.online !== false ? 'block' : 'none';
+
+  const statusText = document.getElementById('admin-active-status-text');
+  if (statusText) {
+    if (chat.userTyping) {
+      statusText.innerHTML = '<span class="text-sky-400 font-bold animate-pulse">Typing...</span>';
+    } else if (chat.online !== false) {
+      statusText.textContent = 'Online';
+    } else {
+      statusText.textContent = chat.userLastSeen ? `Last seen ${formatChatTime(chat.userLastSeen)}` : 'Offline';
+    }
+  }
+
+  // Header WhatsApp button
+  const waBtn = document.getElementById('btn-chat-header-whatsapp');
+  if (waBtn) {
+    if (chat.phone) {
+      waBtn.href = `https://wa.me/880${chat.phone.replace(/^(?:\+880|880|0)/, '')}`;
+      waBtn.classList.remove('hidden');
+    } else {
+      waBtn.classList.add('hidden');
+    }
+  }
+
+  // Blocked or closed banner
+  const blockedBanner = document.getElementById('admin-chat-blocked-banner');
+  const bannerText = document.getElementById('chat-blocked-banner-text');
+  const bannerBtn = document.getElementById('btn-banner-unblock-reopen');
+
+  if (chat.blocked) {
+    blockedBanner?.classList.remove('hidden');
+    if (bannerText) bannerText.textContent = 'This user is blocked from live chat.';
+    if (bannerBtn) {
+      bannerBtn.textContent = 'Unblock User';
+      bannerBtn.onclick = () => toggleBlockUser(uid, false);
+    }
+  } else if (chat.status === 'closed') {
+    blockedBanner?.classList.remove('hidden');
+    if (bannerText) bannerText.textContent = 'This conversation is closed.';
+    if (bannerBtn) {
+      bannerBtn.textContent = 'Reopen Chat';
+      bannerBtn.onclick = async () => {
+        await updateDoc(doc(db, 'chats', uid), { status: 'open' });
+        showToast('Chat reopened', 'success');
+      };
+    }
+  } else {
+    blockedBanner?.classList.add('hidden');
+  }
 
   if (chat.unreadForAdmin > 0) {
     const chatRef = doc(db, 'chats', uid);
@@ -1308,38 +1551,338 @@ window.openAdminChat = function(uid) {
     snapshot.forEach(docSnap => {
       messages.push({ id: docSnap.id, ...docSnap.data() });
     });
-    renderAdminMessages(messages);
+    renderAdminMessages(messages, chat);
   });
 };
 
-function renderAdminMessages(messages) {
+function closeAdminChatView(updateHash = true) {
+  activeChatUid = null;
+  document.body.classList.remove('admin-chat-open');
+
+  const chatViewPanel = document.getElementById('admin-chat-view-panel');
+  const chatListPanel = document.getElementById('admin-chat-list-panel');
+
+  if (window.innerWidth < 900) {
+    chatViewPanel?.classList.add('hidden');
+    chatListPanel?.classList.remove('hidden');
+  }
+
+  if (updateHash && window.location.hash.startsWith('#chat/')) {
+    history.pushState(null, '', 'admin.html#chat');
+  }
+
+  renderChatConversationsList();
+}
+
+function renderAdminMessages(messages, chatData = {}) {
   const container = document.getElementById('admin-chat-messages');
   if (!container) return;
 
   if (messages.length === 0) {
-    container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs">No messages yet in this conversation.</div>`;
-    return;
-  }
-
-  container.innerHTML = messages.map(msg => {
-    const isAdmin = msg.sender === 'admin';
-    const timeStr = formatChatTime(msg.createdAt, msg.deliveredAt);
-
-    return `
-      <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
-        <div class="max-w-[80%] space-y-1">
-          <div class="p-3 rounded-2xl text-xs leading-relaxed ${isAdmin ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700'}">
-            ${msg.fileUrl ? `<div class="mb-1.5"><a href="${msg.fileUrl}" target="_blank" class="underline font-bold text-sky-200">📎 Attachment File</a></div>` : ''}
-            <p class="whitespace-pre-wrap">${msg.text || ''}</p>
-          </div>
-          <p class="text-[9px] text-slate-500 text-${isAdmin ? 'right' : 'left'} px-1">${timeStr}</p>
+    const userName = chatData.userName || 'User';
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full text-center p-6 space-y-3 my-auto">
+        <div class="w-14 h-14 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-sky-400 text-xl">
+          <i class="fa-solid fa-hand-wave"></i>
+        </div>
+        <h3 class="font-bold text-sm text-white">No messages yet. Say hello to ${userName}!</h3>
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <button onclick="insertQuickStartChip('Hello! How can I help you today?')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            Greeting
+          </button>
+          <button onclick="insertQuickStartChip('How can I help you with your project?')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            "How can I help you?"
+          </button>
+          <button onclick="insertQuickStartChip('Please share your project requirements.')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            "Please share your requirements"
+          </button>
         </div>
       </div>
     `;
-  }).join('');
+    return;
+  }
 
+  let html = '';
+  let lastDateStr = '';
+
+  messages.forEach((msg, idx) => {
+    const msgDate = parseToDate(msg.createdAt, msg.deliveredAt) || new Date();
+    const dateStr = formatDateSeparator(msgDate);
+
+    if (dateStr !== lastDateStr) {
+      html += `
+        <div class="flex justify-center my-3">
+          <span class="chat-date-separator">
+            ${dateStr}
+          </span>
+        </div>
+      `;
+      lastDateStr = dateStr;
+    }
+
+    const isAdmin = msg.sender === 'admin';
+    const isNextSameSender = messages[idx + 1] && messages[idx + 1].sender === msg.sender;
+    const isGroupEnd = !isNextSameSender;
+    const timeStr = formatChatTime(msg.createdAt, msg.deliveredAt);
+
+    const textOnly = (msg.text || '').trim();
+    const isEmojiOnly = isOnlyEmojis(textOnly);
+
+    html += `
+      <div class="flex items-end gap-2 my-0.5 group ${isAdmin ? 'justify-end' : 'justify-start'}">
+        ${!isAdmin && isGroupEnd ? `
+          <div class="w-6 h-6 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-slate-700">
+            <img src="${chatData.userPhoto || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
+          </div>
+        ` : (!isAdmin ? '<div class="w-6 shrink-0"></div>' : '')}
+
+        <div class="max-w-[80%] space-y-0.5 relative">
+          <!-- Quoted preview if replying -->
+          ${msg.replyTo ? `
+            <div class="px-3 py-1.5 rounded-xl bg-slate-900/80 border-l-2 border-sky-400 text-[11px] text-slate-300 mb-1 truncate">
+              <span class="font-bold text-sky-400 block">${msg.replyTo.sender || 'Reply'}</span>
+              ${msg.replyTo.text || 'Attachment'}
+            </div>
+          ` : ''}
+
+          <!-- Bubble Content -->
+          <div data-msg-id="${msg.id}" onclick="openBubbleMenu(event, '${msg.id}', \`${(msg.text || '').replace(/`/g, '\\`')}\`)" class="chat-bubble ${isAdmin ? 'chat-bubble-admin' : 'chat-bubble-user'} ${isNextSameSender ? (isAdmin ? 'chat-bubble-admin-grouped' : 'chat-bubble-user-grouped') : ''} ${isEmojiOnly ? 'chat-bubble-emoji-only' : ''} cursor-pointer">
+            ${renderMessageBubblePayload(msg)}
+          </div>
+
+          <!-- Status / Time Footer -->
+          ${isGroupEnd ? `
+            <div class="flex items-center gap-1 text-[10px] text-slate-400 px-1 ${isAdmin ? 'justify-end' : 'justify-start'}">
+              <span>${timeStr}</span>
+              ${isAdmin ? renderAdminStatusTicks(msg, chatData) : ''}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
 }
+
+window.insertQuickStartChip = function(text) {
+  const textarea = document.getElementById('admin-chat-textarea');
+  if (textarea) {
+    textarea.value = text;
+    textarea.focus();
+    autoResizeTextarea(textarea);
+  }
+};
+
+function isOnlyEmojis(str) {
+  if (!str) return false;
+  const regex = /^(\p{Extended_Pictographic}|\p{Emoji_Component}|\s)+$/u;
+  return str.length <= 12 && regex.test(str);
+}
+
+function formatDateSeparator(date) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+}
+
+function renderMessageBubblePayload(msg) {
+  if (msg.deleted) {
+    return `<span class="italic text-slate-400 text-xs"><i class="fa-solid fa-ban mr-1"></i> This message was deleted</span>`;
+  }
+
+  let content = '';
+
+  // Project Request Card (Type "request")
+  if (msg.type === 'request' || msg.requestId) {
+    return `
+      <div class="chat-request-card text-left space-y-2">
+        <div class="flex items-center justify-between border-b border-purple-500/20 pb-2">
+          <span class="font-mono text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-md">${msg.requestId || 'REQUEST'}</span>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${getReqStatusBadgeClass(msg.requestStatus)}">${msg.requestStatus || 'New'}</span>
+        </div>
+        <p class="font-bold text-xs text-purple-300">${msg.category || 'Project Request'}</p>
+        <p class="text-xs text-slate-200 line-clamp-3">${msg.requirements || msg.text || ''}</p>
+        ${msg.budget ? `<p class="text-[11px] font-mono text-emerald-400 font-bold">Budget: ${msg.budget}</p>` : ''}
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
+          <button onclick="event.stopPropagation(); openRequestDetail('${msg.requestId || msg.id}')" class="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-bold text-[10px]">
+            View Details
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Bare URL conversion or explicit File Card
+  if (msg.fileUrl || (msg.text && (msg.text.startsWith('http://') || msg.text.startsWith('https://')))) {
+    const fileUrl = msg.fileUrl || msg.text.trim();
+    const isImg = fileUrl.match(/\.(jpg|jpeg|png|webp|gif)/i) || msg.type === 'image';
+    const isVideo = fileUrl.match(/\.(mp4|webm|mov)/i) || msg.type === 'video';
+    const isAudio = fileUrl.match(/\.(mp3|wav|ogg)/i) || msg.type === 'audio';
+
+    if (isImg) {
+      content += `
+        <div onclick="event.stopPropagation(); openMediaViewer('${fileUrl}', '${msg.fileName || 'Photo'}')" class="overflow-hidden rounded-2xl mb-1">
+          <img src="${fileUrl}" loading="lazy" class="chat-img-thumbnail" onerror="this.onerror=null; this.src='./assets/logo.png?v=2';">
+        </div>
+      `;
+    } else if (isVideo) {
+      content += `
+        <div class="overflow-hidden rounded-2xl mb-1 max-w-[260px] bg-black">
+          <video src="${fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
+        </div>
+      `;
+    } else if (isAudio) {
+      content += `
+        <div class="p-2 bg-slate-900/60 rounded-2xl mb-1 max-w-[260px]">
+          <audio src="${fileUrl}" controls class="w-full h-8"></audio>
+        </div>
+      `;
+    } else {
+      const ext = fileUrl.split('.').pop().split('?')[0].toUpperCase();
+      const fileName = msg.fileName || fileUrl.split('/').pop() || 'Attachment';
+
+      content += `
+        <a href="${fileUrl}" target="_blank" download onclick="event.stopPropagation();" class="chat-file-card hover:bg-white/20 transition-colors">
+          <div class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+            ${ext.slice(0, 4) || 'FILE'}
+          </div>
+          <div class="overflow-hidden flex-1 text-left">
+            <p class="font-bold text-xs truncate text-white">${escapeHTML(fileName)}</p>
+            <p class="text-[10px] text-slate-300 opacity-80">${msg.fileSize ? formatBytes(msg.fileSize) : 'Download'}</p>
+          </div>
+          <i class="fa-solid fa-download text-xs text-slate-300"></i>
+        </a>
+      `;
+    }
+  }
+
+  if (msg.text && !msg.text.startsWith('http://') && !msg.text.startsWith('https://')) {
+    content += `<p class="whitespace-pre-wrap leading-relaxed">${autolinkText(escapeHTML(msg.text))}</p>`;
+  }
+
+  return content;
+}
+
+function renderAdminStatusTicks(msg, chatData) {
+  if (msg.failed) {
+    return `<span onclick="event.stopPropagation(); retryFailedMessage('${msg.id}')" class="text-red-400 font-bold text-[10px] cursor-pointer">Tap to retry <i class="fa-solid fa-rotate-right"></i></span>`;
+  }
+  if (msg.readAt) {
+    return `<img src="${chatData.userPhoto || './assets/logo.png?v=2'}" class="w-3.5 h-3.5 rounded-full object-cover ring-1 ring-sky-400" title="Seen">`;
+  } else if (msg.deliveredAt) {
+    return `<i class="fa-solid fa-check-double text-sky-200 text-[10px]" title="Delivered"></i>`;
+  } else {
+    return `<i class="fa-solid fa-check text-slate-400 text-[10px]" title="Sent"></i>`;
+  }
+}
+
+window.openMediaViewer = function(url, filename) {
+  const modal = document.getElementById('admin-media-viewer-modal');
+  const img = document.getElementById('media-viewer-img');
+  const nameEl = document.getElementById('media-viewer-filename');
+  const dlBtn = document.getElementById('btn-download-media');
+
+  if (img) img.src = url;
+  if (nameEl) nameEl.textContent = filename || 'Image Viewer';
+  if (dlBtn) dlBtn.href = url;
+
+  modal?.classList.remove('hidden');
+};
+
+window.openBubbleMenu = function(e, msgId, text) {
+  e.stopPropagation();
+  const menu = document.getElementById('bubble-action-menu');
+  if (!menu) return;
+
+  menu.style.left = `${Math.min(e.clientX, window.innerWidth - 160)}px`;
+  menu.style.top = `${Math.min(e.clientY, window.innerHeight - 150)}px`;
+  menu.classList.remove('hidden');
+
+  document.getElementById('bubble-act-reply').onclick = () => {
+    quotedMessage = { id: msgId, text: text, sender: 'User' };
+    const replyBar = document.getElementById('admin-quoted-reply-bar');
+    document.getElementById('quoted-reply-text').textContent = text;
+    replyBar?.classList.remove('hidden');
+    menu.classList.add('hidden');
+  };
+
+  document.getElementById('bubble-act-copy').onclick = () => {
+    navigator.clipboard.writeText(text);
+    showToast('Copied message text', 'success');
+    menu.classList.add('hidden');
+  };
+
+  document.getElementById('bubble-act-save-qr').onclick = async () => {
+    if (!text) return;
+    const trigger = text.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8) || 'reply';
+    const newQR = { id: 'qr_' + Date.now(), trigger: trigger, textEn: text, textBn: text };
+    const updatedQR = [...(currentSiteConfig.quickReplies || DEFAULT_QUICK_REPLIES), newQR];
+
+    try {
+      await setDoc(doc(db, 'siteConfig', 'main'), { ...currentSiteConfig, quickReplies: updatedQR }, { merge: true });
+      showToast('Saved as quick reply!', 'success');
+    } catch (err) {}
+    menu.classList.add('hidden');
+  };
+
+  document.getElementById('bubble-act-delete').onclick = async () => {
+    if (!confirm('Delete this message?')) return;
+    try {
+      await updateDoc(doc(db, 'chats', activeChatUid, 'messages', msgId), { deleted: true });
+      showToast('Message deleted', 'success');
+    } catch (err) {}
+    menu.classList.add('hidden');
+  };
+};
+
+function cancelQuotedReply() {
+  quotedMessage = null;
+  document.getElementById('admin-quoted-reply-bar')?.classList.add('hidden');
+}
+
+async function handleAdminFileSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const MAX_SIZE = 30 * 1024 * 1024; // 30MB
+  if (file.size > MAX_SIZE) {
+    showToast('Maximum file size allowed is 30MB.', 'error');
+    e.target.value = '';
+    return;
+  }
+
+  pendingAdminFile = file;
+
+  // Render chip preview
+  const bar = document.getElementById('admin-pending-attachments-bar');
+  if (bar) {
+    bar.classList.remove('hidden');
+    bar.innerHTML = `
+      <div class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 flex items-center gap-2 text-xs text-white">
+        <i class="fa-solid fa-paperclip text-sky-400"></i>
+        <span class="truncate max-w-[150px] font-medium">${file.name}</span>
+        <button type="button" onclick="cancelPendingAdminFile()" class="text-slate-400 hover:text-white ml-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    `;
+  }
+}
+
+window.cancelPendingAdminFile = function() {
+  pendingAdminFile = null;
+  document.getElementById('admin-pending-attachments-bar')?.classList.add('hidden');
+};
 
 async function handleAdminSendMessage(e) {
   e.preventDefault();
@@ -1347,34 +1890,68 @@ async function handleAdminSendMessage(e) {
 
   const textarea = document.getElementById('admin-chat-textarea');
   const text = textarea?.value.trim() || '';
-  if (!text) return;
+
+  if (!text && !pendingAdminFile) return;
 
   const sendBtn = document.getElementById('btn-admin-send');
   if (sendBtn) sendBtn.disabled = true;
+
+  let uploadedFile = null;
+
+  if (pendingAdminFile) {
+    try {
+      uploadedFile = await uploadToCloudinary(pendingAdminFile, {
+        folder: 'webworldbd_uploads/chat'
+      });
+    } catch (err) {
+      showToast('File upload failed', 'error');
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+  }
 
   const messagesRef = collection(db, 'chats', activeChatUid, 'messages');
   const chatRef = doc(db, 'chats', activeChatUid);
   const isoTime = new Date().toISOString();
 
+  let msgType = 'text';
+  if (uploadedFile) {
+    if (pendingAdminFile.type.startsWith('image/')) msgType = 'image';
+    else if (pendingAdminFile.type.startsWith('video/')) msgType = 'video';
+    else if (pendingAdminFile.type.startsWith('audio/')) msgType = 'audio';
+    else msgType = 'file';
+  }
+
   try {
     const batch = writeBatch(db);
     const newMsgRef = doc(messagesRef);
 
-    batch.set(newMsgRef, {
+    const messageData = {
       sender: 'admin',
       senderRole: 'admin',
       senderId: currentAdminUser.uid,
       conversationId: activeChatUid,
       text: text,
-      type: 'text',
+      type: msgType,
+      fileUrl: uploadedFile ? uploadedFile.secure_url : '',
+      fileName: pendingAdminFile ? pendingAdminFile.name : '',
+      fileSize: pendingAdminFile ? pendingAdminFile.size : 0,
       createdAt: serverTimestamp(),
       deliveredAt: isoTime,
       readAt: null
-    });
+    };
+
+    if (quotedMessage) {
+      messageData.replyTo = quotedMessage;
+    }
+
+    batch.set(newMsgRef, messageData);
 
     const targetChat = allChatsData.find(c => c.uid === activeChatUid);
+    const lastPreview = text || (uploadedFile ? `📎 ${pendingAdminFile.name}` : 'File');
+
     batch.update(chatRef, {
-      lastMessage: text,
+      lastMessage: lastPreview,
       lastMessageAt: isoTime,
       lastSender: 'admin',
       unreadForUser: (targetChat?.unreadForUser || 0) + 1,
@@ -1383,15 +1960,85 @@ async function handleAdminSendMessage(e) {
 
     await batch.commit();
 
-    if (textarea) textarea.value = '';
+    if (textarea) {
+      textarea.value = '';
+      autoResizeTextarea(textarea);
+    }
+    cancelPendingAdminFile();
+    cancelQuotedReply();
     document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
-    logAdminAction("SEND_CHAT_REPLY", activeChatUid, `Replied: ${text.slice(0, 30)}...`);
+    logAdminAction("SEND_CHAT_REPLY", activeChatUid, `Replied: ${lastPreview.slice(0, 30)}...`);
   } catch (err) {
     console.error('Error sending admin message:', err);
-    showToast('Failed to send admin message.', 'error');
+    showToast('Failed to send message.', 'error');
   } finally {
     if (sendBtn) sendBtn.disabled = false;
   }
+}
+
+async function exportActiveChatHistory() {
+  if (!activeChatUid) return;
+  try {
+    const messagesRef = collection(db, 'chats', activeChatUid, 'messages');
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+    const snap = await getDocs(q);
+
+    let txt = `WebWorldBD Chat Export - ${activeChatUid}\nDate: ${new Date().toLocaleString()}\n\n`;
+    snap.forEach(docSnap => {
+      const m = docSnap.data();
+      const sender = m.sender === 'admin' ? 'SHAFAET (Admin)' : 'User';
+      const time = formatChatTime(m.createdAt, m.deliveredAt);
+      txt += `[${time}] ${sender}: ${m.text || m.fileUrl || ''}\n`;
+    });
+
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chat_export_${activeChatUid}.txt`;
+    link.click();
+    showToast('Chat history exported', 'success');
+  } catch (e) {
+    showToast('Export failed', 'error');
+  }
+}
+
+async function deleteActiveConversation() {
+  if (!activeChatUid) return;
+  if (!confirm('Permanently delete this entire conversation and all messages?')) return;
+
+  try {
+    await deleteDoc(doc(db, 'chats', activeChatUid));
+    showToast('Conversation deleted.', 'success');
+    closeAdminChatView();
+  } catch (e) {
+    showToast('Failed to delete conversation.', 'error');
+  }
+}
+
+function autolinkText(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="underline font-medium hover:text-sky-300 break-all">${url}</a>`);
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
 function renderQuickReplyDrawer() {
