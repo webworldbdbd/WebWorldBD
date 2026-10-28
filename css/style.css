@@ -1562,7 +1562,9 @@ body.dark .btn-flat-close:hover {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   flex: 1;
-  padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .sidebar-content-scroll::-webkit-scrollbar {
@@ -1811,9 +1813,13 @@ body.dark .sidebar-icon-tile-logout {
 
 /* Auth Buttons (Logged Out) */
 #sidebar-auth-section {
-  margin-top: 20px;
-  margin-bottom: 24px;
+  margin-top: auto;
+  margin-bottom: 20px;
   padding: 0 4px;
+}
+
+#sidebar-auth-section .sidebar-section-title {
+  margin-bottom: 16px;
 }
 
 .sidebar-auth-grid {
