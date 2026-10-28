@@ -39,17 +39,46 @@
   <!-- Entire Admin Interface (Hidden by default until client guard verifies credentials) -->
   <div id="admin-app" class="hidden min-h-screen flex flex-col md:flex-row relative">
 
-    <!-- DESKTOP SIDEBAR -->
-    <aside id="admin-sidebar" class="hidden md:flex flex-col w-64 bg-slate-950/90 backdrop-blur-xl border-r border-slate-800 shrink-0 sticky top-0 h-screen z-30 transition-all duration-300">
+    <!-- MOBILE DRAWER BACKDROP OVERLAY -->
+    <div id="admin-mobile-drawer-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- DESKTOP & MOBILE SLIDE-IN SIDEBAR DRAWER -->
+    <aside id="admin-sidebar" class="fixed md:sticky top-0 left-0 bottom-0 z-50 md:z-30 w-72 md:w-64 bg-slate-950/95 md:bg-slate-950/90 backdrop-blur-xl border-r border-slate-800 flex flex-col h-screen -translate-x-full md:translate-x-0 transition-transform duration-300 shrink-0">
+
+      <!-- Prominent Back to Main Site Button at Very Top -->
+      <div class="p-3 border-b border-slate-800/80 bg-slate-900/40">
+        <a href="./index.html" class="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:from-sky-600 hover:to-purple-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>← Back to Main Site</span>
+        </a>
+      </div>
+
       <!-- Logo Header -->
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <a href="./index.html" class="flex items-center gap-3">
-          <img src="./assets/logo.png?v=2" alt="WebWorldBD" class="h-9 w-auto">
+          <img src="./assets/logo.png?v=2" alt="WebWorldBD" class="h-8 w-auto">
           <div>
-            <span class="font-extrabold text-base tracking-tight text-white">WebWorld<span class="text-sky-400">BD</span></span>
+            <span class="font-extrabold text-sm tracking-tight text-white">WebWorld<span class="text-sky-400">BD</span></span>
             <span class="block text-[9px] font-black uppercase text-sky-400 tracking-wider">Executive Panel</span>
           </div>
         </a>
+        <button id="btn-close-mobile-drawer" class="md:hidden w-8 h-8 rounded-xl bg-slate-900 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Admin Profile Card in Drawer -->
+      <div class="p-3 border-b border-slate-800/80 bg-slate-900/30">
+        <div class="p-2.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-3">
+          <div id="admin-drawer-avatar-ring" class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 p-0.5 shrink-0">
+            <img id="admin-drawer-avatar-img" src="./assets/logo.png?v=2" class="w-full h-full object-cover rounded-full">
+          </div>
+          <div class="overflow-hidden flex-1">
+            <p id="admin-drawer-display-name" class="font-bold text-xs text-white truncate">Administrator</p>
+            <span class="inline-block px-1.5 py-0.2 rounded-md bg-sky-500/20 text-sky-400 text-[9px] font-bold">Administrator</span>
+            <p id="admin-drawer-email" class="text-[10px] text-slate-400 truncate mt-0.5">webworldbd.lmt@gmail.com</p>
+          </div>
+        </div>
       </div>
 
       <!-- Navigation Menu Items -->
@@ -113,22 +142,30 @@
         </button>
       </nav>
 
-      <!-- Bottom Admin Profile Widget -->
-      <div class="p-3 border-t border-slate-800">
-        <div class="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-400 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shrink-0">
-              A
-            </div>
-            <div class="overflow-hidden">
-              <p class="font-bold text-xs text-white truncate">Administrator</p>
-              <p class="text-[10px] text-sky-400 truncate">webworldbd.lmt@gmail.com</p>
-            </div>
-          </div>
-          <button id="btn-admin-logout" title="Sign out from admin" class="w-8 h-8 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs transition-colors cursor-pointer">
-            <i class="fa-solid fa-right-from-bracket"></i>
+      <!-- Quick Tools Shortcuts in Navigation -->
+      <div class="px-3 py-2 border-t border-slate-800/80">
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-1">Quick Tools</p>
+        <div class="grid grid-cols-3 gap-1.5 text-[10px] font-bold">
+          <button data-section="chat" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 flex flex-col items-center gap-1 text-center">
+            <i class="fa-solid fa-bolt text-amber-400"></i> Quick Replies
+          </button>
+          <button id="btn-quick-export" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 flex flex-col items-center gap-1 text-center">
+            <i class="fa-solid fa-file-export text-emerald-400"></i> Export Data
+          </button>
+          <button data-section="settings" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 flex flex-col items-center gap-1 text-center">
+            <i class="fa-solid fa-bell text-sky-400"></i> Notifications
           </button>
         </div>
+      </div>
+
+      <!-- Drawer Bottom Actions -->
+      <div class="p-3 border-t border-slate-800 space-y-2">
+        <a href="./index.html" target="_blank" class="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+          <i class="fa-solid fa-globe text-sky-400"></i> Open Public Site
+        </a>
+        <button id="btn-admin-logout" class="w-full py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        </button>
       </div>
     </aside>
 
@@ -138,20 +175,35 @@
       <!-- TOP BAR -->
       <header class="h-16 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 flex items-center justify-between sticky top-0 z-20">
         <div class="flex items-center gap-3">
-          <h2 id="topbar-section-title" class="font-black text-lg text-white">Dashboard</h2>
+          <!-- Mobile Hamburger Button -->
+          <button id="btn-open-mobile-drawer" class="md:hidden w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-base cursor-pointer">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h2 id="topbar-section-title" class="font-black text-base sm:text-lg text-white">Dashboard</h2>
         </div>
 
-        <div class="flex items-center gap-3">
-          <!-- Quick Search -->
-          <div class="relative hidden sm:block w-64">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Global Search Input & Results Dropdown -->
+          <div class="relative w-40 sm:w-64 md:w-80">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
-            <input type="text" id="admin-global-search" placeholder="Search chats, requests, users..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+            <input type="text" id="admin-global-search" placeholder="Search users, chats, msgs..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+
+            <!-- Floating Global Search Results Dropdown -->
+            <div id="admin-search-results-dropdown" class="hidden absolute left-0 right-0 top-11 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto divide-y divide-slate-800 text-xs">
+              <!-- Dynamically populated -->
+            </div>
           </div>
 
+          <!-- Notification Bell with Unread Badge -->
+          <button id="btn-topbar-notifications" data-section="chat" class="relative w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-sm cursor-pointer">
+            <i class="fa-solid fa-bell"></i>
+            <span id="topbar-unread-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px]">0</span>
+          </button>
+
           <!-- Direct Link to Public Site -->
-          <a href="./index.html" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
+          <a href="./index.html" target="_blank" class="hidden sm:flex px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:bg-sky-500/20 text-xs font-bold transition-all items-center gap-1.5">
             <i class="fa-solid fa-globe"></i>
-            <span class="hidden sm:inline">View Public Site</span>
+            <span>View Site</span>
           </a>
         </div>
       </header>
@@ -276,11 +328,17 @@
             <div id="admin-chat-list-panel" class="w-full md:w-80 lg:w-96 border-r border-slate-800 flex flex-col shrink-0 bg-slate-900/50">
               <!-- Filter & Search Header -->
               <div class="p-3 border-b border-slate-800 space-y-2">
-                <input type="text" id="chat-search-input" placeholder="Search name, email, msg..." class="w-full py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+                <div class="flex items-center gap-2">
+                  <input type="text" id="chat-search-input" placeholder="Search name, email, msg..." class="flex-1 py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+                  <button id="btn-new-chat-message" title="Start new conversation with any user" class="py-2 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center gap-1 shrink-0 cursor-pointer shadow-md">
+                    <i class="fa-solid fa-plus"></i> New
+                  </button>
+                </div>
                 <div class="flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
                   <button data-filter="all" class="chat-filter-tab active px-2.5 py-1 rounded-lg bg-slate-800 text-white">All</button>
                   <button data-filter="unread" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Unread</button>
                   <button data-filter="open" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Open</button>
+                  <button data-filter="all-users" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">All Users</button>
                   <button data-filter="closed" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Closed</button>
                   <button data-filter="pinned" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Pinned</button>
                   <button data-filter="blocked" class="chat-filter-tab px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Blocked</button>
@@ -290,6 +348,28 @@
               <!-- Conversation Items Scroll -->
               <div id="admin-chat-conversations" class="flex-1 overflow-y-auto divide-y divide-slate-800/50">
                 <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- NEW CHAT MODAL (Start Conversation with Any Registered User) -->
+            <div id="admin-new-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+              <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs"></div>
+              <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl z-10 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-sky-400"></i> Start Conversation
+                  </h3>
+                  <button id="btn-close-new-chat-modal" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <div class="space-y-3">
+                  <input type="text" id="input-search-new-chat-user" oninput="renderNewChatUserList(this.value)" placeholder="Search name, username, email, phone..." class="w-full py-2 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+                  <div id="new-chat-user-list" class="max-h-60 overflow-y-auto divide-y divide-slate-800/60 space-y-1">
+                    <!-- Dynamically populated -->
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -392,20 +472,56 @@
 
         <!-- 4. USERS MANAGER SECTION -->
         <section id="section-users" class="admin-section hidden space-y-4">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
-            <h3 class="font-black text-base text-white">Registered Users Directory</h3>
-            <button id="btn-export-users-csv" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-solid fa-file-csv"></i> Export Users CSV
-            </button>
+          <!-- Users Header Controls -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
+            <div>
+              <h3 class="font-black text-base text-white flex items-center gap-2">
+                Registered Users Directory
+                <span id="users-count-badge" class="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-400 text-xs font-extrabold">0 Total</span>
+              </h3>
+              <p class="text-xs text-slate-400">All registered Google & Email accounts with live Firestore sync.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <button id="btn-export-users-csv" class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+              </button>
+            </div>
           </div>
 
-          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+          <!-- Search, Filters, and Sorting Bar -->
+          <div class="glass-card p-3 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="relative w-full md:w-72">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+              <input type="text" id="users-search-input" placeholder="Search name, username, email, phone..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="flex items-center gap-1 overflow-x-auto w-full md:w-auto text-xs font-bold">
+              <button data-user-filter="all" class="user-filter-tab active px-3 py-1.5 rounded-xl bg-slate-800 text-white">All</button>
+              <button data-user-filter="active" class="user-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Active</button>
+              <button data-user-filter="blocked" class="user-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Blocked</button>
+              <button data-user-filter="verified" class="user-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Verified</button>
+              <button data-user-filter="has-phone" class="user-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Has Phone</button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <select id="users-sort-select" class="py-1.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-bold focus:outline-hidden">
+              <option value="newest">Sort: Newest Joined</option>
+              <option value="lastLogin">Sort: Last Login</option>
+              <option value="name">Sort: Name A-Z</option>
+            </select>
+          </div>
+
+          <!-- Users Directory Table -->
+          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs text-slate-300">
                 <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
                   <tr>
-                    <th class="p-3.5">User</th>
-                    <th class="p-3.5">Username</th>
+                    <th class="p-3.5">User Profile</th>
+                    <th class="p-3.5">Username & Email</th>
+                    <th class="p-3.5">Phone Number</th>
                     <th class="p-3.5">Provider</th>
                     <th class="p-3.5">Joined</th>
                     <th class="p-3.5">Status</th>
@@ -419,6 +535,25 @@
             </div>
           </div>
         </section>
+
+        <!-- USER DETAIL DRAWER (Overlay Modal) -->
+        <div id="admin-user-detail-modal" class="fixed inset-0 z-50 flex justify-end hidden">
+          <div id="admin-user-detail-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs"></div>
+          <div class="relative w-full max-w-md bg-slate-900 border-l border-slate-800 h-full z-10 flex flex-col p-5 overflow-y-auto space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                <i class="fa-solid fa-address-card text-sky-400"></i> User Full Profile
+              </h3>
+              <button id="btn-close-user-detail" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div id="user-detail-modal-body" class="space-y-4 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
 
         <!-- 5. CONTENT MANAGER SECTION -->
         <section id="section-content" class="admin-section hidden space-y-6">
@@ -492,22 +627,197 @@
           </div>
         </section>
 
-        <!-- 8. SETTINGS SECTION -->
+        <!-- 8. SETTINGS SECTION (10 Executive Settings Sub-sections) -->
         <section id="section-settings" class="admin-section hidden space-y-6">
-          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
-            <h3 class="font-black text-base text-white">Executive Settings</h3>
-            <div class="space-y-3 text-xs text-slate-300">
-              <p><strong>Admin Email:</strong> webworldbd.lmt@gmail.com</p>
-              <p><strong>Firebase UID:</strong> dS9uZZToHTUPP1Q3DiWiG25D3Xt2</p>
+          <!-- Top Sticky Save Bar -->
+          <div class="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl border border-slate-800 flex items-center justify-between sticky top-16 z-10 shadow-xl">
+            <div>
+              <h3 class="font-black text-base text-white flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-sky-400"></i> Executive Panel Settings
+              </h3>
+              <p class="text-xs text-slate-400">Manage panel features, public website defaults, security & backups.</p>
             </div>
+            <button id="btn-save-all-settings" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 hover:from-sky-600 hover:to-purple-700 text-white font-extrabold text-xs shadow-lg transition-all cursor-pointer flex items-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> Save Settings
+            </button>
+          </div>
+
+          <!-- A) Admin Profile -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-user-shield"></i> A) Admin Profile & Credentials
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Display Name</label>
+                <input type="text" id="set-admin-name" value="SHAFAET HOSSEN SARIP" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-hidden focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Admin Email (Read-Only)</label>
+                <input type="text" readonly value="webworldbd.lmt@gmail.com" class="w-full p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-slate-400 font-mono cursor-not-allowed">
+              </div>
+            </div>
+          </div>
+
+          <!-- B) Appearance -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-purple-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-palette"></i> B) Appearance & Theme Options
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Panel Theme Choice</label>
+                <select id="set-panel-theme" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold">
+                  <option value="dark">Dark Theme (Default Executive)</option>
+                  <option value="light">Light Theme</option>
+                  <option value="system">Follow System Preferences</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Accent Color</label>
+                <select id="set-accent-color" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold">
+                  <option value="sky">Sky Blue (Default)</option>
+                  <option value="purple">Royal Purple</option>
+                  <option value="emerald">Emerald Green</option>
+                  <option value="amber">Amber Gold</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Panel Language</label>
+                <select id="set-panel-lang" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold">
+                  <option value="en">English (US)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- C) Notifications -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-emerald-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-bell"></i> C) Notification & Alert Sounds
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                <span class="font-bold text-white">Chat Notification Sound</span>
+                <input type="checkbox" id="set-sound-enabled" checked class="accent-sky-500 w-4 h-4">
+              </label>
+              <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                <span class="font-bold text-white">New Signup Alerts</span>
+                <input type="checkbox" id="set-signup-alerts" checked class="accent-sky-500 w-4 h-4">
+              </label>
+            </div>
+          </div>
+
+          <!-- D) Live Chat Settings -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-comments"></i> D) Live Chat System Controls
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                <span class="font-bold text-white">Enable Live Chat for Everyone</span>
+                <input type="checkbox" id="set-chat-enabled" checked class="accent-sky-500 w-4 h-4">
+              </label>
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Max File Upload Limit</label>
+                <input type="text" readonly value="30 MB (Cloudinary Upload)" class="w-full p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-slate-400 font-mono cursor-not-allowed">
+              </div>
+            </div>
+          </div>
+
+          <!-- E) User Management Settings -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-pink-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-users-gear"></i> E) User Signup & Access Rules
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
+                <span class="font-bold text-white">Allow Public User Signups</span>
+                <input type="checkbox" id="set-allow-signups" checked class="accent-sky-500 w-4 h-4">
+              </label>
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Reserved Usernames</label>
+                <input type="text" id="set-reserved-usernames" value="admin, administrator, root, support, webworldbd, official" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono">
+              </div>
+            </div>
+          </div>
+
+          <!-- F) Project Requests Settings -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-indigo-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-rocket"></i> F) Project Requests Configuration
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Categories List (Comma Separated)</label>
+                <input type="text" id="set-request-categories" value="E-commerce, SaaS Web App, Portfolio, Custom Web" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white">
+              </div>
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Default Status</label>
+                <input type="text" readonly value="New" class="w-full p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-slate-400 font-bold cursor-not-allowed">
+              </div>
+            </div>
+          </div>
+
+          <!-- G) Website Settings (Public Site Control) -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-teal-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-globe"></i> G) Public Website Settings
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Hero Stat Number 1</label>
+                <input type="text" id="set-stat-1" value="108+ Projects Completed" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white">
+              </div>
+              <div class="space-y-1">
+                <label class="block font-bold text-slate-300">Hero Stat Number 2</label>
+                <input type="text" id="set-stat-2" value="86+ Satisfied Clients" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white">
+              </div>
+            </div>
+          </div>
+
+          <!-- H) Security -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-red-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-shield-halved"></i> H) Security Controls
+            </h4>
+            <div class="space-y-2 text-xs text-slate-300">
+              <p><strong>Auto Sign-Out Timeout:</strong> 30 Minutes Inactivity (Strict Enforcement)</p>
+              <p><strong>Enforced Access:</strong> Firestore Security Rules enforces <code>webworldbd.lmt@gmail.com</code> with verified email.</p>
+            </div>
+          </div>
+
+          <!-- I) Data & Backup -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
+            <h4 class="font-extrabold text-sm text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i class="fa-solid fa-database"></i> I) Data Backup & Export
+            </h4>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button onclick="exportUsersCSV()" class="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 font-bold hover:bg-emerald-500/30">
+                <i class="fa-solid fa-file-csv"></i> Export Users CSV
+              </button>
+              <button onclick="exportRequestsCSV()" class="px-4 py-2 rounded-xl bg-purple-500/20 text-purple-400 font-bold hover:bg-purple-500/30">
+                <i class="fa-solid fa-file-csv"></i> Export Requests CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- J) System Info -->
+          <div class="glass-card p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3 text-xs text-slate-400">
+            <h4 class="font-extrabold text-sm text-white uppercase tracking-wider border-b border-slate-800 pb-2">
+              <i class="fa-solid fa-circle-info"></i> J) System Information
+            </h4>
+            <p><strong>Panel Version:</strong> WebWorldBD Executive v3.5</p>
+            <p><strong>Firebase SDK:</strong> v10.12.2 CDN</p>
           </div>
         </section>
 
       </main>
     </div>
 
-    <!-- MOBILE BOTTOM NAVIGATION TAB BAR -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 z-40 flex items-center justify-around px-2">
+    <!-- MOBILE BOTTOM NAVIGATION TAB BAR (Floating) -->
+    <nav class="md:hidden fixed bottom-3 left-3 right-3 h-16 bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl z-40 flex items-center justify-around px-2 shadow-2xl">
       <button data-section="dashboard" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
         <i class="fa-solid fa-chart-pie text-base"></i>
         <span>Dash</span>
@@ -515,18 +825,20 @@
       <button data-section="chat" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
         <i class="fa-solid fa-comments text-base"></i>
         <span>Chats</span>
+        <span id="mobile-chat-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-red-500 text-white font-black text-[8px]">0</span>
       </button>
       <button data-section="requests" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold relative">
         <i class="fa-solid fa-rocket text-base"></i>
         <span>Requests</span>
+        <span id="mobile-req-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-sky-500 text-white font-black text-[8px]">0</span>
       </button>
       <button data-section="users" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
         <i class="fa-solid fa-users text-base"></i>
         <span>Users</span>
       </button>
-      <button data-section="site-control" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
-        <i class="fa-solid fa-sliders text-base"></i>
-        <span>Control</span>
+      <button data-section="settings" class="mobile-admin-tab flex flex-col items-center gap-1 text-slate-400 hover:text-white text-[10px] font-bold">
+        <i class="fa-solid fa-gear text-base"></i>
+        <span>Settings</span>
       </button>
     </nav>
 

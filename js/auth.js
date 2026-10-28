@@ -227,6 +227,8 @@ export async function fetchOrCreateUserDoc(user, signupName = "") {
   const userRef = doc(db, "users", user.uid);
   const nowIso = new Date().toISOString();
 
+  let resultData = null;
+
   try {
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
@@ -236,7 +238,7 @@ export async function fetchOrCreateUserDoc(user, signupName = "") {
         emailVerified: user.emailVerified || false
       };
       await updateDoc(userRef, updates);
-      return { ...existingData, ...updates };
+      resultData = { ...existingData, ...updates };
     } else {
       // New user auto-creation
       const displayName = signupName || user.displayName || user.email?.split("@")[0] || 'User';
@@ -267,8 +269,50 @@ export async function fetchOrCreateUserDoc(user, signupName = "") {
       };
 
       await setDoc(userRef, newUserData);
-      return newUserData;
+      resultData = newUserData;
     }
+
+    // Auto create or update chats/{uid} conversation stub for every account
+    try {
+      const chatRef = doc(db, "chats", user.uid);
+      const chatSnap = await getDoc(chatRef);
+      if (!chatSnap.exists()) {
+        await setDoc(chatRef, {
+          uid: user.uid,
+          userName: resultData.name || 'User',
+          userEmail: resultData.email || '',
+          userPhoto: resultData.photoURL || '',
+          username: resultData.username || '',
+          phone: resultData.phone || '',
+          lastMessage: '',
+          lastMessageAt: nowIso,
+          lastSender: 'user',
+          unreadForAdmin: 0,
+          unreadForUser: 0,
+          status: 'new',
+          pinned: false,
+          blocked: false,
+          userTyping: false,
+          adminTyping: false,
+          userLastSeen: nowIso,
+          createdAt: nowIso,
+          tags: [],
+          adminNote: ''
+        });
+      } else {
+        await updateDoc(chatRef, {
+          userName: resultData.name || 'User',
+          userEmail: resultData.email || '',
+          userPhoto: resultData.photoURL || '',
+          username: resultData.username || '',
+          phone: resultData.phone || ''
+        });
+      }
+    } catch (chatErr) {
+      console.warn("Auto chat stub sync warning:", chatErr);
+    }
+
+    return resultData;
   } catch (err) {
     console.warn("Firestore fetch/create error, using fallback:", err);
     return {
