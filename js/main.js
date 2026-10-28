@@ -171,46 +171,51 @@ function injectHeader() {
   const isDark = document.body.classList.contains('dark');
 
   headerContainer.innerHTML = `
-    <header class="sticky top-0 z-40 w-full glass-nav px-2.5 sm:px-4 py-2.5 transition-colors duration-200">
-      <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
-        <!-- Left Section: Hamburger + Brand Logo -->
+    <header id="main-header" class="sticky top-0 z-40 w-full header-3d-bar">
+      <div class="max-w-6xl mx-auto header-inner flex items-center justify-between">
+        <!-- Left Group: Hamburger + Brand Logo -->
         <div class="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             id="btn-open-sidebar"
             aria-label="Open Navigation Menu"
-            class="btn-flat-header-round w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-3d-header btn-3d-header-round"
           >
-            <i class="fa-solid fa-bars text-base sm:text-lg"></i>
+            <i class="fa-solid fa-bars text-base"></i>
           </button>
 
-          <a href="./index.html" class="flex items-center gap-2 group">
-            <img
-              src="./assets/logo.png?v=2"
-              alt="WebWorldBD"
-              width="36"
-              height="36"
-              class="h-9 sm:h-10 w-auto object-contain filter drop-shadow-xs group-hover:scale-105 transition-transform"
-              onerror="this.style.display='none';"
-            />
-            <span class="header-brand-text font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
-              <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
+          <a href="./index.html" class="flex items-center gap-2 group header-logo-link">
+            <div class="logo-img-container">
+              <img
+                src="./assets/logo.png?v=2"
+                alt="WebWorldBD"
+                width="36"
+                height="36"
+                class="header-logo-img"
+                onerror="this.style.display='none';"
+              />
+            </div>
+            <span class="header-brand-text">
+              <span class="brand-dark" data-i18n="brandName">${t('brandName')}</span><span class="brand-sky" data-i18n="brandBD">${t('brandBD')}</span>
             </span>
           </a>
         </div>
 
-        <!-- Right Section: Header Avatar Dropdown + Theme Toggle + Language Toggle Pill -->
-        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <!-- Right Group: User Avatar + Theme Toggle + Language Toggle -->
+        <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
           <!-- Header User Avatar Dropdown (Hidden when logged out) -->
           <div id="header-user-wrapper" class="relative hidden">
             <button
               id="btn-header-avatar"
               aria-label="User Menu"
-              class="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-tr from-sky-400 via-indigo-500 to-purple-500 rounded-full cursor-pointer focus:outline-hidden ring-2 ring-sky-300 dark:ring-sky-900 transition-transform hover:scale-105"
+              class="btn-3d-avatar"
             >
-              <div class="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center">
-                <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Profile">
-                <span id="header-avatar-initial" class="text-white font-black text-xs">U</span>
+              <div class="avatar-ring-outer">
+                <div class="avatar-ring-inner">
+                  <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Profile">
+                  <span id="header-avatar-initial" class="text-white font-black text-xs">U</span>
+                </div>
               </div>
+              <span class="avatar-online-dot"></span>
             </button>
 
             <!-- Dropdown Menu -->
@@ -256,22 +261,23 @@ function injectHeader() {
           <button
             id="btn-toggle-theme"
             aria-label="Toggle Light/Dark Theme"
-            class="btn-flat-header-round w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-3d-header btn-3d-header-round btn-theme-toggle"
           >
-            <i class="fa-solid fa-sun text-amber-500 theme-icon-sun" style="display:${isDark ? 'none' : 'inline-block'};"></i>
-            <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:${isDark ? 'inline-block' : 'none'};"></i>
+            <i class="fa-solid fa-sun theme-icon-sun text-amber-500" style="display:${isDark ? 'none' : 'inline-block'};"></i>
+            <i class="fa-solid fa-moon theme-icon-moon text-sky-400" style="display:${isDark ? 'inline-block' : 'none'};"></i>
           </button>
 
           <button
             id="btn-toggle-lang"
             aria-label="Toggle Language"
-            class="btn-flat-header-pill px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full flex items-center gap-1 sm:gap-1.5 font-semibold text-xs cursor-pointer"
+            class="btn-3d-header btn-3d-header-pill"
           >
             <i class="fa-solid fa-globe text-sky-500"></i>
             <span class="lang-toggle-text">${getLanguage() === 'en' ? 'BN' : 'EN'}</span>
           </button>
         </div>
       </div>
+      <div class="header-bottom-glow-line"></div>
     </header>
   `;
 
@@ -299,6 +305,18 @@ function injectHeader() {
     await logOut();
     showToast(getLanguage() === 'en' ? "Signed out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
     window.location.href = './index.html';
+  });
+
+  // Scroll height shrink listener
+  window.addEventListener('scroll', () => {
+    const header = document.getElementById('main-header');
+    if (header) {
+      if (window.scrollY > 10) {
+        header.classList.add('is-scrolled');
+      } else {
+        header.classList.remove('is-scrolled');
+      }
+    }
   });
 }
 
@@ -1020,22 +1038,34 @@ function injectBottomNav() {
   const isLiveChatActive = currentPath === 'livechat.html';
   const isConnectActive = currentPath === 'contact.html';
 
+  let activeIndex = 0;
+  if (isServicesActive) activeIndex = 1;
+  else if (isStartProjectActive) activeIndex = 2;
+  else if (isLiveChatActive) activeIndex = 3;
+  else if (isConnectActive) activeIndex = 4;
+
   const nav = document.createElement('nav');
   nav.id = 'bottom-nav-bar';
   nav.className = 'bottom-nav-container';
   nav.setAttribute('aria-label', 'Mobile Bottom Navigation');
 
   nav.innerHTML = `
-    <div class="bottom-nav-pill">
+    <div class="bottom-nav-pill-3d">
+      <!-- Animated Active Tab Pill Indicator -->
+      <div class="bottom-nav-active-indicator" style="transform: translateX(calc(${activeIndex} * 100%));">
+        <div class="bottom-nav-indicator-glow"></div>
+      </div>
+
       <!-- 1. Home -->
       <a
         href="./index.html"
         class="bottom-nav-btn ${isHomeActive ? 'active' : ''}"
       >
         <div class="bottom-nav-icon-wrapper">
-          <i class="fa-solid fa-house text-lg"></i>
+          <i class="fa-solid fa-house"></i>
         </div>
         <span class="bottom-nav-label" data-i18n="home">${t('home')}</span>
+        <span class="bottom-nav-active-dot"></span>
       </a>
 
       <!-- 2. Services -->
@@ -1044,24 +1074,25 @@ function injectBottomNav() {
         class="bottom-nav-btn ${isServicesActive ? 'active' : ''}"
       >
         <div class="bottom-nav-icon-wrapper">
-          <i class="fa-solid fa-layer-group text-lg"></i>
+          <i class="fa-solid fa-layer-group"></i>
         </div>
         <span class="bottom-nav-label" data-i18n="services">${t('services')}</span>
+        <span class="bottom-nav-active-dot"></span>
       </a>
 
       <!-- 3. Start Project (CENTER) -->
-      <div class="bottom-nav-center-item">
+      <div class="bottom-nav-btn bottom-nav-center-col ${isStartProjectActive ? 'active' : ''}">
         <a
           href="./start-project.html"
           id="btn-bottom-start-project"
-          class="bottom-nav-center-btn ${isStartProjectActive ? 'active' : ''}"
+          class="bottom-nav-center-sphere"
           aria-label="Start Project"
         >
-          <div class="bottom-nav-center-circle">
-            <i class="fa-solid fa-rocket text-xl text-white"></i>
-          </div>
+          <div class="sphere-glass-shine"></div>
+          <i class="fa-solid fa-rocket sphere-rocket-icon"></i>
         </a>
-        <span class="bottom-nav-label font-bold" data-i18n="startProject">${t('startProject')}</span>
+        <span class="bottom-nav-label center-label" data-i18n="startProject">${t('startProject')}</span>
+        <span class="bottom-nav-active-dot"></span>
       </div>
 
       <!-- 4. Live Chat -->
@@ -1071,10 +1102,11 @@ function injectBottomNav() {
         aria-label="Live Chat"
       >
         <div class="bottom-nav-icon-wrapper relative">
-          <i class="fa-solid fa-comments text-lg"></i>
+          <i class="fa-solid fa-comments"></i>
           <span class="live-chat-red-dot hidden"></span>
         </div>
         <span class="bottom-nav-label" data-i18n="liveChat">${t('liveChat')}</span>
+        <span class="bottom-nav-active-dot"></span>
       </a>
 
       <!-- 5. Connect -->
@@ -1083,14 +1115,35 @@ function injectBottomNav() {
         class="bottom-nav-btn ${isConnectActive ? 'active' : ''}"
       >
         <div class="bottom-nav-icon-wrapper">
-          <i class="fa-solid fa-link text-lg"></i>
+          <i class="fa-solid fa-link"></i>
         </div>
         <span class="bottom-nav-label" data-i18n="connect">${t('connect')}</span>
+        <span class="bottom-nav-active-dot"></span>
       </a>
     </div>
   `;
 
   document.body.appendChild(nav);
+
+  // Center rocket button launch bounce tap handler
+  const rocketBtn = document.getElementById('btn-bottom-start-project');
+  rocketBtn?.addEventListener('click', (e) => {
+    rocketBtn.classList.add('rocket-launch');
+    setTimeout(() => rocketBtn.classList.remove('rocket-launch'), 500);
+  });
+
+  // Slide down bottom bar on input focus (virtual keyboard open)
+  const inputs = 'input, textarea, select';
+  document.addEventListener('focusin', (e) => {
+    if (e.target.matches(inputs)) {
+      nav.classList.add('is-keyboard-open');
+    }
+  });
+  document.addEventListener('focusout', (e) => {
+    if (e.target.matches(inputs)) {
+      nav.classList.remove('is-keyboard-open');
+    }
+  });
 }
 
 /* ================= FLOATING BUTTONS INJECTION ================= */
