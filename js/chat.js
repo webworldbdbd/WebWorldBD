@@ -120,6 +120,19 @@ function initChatUI() {
     document.getElementById('media-viewer-modal')?.classList.add('hidden');
   });
 
+  // 8. Quick Suggestion Chips Handler
+  document.querySelectorAll('.btn-chat-suggestion').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const msg = e.currentTarget.getAttribute('data-msg');
+      const textarea = document.getElementById('chat-textarea');
+      if (textarea && msg) {
+        textarea.value = msg;
+        textarea.focus();
+        autoResizeTextarea(textarea);
+      }
+    });
+  });
+
   // Reset document title on tab click
   window.addEventListener('focus', () => {
     document.title = originalTitle;

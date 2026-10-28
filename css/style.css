@@ -77,6 +77,23 @@ body.admin-page #sidebar-drawer {
   display: none !important;
 }
 
+/* LiveChat Page Full-Screen Rules */
+body.livechat-page {
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+}
+
+body.livechat-page #header-root,
+body.livechat-page #footer-root,
+body.livechat-page #bottom-nav-bar,
+body.livechat-page #floating-buttons-root {
+  display: none !important;
+}
+
 /* Admin Panel Mobile Bottom Tab Bar Styling */
 .admin-bottom-tab-bar {
   position: fixed;
