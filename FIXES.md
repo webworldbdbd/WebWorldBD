@@ -1,6 +1,33 @@
 # WebWorldBD Fixes and Feature Implementations Log
 
-## Version 2.9.0 - Bengali Language Copy, Name Spelling, Brand Consistency & Layout Fixes
+## Version 2.9.0 - Unified Atomic Project Requests & Shared Card Component
+
+### Root Cause Analysis
+- Previously, submitting a project request in `start-project.html` did not write to `projectRequests/{id}` and `chats/{uid}/messages` atomically, causing requests not to render as rich cards inside user and admin Live Chat conversations.
+- Project requests lacked a single, standardized, responsive card component across the Admin Panel drawer, Live Chat inbox, and user profile views.
+- WhatsApp message generation on the form needed bold asterisks, emojis, line breaks, and proper attachment URL fallbacks without writing to Firestore.
+
+### Summary of Changes Implemented
+1. **Atomic Batch Submission (`start-project.html`)**:
+   - Refactored request submission to run in a single Firestore `writeBatch(db)`.
+   - Atomically creates `projectRequests/{requestId}`, creates a `type: "request"` message in `chats/{uid}/messages`, and creates/updates `chats/{uid}` with `lastMessage: "📋 Project Request WW-XXXXXX"`.
+   - Updated WhatsApp form button to build formatted text with `*bold*` labels, emojis, line breaks, and attachment URL without saving to Firestore.
+
+2. **Unified Shared Request Card Component (`js/request-card.js`)**:
+   - Created `renderRequestCardHtml()` with gradient title, ID badge (copy to clipboard), colored status chip, time ago + exact timestamp, client profile info with registered badge, details grid, quote-style requirements block with autolink and show more/less toggle, attachment preview/download, status dropdown, WhatsApp action, copy as text, print/PDF, and admin note auto-save.
+
+3. **Admin Panel & Alerts (`js/admin.js` & `css/style.css`)**:
+   - Updated request detail drawer to render the unified Request Card.
+   - Added print stylesheet `@media print` in `css/style.css` so printing or saving to PDF outputs only the request card cleanly.
+   - Preserved real-time sound, desktop notifications, toast alerts, unread badges, and glowing "NEW" tags.
+
+4. **Live Chat Inbox Request Cards (`js/chat.js` & `js/admin.js`)**:
+   - Render `type: "request"` messages as special wide cards with live status badges on both Admin and User sides in Live Chat conversations.
+
+5. **Firestore Security Rules (`firestore.rules`)**:
+   - Configured `chats/{uid}/messages` match rules to allow `type: "request"` for signed-in users with a `getAfter()` check requiring `projectRequests/{requestId}.userId == request.auth.uid`.
+
+## Version 2.8.1 - Bengali Language Copy, Name Spelling, Brand Consistency & Layout Fixes
 
 ### Root Cause Analysis
 1. **Name Spelling Inconsistency**:
