@@ -1,5 +1,40 @@
 # WebWorldBD Fixes and Feature Implementations Log
 
+## Version 2.8.0 - Real-Time Project Requests & Live Tracking System
+
+### Root Cause Analysis
+- Previously, project request submissions on `start-project.html` were saved as basic document entries without authenticated user validation, client-side rate limiting, Cloudinary progress cancellation, or complete schema fields (`requestId`, `seenByAdmin`, `adminNote`, `language`, `source`, structured `attachment` object).
+- The admin panel (`admin.html` / `js/admin.js`) lacked real-time notification alerts (sound, desktop notifications, unread badges, glowing "NEW" tags) and complete request detail drawer inspection features.
+- Users lacked a dedicated real-time "My Requests" live status tracker on `profile.html`.
+
+### Summary of Changes Implemented
+1. **Firestore Security Rules (`firestore.rules`)**:
+   - Updated `projectRequests/{requestId}` match rules to require user authentication (`request.auth != null`), schema key validation (`hasOnly`), strict field length limits (`requirements <= 3000`, `name <= 80`, `mobile <= 20`, `email <= 120`, `budget <= 60`, `category <= 80`), non-blocked account status (`users/{uid}.blocked != true`), and read access restricted to owner or admin.
+
+2. **Start Project Form (`start-project.html`)**:
+   - Enforced user authentication for submitting requests with login redirection; kept WhatsApp message button accessible to all.
+   - Added client-side field validation for mobile number (BD format), category selection, requirements (10–3000 chars), email format, and budget (<60 chars) with translated errors shown under each field.
+   - Implemented Cloudinary unsigned upload to `webworldbd_uploads/requests` folder with live progress tracking and cancellation.
+   - Saves structured document fields (`requestId`, `name`, `mobile`, `email`, `budget`, `category`, `requirements`, `attachment`, `userId`, `userName`, `username`, `userEmail`, `userPhoto`, `status`, `seenByAdmin`, `adminNote`, `createdAt`, `updatedAt`, `language`, `source`).
+   - Ensures `chats/{uid}` stub exists on request creation so admins can immediately initiate live chat.
+   - Shows an animated success screen with Request ID, Admin Settings auto-reply text, and quick action links.
+   - Enforces rate limiting (1 request per 60s per user) with countdown timer and double-submit block.
+
+3. **Admin Panel (`admin.html` & `js/admin.js`)**:
+   - Real-time `onSnapshot` listener on `projectRequests` (newest first, with "Load More" pagination).
+   - Real-time alerts: sound alert, in-panel toast, desktop notification, badge counters on sidebar, bottom tab, topbar bell, dashboard "New Requests" counter, and tab title `(N) New request`.
+   - Glowing "NEW" chip for unread requests until opened (`seenByAdmin: true`).
+   - Request Detail Drawer: full field display, copy buttons, attachment preview/download, user profile summary, private admin note, and actions ("Message user", "WhatsApp", "Call", "Email", "Delete").
+   - Filter tabs, search bar, sorting, and CSV export.
+
+4. **User Profile Live Tracking (`profile.html`)**:
+   - Added real-time "My Requests" list on `profile.html` displaying Request ID, category, date, attachment link, status chip, and status explanation.
+   - Displays live toast notifications whenever the admin changes request status.
+   - Friendly empty state with "Start a Project" button.
+
+5. **Internationalization (`js/i18n.js`)**:
+   - Added complete English and Bengali translations for Start Project form errors, My Requests status explanations, and admin request drawer elements.
+
 ## Version 2.7.0 - Admin Panel Public UI Isolation, Header Search & Dashboard Data Fixes
 
 ### Root Cause Analysis

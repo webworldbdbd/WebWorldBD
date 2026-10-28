@@ -285,6 +285,25 @@
 
       </div>
 
+      <!-- MY PROJECT REQUESTS REAL-TIME LIST SECTION -->
+      <div id="my-requests" class="p-6 border-t border-slate-100 dark:border-slate-800/80 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-rocket text-purple-500"></i>
+            <span data-i18n="myRequestsHeading">My Project Requests</span>
+          </h3>
+          <a href="./start-project.html" class="px-3.5 py-1.5 rounded-full bg-sky-500/10 text-sky-500 hover:bg-sky-500/20 font-bold text-xs transition-colors flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i>
+            <span data-i18n="startProject">Start Project</span>
+          </a>
+        </div>
+
+        <div id="my-requests-list" class="space-y-3">
+          <!-- Dynamically populated via JS subscription -->
+          <div class="text-center py-8 text-slate-400 text-xs animate-pulse">Loading your project requests...</div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -495,14 +514,19 @@
 
   <script type="module" src="./js/main.js"></script>
   <script type="module">
+    import { db } from './js/firebase-config.js';
     import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
     import { isAdminUser } from './js/admin-config.js';
     import { uploadToCloudinary, getOptimizedImageUrl } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
+    import { collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let currentUser = null;
     let currentUserData = null;
+    let myRequestsUnsub = null;
+    let previousReqStatuses = {};
+    let initialReqsLoaded = false;
     let initialFormState = {};
     let pendingBlobToUpload = null;
     let usernameCheckTimeout = null;
@@ -545,6 +569,7 @@
           currentUserData = userData;
 
           renderProfilePage(user, userData);
+          subscribeMyRequests(user.uid);
 
           // Check URL parameter for modal auto-open
           const urlParams = new URLSearchParams(window.location.search);
@@ -761,6 +786,117 @@
         }
       });
     });
+
+    /* ================= REAL-TIME MY REQUESTS SUBSCRIBER ================= */
+    function subscribeMyRequests(uid) {
+      if (myRequestsUnsub) { myRequestsUnsub(); myRequestsUnsub = null; }
+
+      const requestsRef = collection(db, 'projectRequests');
+      const q = query(requestsRef, where('userId', '==', uid), orderBy('createdAt', 'desc'));
+
+      myRequestsUnsub = onSnapshot(q, (snapshot) => {
+        const requests = [];
+        snapshot.forEach(docSnap => {
+          requests.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        if (initialReqsLoaded) {
+          requests.forEach(req => {
+            const prevStatus = previousReqStatuses[req.id];
+            if (prevStatus && prevStatus !== req.status) {
+              showToast(`Your request ${req.requestId || req.id} is now ${req.status}`, 'info');
+            }
+          });
+        }
+
+        previousReqStatuses = {};
+        requests.forEach(r => { previousReqStatuses[r.id] = r.status; });
+        initialReqsLoaded = true;
+
+        renderMyRequestsList(requests);
+      }, (err) => {
+        console.error("My Requests Subscription Error:", err);
+        const listEl = document.getElementById('my-requests-list');
+        if (listEl) {
+          listEl.innerHTML = `<div class="p-4 rounded-2xl bg-red-500/10 text-red-400 text-xs">Failed to load requests. Please try refreshing.</div>`;
+        }
+      });
+    }
+
+    function renderMyRequestsList(requests) {
+      const container = document.getElementById('my-requests-list');
+      if (!container) return;
+
+      if (requests.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 rounded-3xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-3">
+            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-500 flex items-center justify-center text-2xl mx-auto">
+              <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h4 class="font-extrabold text-sm text-slate-800 dark:text-white" data-i18n="myRequestsEmptyTitle">${t('myRequestsEmptyTitle')}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto" data-i18n="myRequestsEmptyDesc">${t('myRequestsEmptyDesc')}</p>
+            <div class="pt-2">
+              <a href="./start-project.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition-all">
+                <i class="fa-solid fa-rocket"></i>
+                <span data-i18n="startProject">${t('startProject')}</span>
+              </a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = requests.map(req => {
+        const createdDate = req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : (req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A');
+        const statusKey = (req.status || 'new').toLowerCase().replace(' ', '');
+
+        let statusText = req.status || 'New';
+        let statusDesc = t('statusNewDesc');
+        let statusClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+
+        if (statusKey === 'contacted') {
+          statusText = t('statusContacted');
+          statusDesc = t('statusContactedDesc');
+          statusClass = 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-300 dark:border-sky-800';
+        } else if (statusKey === 'inprogress') {
+          statusText = t('statusInProgress');
+          statusDesc = t('statusInProgressDesc');
+          statusClass = 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300 dark:border-purple-800';
+        } else if (statusKey === 'completed') {
+          statusText = t('statusCompleted');
+          statusDesc = t('statusCompletedDesc');
+          statusClass = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
+        } else if (statusKey === 'rejected') {
+          statusText = t('statusRejected');
+          statusDesc = t('statusRejectedDesc');
+          statusClass = 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border-red-300 dark:border-red-800';
+        }
+
+        return `
+          <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 shadow-md space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-black text-sky-500">${req.requestId || req.id}</span>
+                <span class="text-xs font-bold text-slate-800 dark:text-slate-200">• ${req.category || 'Custom Project'}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${statusClass}">
+                  ${statusText}
+                </span>
+                <span class="text-[10px] text-slate-400 font-medium">${createdDate}</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 italic">${req.requirements || ''}</p>
+
+            <div class="flex items-center justify-between text-xs pt-1">
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">${statusDesc}</p>
+              ${req.attachment?.url ? `<a href="${req.attachment.url}" target="_blank" class="px-3 py-1 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 font-bold hover:underline flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-paperclip"></i> View File</a>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
 
     /* ================= RENDER PROFILE PAGE ================= */
     function renderProfilePage(user, userData) {

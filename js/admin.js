@@ -27,10 +27,16 @@ let requestsUnsub = null;
 let usersUnsub = null;
 let logsUnsub = null;
 let configUnsub = null;
+let adminSettingsUnsub = null;
+
 let allChatsData = [];
 let allRequestsData = [];
 let allUsersData = [];
 let currentSiteConfig = {};
+let currentAdminSettings = { soundEnabled: true };
+
+let initialRequestsLoaded = false;
+let requestDisplayLimit = 15;
 
 // Inactivity timeout tracking (30 minutes timeout with 28 minute warning)
 let inactivityTimer = null;
@@ -85,8 +91,14 @@ function initAdminGuard() {
     document.getElementById('admin-auth-guard')?.classList.add('hidden');
     document.getElementById('admin-app')?.classList.remove('hidden');
 
+    // Request browser notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     setupInactivityTimers();
     initAdminUI();
+    subscribeAdminSettings();
     subscribeDashboardData();
     subscribeSiteConfig();
     subscribeAdminLogs();
@@ -128,6 +140,51 @@ function setupInactivityTimers() {
   });
 
   resetTimers();
+}
+
+function subscribeAdminSettings() {
+  const ref = doc(db, 'adminSettings', 'main');
+  adminSettingsUnsub = onSnapshot(ref, (snap) => {
+    if (snap.exists()) {
+      currentAdminSettings = snap.data();
+      const soundCheck = document.getElementById('set-sound-enabled');
+      if (soundCheck) soundCheck.checked = currentAdminSettings.soundEnabled !== false;
+      const autoReplyInput = document.getElementById('set-auto-reply-text');
+      if (autoReplyInput && currentAdminSettings.autoReplyText) {
+        autoReplyInput.value = currentAdminSettings.autoReplyText;
+      }
+    }
+  }, () => {});
+}
+
+function playNotificationSound() {
+  if (currentAdminSettings.soundEnabled === false) return;
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.3);
+  } catch (e) {}
+}
+
+function triggerNewRequestNotification(req) {
+  playNotificationSound();
+  showToast(`New project request from ${req.name || req.userName || 'a client'}!`, 'success');
+
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('New Project Request | WebWorldBD', {
+      body: `${req.name || 'Client'} (${req.category || 'General'}): ${req.requirements?.slice(0, 60)}...`,
+      icon: './assets/logo.png?v=2'
+    });
+  }
 }
 
 function initAdminUI() {
@@ -252,9 +309,30 @@ function initAdminUI() {
     });
   });
 
+  // Requests Manager Search, Filters, Sorting, and Load More Listeners
+  document.getElementById('requests-search-input')?.addEventListener('input', renderRequestsTable);
+  document.getElementById('requests-sort-select')?.addEventListener('change', renderRequestsTable);
+
+  document.querySelectorAll('.req-filter-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      document.querySelectorAll('.req-filter-tab').forEach(t => t.classList.remove('active', 'bg-slate-800', 'text-white'));
+      e.target.classList.add('active', 'bg-slate-800', 'text-white');
+      renderRequestsTable();
+    });
+  });
+
+  document.getElementById('btn-requests-load-more')?.addEventListener('click', () => {
+    requestDisplayLimit += 15;
+    renderRequestsTable();
+  });
+
   // User Detail Drawer Close Listeners
   document.getElementById('btn-close-user-detail')?.addEventListener('click', closeUserDetailModal);
   document.getElementById('admin-user-detail-backdrop')?.addEventListener('click', closeUserDetailModal);
+
+  // Request Detail Drawer Close Listeners
+  document.getElementById('btn-close-request-detail')?.addEventListener('click', closeRequestDetailModal);
+  document.getElementById('admin-request-detail-backdrop')?.addEventListener('click', closeRequestDetailModal);
 
   // Content Manager Save Button
   document.getElementById('btn-save-site-config')?.addEventListener('click', saveContentManagerChanges);
@@ -288,6 +366,7 @@ async function saveExecutiveSettingsSuite() {
   const allowSignups = document.getElementById('set-allow-signups')?.checked !== false;
   const reservedUsernamesStr = document.getElementById('set-reserved-usernames')?.value || '';
   const requestCategoriesStr = document.getElementById('set-request-categories')?.value || '';
+  const autoReplyText = document.getElementById('set-auto-reply-text')?.value.trim() || '';
   const stat1 = document.getElementById('set-stat-1')?.value || '';
   const stat2 = document.getElementById('set-stat-2')?.value || '';
 
@@ -315,6 +394,7 @@ async function saveExecutiveSettingsSuite() {
       soundEnabled: soundEnabled,
       signupAlerts: signupAlerts,
       reservedUsernames: reservedUsernames,
+      autoReplyText: autoReplyText,
       updatedAt: new Date().toISOString()
     }, { merge: true });
 
@@ -376,6 +456,17 @@ function parseDocDate(val) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+function formatRelativeTime(date) {
+  if (!date) return 'Recently';
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 60) return 'Just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hr ago`;
+  if (diffSec < 604800) return `${Math.floor(diffSec / 86400)} days ago`;
+  return date.toLocaleDateString();
+}
+
 function showDashboardError(err) {
   console.error("Dashboard Subscription Error:", err);
   const banner = document.getElementById('dashboard-error-banner');
@@ -390,19 +481,20 @@ function renderUsersTrendChart() {
   const container = document.getElementById('chart-users-trend');
   if (!container) return;
 
-  if (allUsersData.length === 0) {
+  if (allUsersData.length === 0 && allRequestsData.length === 0) {
     container.innerHTML = `
       <div class="flex flex-col items-center justify-center text-center p-4">
         <i class="fa-solid fa-chart-line text-2xl text-slate-600 mb-1"></i>
         <p class="text-xs font-bold text-slate-400">No data yet</p>
-        <p class="text-[10px] text-slate-500">User registrations will appear here.</p>
+        <p class="text-[10px] text-slate-500">Registrations and requests will appear here.</p>
       </div>
     `;
     return;
   }
 
   const days = 14;
-  const counts = new Array(days).fill(0);
+  const userCounts = new Array(days).fill(0);
+  const reqCounts = new Array(days).fill(0);
   const datesLabels = [];
   const now = new Date();
   now.setHours(23, 59, 59, 999);
@@ -416,34 +508,36 @@ function renderUsersTrendChart() {
   allUsersData.forEach(u => {
     const date = parseDocDate(u.createdAt);
     if (!date) return;
-    const midnightNow = new Date(now);
-    midnightNow.setHours(0, 0, 0, 0);
-    const midnightUser = new Date(date);
-    midnightUser.setHours(0, 0, 0, 0);
-
-    const diffTime = midnightNow - midnightUser;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const midnightNow = new Date(now); midnightNow.setHours(0,0,0,0);
+    const midnightUser = new Date(date); midnightUser.setHours(0,0,0,0);
+    const diffDays = Math.floor((midnightNow - midnightUser) / (1000 * 60 * 60 * 24));
     if (diffDays >= 0 && diffDays < days) {
-      counts[days - 1 - diffDays]++;
+      userCounts[days - 1 - diffDays]++;
     }
   });
 
-  const totalInPeriod = counts.reduce((a, b) => a + b, 0);
-  if (totalInPeriod === 0) {
-    container.innerHTML = `
-      <div class="flex flex-col items-center justify-center text-center p-4">
-        <i class="fa-solid fa-users-slash text-2xl text-slate-600 mb-1"></i>
-        <p class="text-xs font-bold text-slate-400">No new registrations in last 14 days</p>
-        <p class="text-[10px] text-slate-500">Total registered users: ${allUsersData.length}</p>
-      </div>
-    `;
-    return;
-  }
+  allRequestsData.forEach(r => {
+    const date = parseDocDate(r.createdAt);
+    if (!date) return;
+    const midnightNow = new Date(now); midnightNow.setHours(0,0,0,0);
+    const midnightReq = new Date(date); midnightReq.setHours(0,0,0,0);
+    const diffDays = Math.floor((midnightNow - midnightReq) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays < days) {
+      reqCounts[days - 1 - diffDays]++;
+    }
+  });
 
-  const maxVal = Math.max(...counts, 4);
+  const maxVal = Math.max(...userCounts, ...reqCounts, 4);
   const width = 320;
   const height = 120;
-  const points = counts.map((val, idx) => {
+
+  const userPoints = userCounts.map((val, idx) => {
+    const x = (idx / (days - 1)) * (width - 20) + 10;
+    const y = height - (val / maxVal) * (height - 30) - 15;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const reqPoints = reqCounts.map((val, idx) => {
     const x = (idx / (days - 1)) * (width - 20) + 10;
     const y = height - (val / maxVal) * (height - 30) - 15;
     return `${x},${y}`;
@@ -454,25 +548,23 @@ function renderUsersTrendChart() {
       <svg viewBox="0 0 ${width} ${height}" class="w-full h-36 overflow-visible">
         <defs>
           <linearGradient id="userGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3"/>
             <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0"/>
           </linearGradient>
+          <linearGradient id="reqGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c084fc" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#c084fc" stop-opacity="0.0"/>
+          </linearGradient>
         </defs>
-        <polygon points="10,${height - 10} ${points} ${width - 10},${height - 10}" fill="url(#userGrad)" />
-        <polyline fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}" />
-        ${counts.map((val, idx) => {
-          const x = (idx / (days - 1)) * (width - 20) + 10;
-          const y = height - (val / maxVal) * (height - 30) - 15;
-          return `
-            <circle cx="${x}" cy="${y}" r="3.5" fill="#0f172a" stroke="#38bdf8" stroke-width="2">
-              <title>${datesLabels[idx]}: ${val} users</title>
-            </circle>
-          `;
-        }).join('')}
+        <polygon points="10,${height - 10} ${userPoints} ${width - 10},${height - 10}" fill="url(#userGrad)" />
+        <polyline fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${userPoints}" />
+
+        <polygon points="10,${height - 10} ${reqPoints} ${width - 10},${height - 10}" fill="url(#reqGrad)" />
+        <polyline fill="none" stroke="#c084fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${reqPoints}" />
       </svg>
-      <div class="w-full flex justify-between text-[9px] font-bold text-slate-500 px-1 mt-1">
-        <span>${datesLabels[0]}</span>
-        <span>${datesLabels[Math.floor(days/2)]}</span>
+      <div class="w-full flex items-center justify-between text-[9px] font-bold text-slate-500 px-1 mt-1">
+        <span class="text-sky-400">● Users</span>
+        <span class="text-purple-400">● Requests</span>
         <span>${datesLabels[days - 1]}</span>
       </div>
     </div>
@@ -496,7 +588,7 @@ function renderRequestsCategoryChart() {
 
   const categoryMap = {};
   allRequestsData.forEach(r => {
-    const cat = r.projectCategory || 'General Web';
+    const cat = r.category || r.projectCategory || 'General Web';
     categoryMap[cat] = (categoryMap[cat] || 0) + 1;
   });
 
@@ -506,7 +598,7 @@ function renderRequestsCategoryChart() {
     return;
   }
 
-  const colors = ['#38bdf8', '#c084fc', '#34d399', '#fbbf24', '#f87171'];
+  const colors = ['#38bdf8', '#c084fc', '#34d399', '#fbbf24', '#f87171', '#a7f3d0'];
   const total = allRequestsData.length || 1;
 
   let html = `<div class="flex items-center gap-6 w-full justify-center">
@@ -531,7 +623,7 @@ function renderRequestsCategoryChart() {
     const color = colors[i % colors.length];
     html += `
       <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full" style="background-color:${color}"></span>
+        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${color}"></span>
         <span class="text-slate-300 font-semibold truncate max-w-[120px]">${cat} (${categoryMap[cat]})</span>
       </div>
     `;
@@ -710,7 +802,7 @@ function subscribeDashboardData() {
   if (requestsUnsub) requestsUnsub();
   if (usersUnsub) usersUnsub();
 
-  // 1. Subscribe to Live Chats (All documents for full total unread / open counts)
+  // 1. Subscribe to Live Chats
   const chatsRef = collection(db, 'chats');
   const qChats = query(chatsRef, orderBy('lastMessageAt', 'desc'));
 
@@ -729,12 +821,10 @@ function subscribeDashboardData() {
     document.getElementById('stat-open-chats').textContent = openCount;
     document.getElementById('stat-unread-msgs').textContent = totalUnread;
 
-    // Update unread badges across header, sidebar, and mobile nav
     const unreadBadge = document.getElementById('nav-chat-unread-badge');
-    const topbarBadge = document.getElementById('topbar-unread-badge');
     const mobileChatBadge = document.getElementById('mobile-chat-badge');
 
-    [unreadBadge, topbarBadge, mobileChatBadge].forEach(badge => {
+    [unreadBadge, mobileChatBadge].forEach(badge => {
       if (badge) {
         if (totalUnread > 0) {
           badge.textContent = totalUnread;
@@ -752,36 +842,61 @@ function subscribeDashboardData() {
     showDashboardError(err);
   });
 
-  // 2. Subscribe to Project Requests (All documents)
+  // 2. Subscribe to Project Requests
   const requestsRef = collection(db, 'projectRequests');
   const qReqs = query(requestsRef, orderBy('createdAt', 'desc'));
 
   requestsUnsub = onSnapshot(qReqs, (snapshot) => {
+    const previousUnseenCount = allRequestsData.filter(r => r.seenByAdmin === false || r.status === 'new' || r.status === 'New').length;
+
     allRequestsData = [];
-    let newCount = 0;
+    let unseenNewCount = 0;
+
+    snapshot.docChanges().forEach(change => {
+      if (change.type === 'added' && initialRequestsLoaded) {
+        const reqData = { id: change.doc.id, ...change.doc.data() };
+        triggerNewRequestNotification(reqData);
+      }
+    });
 
     snapshot.forEach(docSnap => {
       const data = { id: docSnap.id, ...docSnap.data() };
       allRequestsData.push(data);
-      if (data.status === 'New' || !data.status) newCount++;
+      if (data.seenByAdmin === false || data.status === 'new' || data.status === 'New') {
+        unseenNewCount++;
+      }
     });
 
-    document.getElementById('stat-new-requests').textContent = newCount;
-    document.getElementById('stat-total-requests').textContent = allRequestsData.length;
+    initialRequestsLoaded = true;
 
+    // Update counters
+    const newReqsEl = document.getElementById('stat-new-requests');
+    const totalReqsEl = document.getElementById('stat-total-requests');
+    if (newReqsEl) newReqsEl.textContent = unseenNewCount;
+    if (totalReqsEl) totalReqsEl.textContent = allRequestsData.length;
+
+    // Badges update
     const reqsBadge = document.getElementById('nav-requests-badge');
     const mobileReqBadge = document.getElementById('mobile-req-badge');
+    const topbarBadge = document.getElementById('topbar-unread-badge');
 
-    [reqsBadge, mobileReqBadge].forEach(badge => {
+    [reqsBadge, mobileReqBadge, topbarBadge].forEach(badge => {
       if (badge) {
-        if (newCount > 0) {
-          badge.textContent = newCount;
+        if (unseenNewCount > 0) {
+          badge.textContent = unseenNewCount;
           badge.classList.remove('hidden');
         } else {
           badge.classList.add('hidden');
         }
       }
     });
+
+    // Browser tab title update
+    if (unseenNewCount > 0) {
+      document.title = `(${unseenNewCount}) New request | Admin WebWorldBD`;
+    } else {
+      document.title = `Admin Executive Center | WebWorldBD`;
+    }
 
     renderRecentRequestsWidget();
     renderRequestsTable();
@@ -790,7 +905,7 @@ function subscribeDashboardData() {
     showDashboardError(err);
   });
 
-  // 3. Subscribe to Users (All documents, no filter/limit to ensure exact total user count)
+  // 3. Subscribe to Users
   const usersRef = collection(db, 'users');
 
   usersUnsub = onSnapshot(usersRef, (snapshot) => {
@@ -856,12 +971,15 @@ function renderRecentRequestsWidget() {
   }
 
   container.innerHTML = recent.map(r => `
-    <div class="p-2.5 rounded-2xl bg-slate-950 border border-slate-800/80 flex items-center justify-between">
+    <div onclick="openRequestDetail('${r.id}')" class="p-2.5 rounded-2xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800/80 flex items-center justify-between cursor-pointer transition-colors">
       <div class="overflow-hidden">
-        <p class="font-bold text-xs text-white truncate">${r.fullName || r.mobileNumber || 'Inquiry'}</p>
-        <p class="text-[10px] text-slate-400 truncate">${r.projectCategory || 'General Web'}</p>
+        <div class="flex items-center gap-1.5">
+          <p class="font-bold text-xs text-white truncate">${r.name || r.userName || r.mobile || 'Inquiry'}</p>
+          ${r.seenByAdmin === false ? `<span class="px-1.5 py-0.2 rounded-md bg-sky-500 text-white font-black text-[8px] animate-pulse">NEW</span>` : ''}
+        </div>
+        <p class="text-[10px] text-slate-400 truncate">${r.category || r.projectCategory || 'General Web'}</p>
       </div>
-      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${r.status === 'New' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-300'}">${r.status || 'New'}</span>
+      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${getReqStatusBadgeClass(r.status)}">${r.status || 'New'}</span>
     </div>
   `).join('');
 }
@@ -893,8 +1011,6 @@ function renderRecentUsersWidget() {
 }
 
 /* ================= LIVE CHAT INBOX ================= */
-
-/* ================= SAFE BACKFILL & NEW CHAT MODAL ================= */
 
 async function runOneTimeChatsBackfill() {
   if (sessionStorage.getItem('admin_chats_backfilled')) return;
@@ -992,7 +1108,6 @@ window.startAdminChatWithUser = async function(uid) {
   const u = allUsersData.find(user => user.uid === uid);
 
   if (!chat && u) {
-    // Create new chat stub doc
     const chatRef = doc(db, 'chats', uid);
     const nowIso = new Date().toISOString();
     try {
@@ -1039,7 +1154,6 @@ function renderChatConversationsList() {
   let filtered = [...allChatsData];
 
   if (filter === 'all-users') {
-    // Merge all registered users so even users without active messages show in list
     const existingChatUids = new Set(allChatsData.map(c => c.uid));
     allUsersData.forEach(u => {
       if (!existingChatUids.has(u.uid)) {
@@ -1271,7 +1385,7 @@ function renderUserInfoDrawer(chat) {
       <p><strong>Pinned:</strong> ${chat.pinned ? 'Yes' : 'No'}</p>
     </div>
 
-    <!-- Private Admin Note & Tags Form -->
+    <!-- Private Admin Note -->
     <div class="pt-2 border-t border-slate-800 space-y-2">
       <label class="block font-bold text-slate-400 text-[11px]">Private Admin Note</label>
       <textarea id="input-admin-note" rows="2" class="w-full p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white" placeholder="Add private note...">${chat.adminNote || ''}</textarea>
@@ -1322,48 +1436,303 @@ window.toggleBlockUser = async function(uid, block) {
   }
 };
 
-/* ================= PROJECT REQUESTS TABLE ================= */
+/* ================= PROJECT REQUESTS MANAGER ================= */
+
+function getReqStatusBadgeClass(status) {
+  const normalized = (status || 'new').toLowerCase();
+  if (normalized === 'new') return 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+  if (normalized === 'contacted') return 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
+  if (normalized === 'in progress' || normalized === 'in-progress') return 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+  if (normalized === 'completed') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+  if (normalized === 'rejected') return 'bg-red-500/20 text-red-400 border border-red-500/30';
+  return 'bg-slate-800 text-slate-300 border border-slate-700';
+}
 
 function renderRequestsTable() {
   const container = document.getElementById('requests-table-body');
   if (!container) return;
 
-  if (allRequestsData.length === 0) {
-    container.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No project requests found.</td></tr>`;
+  const countBadge = document.getElementById('requests-count-badge');
+  const searchVal = document.getElementById('requests-search-input')?.value.toLowerCase().trim() || '';
+  const sortVal = document.getElementById('requests-sort-select')?.value || 'newest';
+
+  let filterVal = 'all';
+  const activeTab = document.querySelector('.req-filter-tab.active');
+  if (activeTab) filterVal = activeTab.getAttribute('data-req-filter');
+
+  let filtered = [...allRequestsData];
+
+  // 1. Status / Property Filter
+  if (filterVal !== 'all') {
+    if (filterVal === 'has-attachment') {
+      filtered = filtered.filter(r => r.attachment && r.attachment.url);
+    } else {
+      filtered = filtered.filter(r => (r.status || 'new').toLowerCase().replace(' ', '-') === filterVal);
+    }
+  }
+
+  // 2. Search
+  if (searchVal) {
+    filtered = filtered.filter(r =>
+      (r.requestId && r.requestId.toLowerCase().includes(searchVal)) ||
+      (r.id && r.id.toLowerCase().includes(searchVal)) ||
+      (r.name && r.name.toLowerCase().includes(searchVal)) ||
+      (r.userName && r.userName.toLowerCase().includes(searchVal)) ||
+      (r.mobile && r.mobile.includes(searchVal)) ||
+      (r.email && r.email.toLowerCase().includes(searchVal)) ||
+      (r.category && r.category.toLowerCase().includes(searchVal)) ||
+      (r.requirements && r.requirements.toLowerCase().includes(searchVal))
+    );
+  }
+
+  // 3. Sorting
+  if (sortVal === 'newest') {
+    filtered.sort((a, b) => (parseDocDate(b.createdAt) || 0) - (parseDocDate(a.createdAt) || 0));
+  } else if (sortVal === 'oldest') {
+    filtered.sort((a, b) => (parseDocDate(a.createdAt) || 0) - (parseDocDate(b.createdAt) || 0));
+  } else if (sortVal === 'category') {
+    filtered.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+  }
+
+  if (countBadge) countBadge.textContent = `${filtered.length} Total`;
+
+  // Pagination limit logic
+  const paginated = filtered.slice(0, requestDisplayLimit);
+
+  const pageInfo = document.getElementById('requests-page-info');
+  const loadMoreBtn = document.getElementById('btn-requests-load-more');
+
+  if (pageInfo) pageInfo.textContent = `Showing ${paginated.length} of ${filtered.length} requests`;
+
+  if (loadMoreBtn) {
+    if (paginated.length < filtered.length) {
+      loadMoreBtn.classList.remove('hidden');
+    } else {
+      loadMoreBtn.classList.add('hidden');
+    }
+  }
+
+  if (paginated.length === 0) {
+    container.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 italic">No project requests match the selected criteria.</td></tr>`;
     return;
   }
 
-  container.innerHTML = allRequestsData.map(r => `
-    <tr class="hover:bg-slate-800/40 transition-colors">
-      <td class="p-3.5">
-        <p class="font-bold text-white">${r.fullName || 'Anonymous'}</p>
-        <p class="text-[10px] text-slate-400">${r.mobileNumber || ''} ${r.email ? '• ' + r.email : ''}</p>
-      </td>
-      <td class="p-3.5 font-semibold text-sky-400">${r.projectCategory || 'General'}</td>
-      <td class="p-3.5">${r.estimatedBudget || 'N/A'}</td>
-      <td class="p-3.5 text-slate-400">${new Date(r.createdAt || Date.now()).toLocaleDateString()}</td>
-      <td class="p-3.5">
-        <select onchange="updateRequestStatus('${r.id}', this.value)" class="py-1 px-2 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-hidden">
-          <option value="New" ${r.status === 'New' ? 'selected' : ''}>New</option>
-          <option value="Contacted" ${r.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
-          <option value="In Progress" ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-          <option value="Completed" ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
-          <option value="Rejected" ${r.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-        </select>
-      </td>
-      <td class="p-3.5 text-right space-x-2">
-        ${r.mobileNumber ? `<a href="https://wa.me/880${r.mobileNumber.replace(/^0/, '')}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold hover:bg-emerald-500/20"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
-        <button onclick="deleteProjectRequest('${r.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-500/10 text-red-400 font-bold hover:bg-red-500/20"><i class="fa-solid fa-trash"></i></button>
-      </td>
-    </tr>
-  `).join('');
+  container.innerHTML = paginated.map(r => {
+    const createdDate = parseDocDate(r.createdAt);
+    const relTime = formatRelativeTime(createdDate);
+    const fullDate = createdDate ? createdDate.toLocaleString() : 'N/A';
+    const isNew = r.seenByAdmin === false || (r.status || '').toLowerCase() === 'new';
+
+    return `
+      <tr onclick="openRequestDetail('${r.id}')" class="hover:bg-slate-800/40 transition-colors cursor-pointer ${isNew ? 'bg-sky-500/5' : ''}">
+        <td class="p-3.5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-slate-700">
+              <img src="${r.userPhoto || './assets/logo.png?v=2'}" class="w-full h-full object-cover" onerror="this.src='./assets/logo.png?v=2';">
+            </div>
+            <div class="overflow-hidden">
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-[10px] font-bold text-sky-400">${r.requestId || r.id}</span>
+                ${isNew ? `<span class="px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-black text-[8px] animate-pulse">NEW</span>` : ''}
+              </div>
+              <p class="font-bold text-white truncate max-w-[140px]">${r.name || r.userName || 'Client'}</p>
+              <p class="text-[10px] text-slate-400 truncate max-w-[160px]">${r.mobile || ''} ${r.email ? '• ' + r.email : ''}</p>
+            </div>
+          </div>
+        </td>
+        <td class="p-3.5 font-semibold text-purple-300">
+          <div class="flex items-center gap-1.5">
+            <span>${r.category || 'Custom'}</span>
+            ${r.attachment?.url ? `<i class="fa-solid fa-paperclip text-sky-400 text-xs" title="Has attachment"></i>` : ''}
+          </div>
+        </td>
+        <td class="p-3.5 font-mono text-emerald-400 font-bold">${r.budget || 'Unspecified'}</td>
+        <td class="p-3.5">
+          <p class="font-medium text-slate-200 text-[11px]">${relTime}</p>
+          <p class="text-[9px] text-slate-500">${fullDate}</p>
+        </td>
+        <td class="p-3.5" onclick="event.stopPropagation();">
+          <select onchange="updateRequestStatus('${r.id}', this.value)" class="py-1 px-2 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-hidden cursor-pointer">
+            <option value="New" ${(r.status || 'New') === 'New' ? 'selected' : ''}>New</option>
+            <option value="Contacted" ${r.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
+            <option value="In Progress" ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+            <option value="Completed" ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            <option value="Rejected" ${r.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+          </select>
+        </td>
+        <td class="p-3.5 text-right space-x-1.5" onclick="event.stopPropagation();">
+          <button onclick="openRequestDetail('${r.id}')" class="px-2.5 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold transition-colors" title="View Full Drawer">
+            <i class="fa-solid fa-eye"></i> View
+          </button>
+          ${r.mobile ? `<a href="https://wa.me/880${r.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${r.name || 'Client'}, regarding your project request [${r.requestId || r.id}]...`)}" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-colors" title="Message on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+          <button onclick="deleteProjectRequest('${r.id}')" class="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-colors" title="Delete Request"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
+
+window.openRequestDetail = async function(reqId) {
+  const req = allRequestsData.find(r => r.id === reqId || r.requestId === reqId);
+  if (!req) return;
+
+  // Mark request as seen by admin
+  if (req.seenByAdmin === false || req.status === 'new') {
+    try {
+      const ref = doc(db, 'projectRequests', req.id);
+      await updateDoc(ref, { seenByAdmin: true, updatedAt: serverTimestamp() });
+      req.seenByAdmin = true;
+    } catch (e) {}
+  }
+
+  const modal = document.getElementById('admin-request-detail-modal');
+  const body = document.getElementById('request-detail-modal-body');
+  if (!modal || !body) return;
+
+  const createdDate = parseDocDate(req.createdAt);
+  const clientUser = allUsersData.find(u => u.uid === req.userId || u.email === req.email || u.phone === req.mobile);
+  const otherReqs = allRequestsData.filter(r => r.id !== req.id && (r.userId === req.userId || r.email === req.email));
+
+  let attachmentHtml = `<span class="text-slate-500 italic">No attachment provided</span>`;
+  if (req.attachment && req.attachment.url) {
+    const url = req.attachment.url;
+    const name = req.attachment.name || 'Reference File';
+    const isImg = url.match(/\.(jpg|jpeg|png|webp)/i) || (req.attachment.type && req.attachment.type.startsWith('image/'));
+
+    if (isImg) {
+      attachmentHtml = `
+        <div class="space-y-2">
+          <div class="max-h-48 rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
+            <img src="${url}" class="w-full h-full object-contain">
+          </div>
+          <a href="${url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs hover:bg-sky-500/30">
+            <i class="fa-solid fa-download"></i> Download Image
+          </a>
+        </div>
+      `;
+    } else {
+      attachmentHtml = `
+        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <i class="fa-solid fa-file-lines text-purple-400 text-xl shrink-0"></i>
+            <div class="overflow-hidden">
+              <p class="font-bold text-white truncate max-w-[200px]">${name}</p>
+              <p class="text-[10px] text-slate-400">${req.attachment.size ? Math.round(req.attachment.size / 1024) + ' KB' : 'Attachment'}</p>
+            </div>
+          </div>
+          <a href="${url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold hover:bg-sky-500/30 shrink-0">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  body.innerHTML = `
+    <!-- Top Identity Card -->
+    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-xs font-black text-sky-400 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">${req.requestId || req.id}</span>
+        <select onchange="updateRequestStatus('${req.id}', this.value)" class="py-1 px-3 rounded-xl bg-slate-800 border border-slate-700 font-bold text-white focus:outline-hidden cursor-pointer">
+          <option value="New" ${(req.status || 'New') === 'New' ? 'selected' : ''}>New</option>
+          <option value="Contacted" ${req.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
+          <option value="In Progress" ${req.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+          <option value="Completed" ${req.status === 'Completed' ? 'selected' : ''}>Completed</option>
+          <option value="Rejected" ${req.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div><span class="text-slate-400">Category:</span> <p class="font-bold text-purple-300">${req.category || 'Custom'}</p></div>
+        <div><span class="text-slate-400">Budget:</span> <p class="font-bold text-emerald-400">${req.budget || 'Unspecified'}</p></div>
+        <div><span class="text-slate-400">Submitted:</span> <p class="font-medium text-slate-200">${createdDate ? createdDate.toLocaleString() : 'N/A'}</p></div>
+        <div><span class="text-slate-400">Language:</span> <p class="font-semibold text-sky-400 uppercase">${req.language || 'EN'}</p></div>
+      </div>
+    </div>
+
+    <!-- Requirements Card with Copy Button -->
+    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+      <div class="flex items-center justify-between">
+        <h4 class="font-bold text-white text-xs uppercase tracking-wider text-purple-400">Project Requirements</h4>
+        <button onclick="navigator.clipboard.writeText(\`${(req.requirements || '').replace(/`/g, '\\`')}\`); showToast('Requirements copied', 'success');" class="px-2 py-1 rounded bg-slate-800 text-sky-400 hover:bg-slate-700 text-[10px] font-bold">
+          <i class="fa-regular fa-copy mr-1"></i> Copy Text
+        </button>
+      </div>
+      <p class="whitespace-pre-wrap text-slate-200 text-xs leading-relaxed max-h-60 overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800/80">${req.requirements || 'No requirements text'}</p>
+    </div>
+
+    <!-- Attachment Section -->
+    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+      <h4 class="font-bold text-white text-xs uppercase tracking-wider text-sky-400">Attachment</h4>
+      ${attachmentHtml}
+    </div>
+
+    <!-- Client Profile Summary -->
+    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+      <h4 class="font-bold text-white text-xs uppercase tracking-wider text-amber-400">Client Profile</h4>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-sky-400">
+          <img src="${req.userPhoto || clientUser?.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
+        </div>
+        <div class="overflow-hidden">
+          <p class="font-bold text-white text-xs">${req.name || req.userName || 'Client'}</p>
+          <p class="text-[10px] text-sky-400 font-mono">@${req.username || clientUser?.username || 'user'}</p>
+          <p class="text-[10px] text-slate-400 truncate">${req.mobile || ''} ${req.email ? '• ' + req.email : ''}</p>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+        <p><strong>Other Requests:</strong> ${otherReqs.length} previous requests</p>
+      </div>
+    </div>
+
+    <!-- Private Admin Note -->
+    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+      <label class="block font-bold text-slate-300 text-xs">Private Admin Note</label>
+      <textarea id="input-request-admin-note" rows="2" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden" placeholder="Add private note for team...">${req.adminNote || ''}</textarea>
+      <button onclick="saveRequestAdminNote('${req.id}')" class="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-700 font-bold text-xs text-white transition-colors">
+        Save Admin Note
+      </button>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+      <button onclick="openAdminChat('${req.userId}'); closeRequestDetailModal();" class="py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
+        <i class="fa-solid fa-comments"></i> Chat
+      </button>
+      ${req.mobile ? `<a href="https://wa.me/880${req.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${req.name || 'Client'}, regarding your project request [${req.requestId || req.id}]...`)}" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : ''}
+      ${req.mobile ? `<a href="tel:${req.mobile}" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-phone"></i> Call</a>` : ''}
+      ${req.email ? `<a href="mailto:${req.email}?subject=WebWorldBD%20Project%20Request%20%5B${req.requestId || req.id}%5D" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-envelope"></i> Email</a>` : ''}
+    </div>
+
+    <button onclick="deleteProjectRequest('${req.id}'); closeRequestDetailModal();" class="w-full py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold text-xs hover:bg-red-500/30 transition-colors">
+      <i class="fa-solid fa-trash mr-1.5"></i> Delete Request
+    </button>
+  `;
+
+  modal.classList.remove('hidden');
+};
+
+function closeRequestDetailModal() {
+  document.getElementById('admin-request-detail-modal')?.classList.add('hidden');
+}
+
+window.saveRequestAdminNote = async function(reqId) {
+  const noteText = document.getElementById('input-request-admin-note')?.value.trim() || '';
+  try {
+    const ref = doc(db, 'projectRequests', reqId);
+    await updateDoc(ref, { adminNote: noteText, updatedAt: serverTimestamp() });
+    showToast('Admin note saved.', 'success');
+  } catch (e) {
+    showToast('Failed to save note.', 'error');
+  }
+};
 
 window.updateRequestStatus = async function(id, status) {
   try {
     const ref = doc(db, 'projectRequests', id);
-    await updateDoc(ref, { status: status });
-    showToast(`Request status set to ${status}`, 'success');
+    await updateDoc(ref, { status: status, updatedAt: serverTimestamp() });
+    showToast(`Request status updated to ${status}`, 'success');
     logAdminAction("UPDATE_REQUEST_STATUS", id, `Status changed to ${status}`);
   } catch (e) {
     showToast('Failed to update status', 'error');
@@ -1474,7 +1843,7 @@ window.viewUserDetail = function(uid) {
   const body = document.getElementById('user-detail-modal-body');
   if (!modal || !body) return;
 
-  const userReqs = allRequestsData.filter(r => r.email === u.email || r.mobileNumber === u.phone);
+  const userReqs = allRequestsData.filter(r => r.userId === u.uid || r.email === u.email || r.mobile === u.phone);
 
   body.innerHTML = `
     <div class="text-center space-y-2">
@@ -1511,7 +1880,7 @@ window.viewUserDetail = function(uid) {
       <button onclick="openAdminChat('${u.uid}'); closeUserDetailModal();" class="py-2 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold flex items-center justify-center gap-2 shadow-md">
         <i class="fa-solid fa-paper-plane"></i> Send Message
       </button>
-      ${u.phone ? `<a href="https://wa.me/880${u.phone.replace(/^0/, '')}" target="_blank" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : `<button disabled class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-bold flex items-center justify-center gap-2 cursor-not-allowed"><i class="fa-brands fa-whatsapp"></i> No Phone</button>`}
+      ${u.phone ? `<a href="https://wa.me/880${u.phone.replace(/^(?:\+880|880|0)/, '')}" target="_blank" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : `<button disabled class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-bold flex items-center justify-center gap-2 cursor-not-allowed"><i class="fa-brands fa-whatsapp"></i> No Phone</button>`}
     </div>
 
     <!-- User Profile Details Card -->
@@ -1560,9 +1929,10 @@ window.deleteUserData = async function(uid, username) {
 function exportRequestsCSV() {
   if (allRequestsData.length === 0) return showToast('No requests to export.', 'info');
 
-  let csv = 'ID,Name,Mobile,Email,Category,Budget,Status,Date\n';
+  let csv = 'ID,Name,Mobile,Email,Category,Budget,Requirements,Status,CreatedAt\n';
   allRequestsData.forEach(r => {
-    csv += `"${r.id}","${r.fullName || ''}","${r.mobileNumber || ''}","${r.email || ''}","${r.projectCategory || ''}","${r.estimatedBudget || ''}","${r.status || 'New'}","${r.createdAt || ''}"\n`;
+    const cleanReq = (r.requirements || '').replace(/"/g, '""').replace(/\n/g, ' ');
+    csv += `"${r.requestId || r.id}","${r.name || r.userName || ''}","${r.mobile || ''}","${r.email || ''}","${r.category || ''}","${r.budget || ''}","${cleanReq}","${r.status || 'New'}","${r.createdAt || ''}"\n`;
   });
 
   downloadCSV(csv, 'webworldbd_project_requests.csv');
@@ -1621,10 +1991,13 @@ function handleGlobalSearch(e) {
 
   // 3. Search Requests
   const matchedRequests = allRequestsData.filter(r =>
-    (r.fullName && r.fullName.toLowerCase().includes(queryVal)) ||
+    (r.requestId && r.requestId.toLowerCase().includes(queryVal)) ||
+    (r.id && r.id.toLowerCase().includes(queryVal)) ||
+    (r.name && r.name.toLowerCase().includes(queryVal)) ||
+    (r.userName && r.userName.toLowerCase().includes(queryVal)) ||
     (r.email && r.email.toLowerCase().includes(queryVal)) ||
-    (r.mobileNumber && r.mobileNumber.includes(queryVal)) ||
-    (r.projectCategory && r.projectCategory.toLowerCase().includes(queryVal))
+    (r.mobile && r.mobile.includes(queryVal)) ||
+    (r.category && r.category.toLowerCase().includes(queryVal))
   ).slice(0, 4);
 
   if (matchedUsers.length === 0 && matchedChats.length === 0 && matchedRequests.length === 0) {
@@ -1669,10 +2042,10 @@ function handleGlobalSearch(e) {
     html += `<div class="p-2 bg-slate-950 font-bold text-[10px] text-purple-400 uppercase tracking-wider">Project Requests</div>`;
     matchedRequests.forEach(r => {
       html += `
-        <div onclick="switchSection('requests'); document.getElementById('admin-search-results-dropdown').classList.add('hidden');" class="p-2.5 hover:bg-slate-800 flex items-center justify-between cursor-pointer">
+        <div onclick="openRequestDetail('${r.id}'); document.getElementById('admin-search-results-dropdown').classList.add('hidden');" class="p-2.5 hover:bg-slate-800 flex items-center justify-between cursor-pointer">
           <div class="overflow-hidden">
-            <p class="font-bold text-white truncate">${r.fullName || 'Inquiry'}</p>
-            <p class="text-[10px] text-slate-400 truncate">${r.projectCategory || ''} • ${r.mobileNumber || ''}</p>
+            <p class="font-bold text-white truncate">${r.requestId || r.id} • ${r.name || r.userName || 'Inquiry'}</p>
+            <p class="text-[10px] text-slate-400 truncate">${r.category || ''} • ${r.mobile || ''}</p>
           </div>
           <span class="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-400 font-bold text-[9px]">${r.status || 'New'}</span>
         </div>

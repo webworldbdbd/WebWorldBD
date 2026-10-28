@@ -195,7 +195,7 @@
           </div>
 
           <!-- Notification Bell with Unread Badge -->
-          <button id="btn-topbar-notifications" data-section="chat" class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs sm:text-sm cursor-pointer shrink-0">
+          <button id="btn-topbar-notifications" data-section="requests" class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs sm:text-sm cursor-pointer shrink-0">
             <i class="fa-solid fa-bell"></i>
             <span id="topbar-unread-badge" class="hidden absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px]">0</span>
           </button>
@@ -261,7 +261,7 @@
             <!-- Line Chart: Registrations in last 14 days -->
             <div class="glass-card p-5 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
               <h4 class="font-bold text-xs uppercase tracking-wider text-sky-400 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line"></i> User Registrations (Last 14 Days)
+                <i class="fa-solid fa-chart-line"></i> Requests & Registrations Trend (14 Days)
               </h4>
               <div id="chart-users-trend" class="h-44 w-full flex items-center justify-center">
                 <!-- SVG Chart Injected via JS -->
@@ -455,7 +455,13 @@
         <!-- 3. PROJECT REQUESTS SECTION -->
         <section id="section-requests" class="admin-section hidden space-y-4">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900/60 p-4 rounded-3xl border border-slate-800">
-            <h3 class="font-black text-base text-white">Project Inquiries & Requests</h3>
+            <div>
+              <h3 class="font-black text-base text-white flex items-center gap-2">
+                Project Inquiries & Requests
+                <span id="requests-count-badge" class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-xs font-extrabold">0 Total</span>
+              </h3>
+              <p class="text-xs text-slate-400">Real-time submissions from the Start Project form with direct live chat and WhatsApp triggers.</p>
+            </div>
             <div class="flex items-center gap-2">
               <button id="btn-export-requests-csv" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-file-csv"></i> Export CSV
@@ -463,16 +469,40 @@
             </div>
           </div>
 
-          <!-- Requests List Table / Cards -->
-          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+          <!-- Search, Filter & Sort Controls Bar for Requests -->
+          <div class="glass-card p-3 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+            <div class="relative w-full md:w-72">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+              <input type="text" id="requests-search-input" placeholder="Search name, mobile, email, ID..." class="w-full py-1.5 pl-8 pr-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-sky-500">
+            </div>
+
+            <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto font-bold">
+              <button data-req-filter="all" class="req-filter-tab active px-3 py-1.5 rounded-xl bg-slate-800 text-white">All</button>
+              <button data-req-filter="new" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">New</button>
+              <button data-req-filter="contacted" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Contacted</button>
+              <button data-req-filter="in-progress" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">In Progress</button>
+              <button data-req-filter="completed" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Completed</button>
+              <button data-req-filter="rejected" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Rejected</button>
+              <button data-req-filter="has-attachment" class="req-filter-tab px-3 py-1.5 rounded-xl text-slate-400 hover:text-white">Has Attachment</button>
+            </div>
+
+            <select id="requests-sort-select" class="py-1.5 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-bold focus:outline-hidden">
+              <option value="newest">Sort: Newest First</option>
+              <option value="oldest">Sort: Oldest First</option>
+              <option value="category">Sort: Category</option>
+            </select>
+          </div>
+
+          <!-- Requests List Table -->
+          <div class="glass-card rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs text-slate-300">
                 <thead class="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
                   <tr>
-                    <th class="p-3.5">Name / Contact</th>
+                    <th class="p-3.5">Request ID / Client</th>
                     <th class="p-3.5">Category</th>
                     <th class="p-3.5">Budget</th>
-                    <th class="p-3.5">Date</th>
+                    <th class="p-3.5">Time & Date</th>
                     <th class="p-3.5">Status</th>
                     <th class="p-3.5 text-right">Actions</th>
                   </tr>
@@ -482,8 +512,35 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Pagination / Load More Footer -->
+            <div id="requests-pagination-bar" class="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+              <span id="requests-page-info">Showing all requests</span>
+              <button id="btn-requests-load-more" class="hidden px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-colors">
+                Load More
+              </button>
+            </div>
           </div>
         </section>
+
+        <!-- REQUEST DETAIL DRAWER (Overlay Modal) -->
+        <div id="admin-request-detail-modal" class="fixed inset-0 z-50 flex justify-end hidden">
+          <div id="admin-request-detail-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs"></div>
+          <div class="relative w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full z-10 flex flex-col p-5 overflow-y-auto space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                <i class="fa-solid fa-rocket text-purple-400"></i> Project Request Details
+              </h3>
+              <button id="btn-close-request-detail" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div id="request-detail-modal-body" class="space-y-5 text-xs">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
 
         <!-- 4. USERS MANAGER SECTION -->
         <section id="section-users" class="admin-section hidden space-y-4">
@@ -714,7 +771,7 @@
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
-                <span class="font-bold text-white">Chat Notification Sound</span>
+                <span class="font-bold text-white">Chat & Request Sound Alert</span>
                 <input type="checkbox" id="set-sound-enabled" checked class="accent-sky-500 w-4 h-4">
               </label>
               <label class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer">
@@ -764,9 +821,13 @@
               <i class="fa-solid fa-rocket"></i> F) Project Requests Configuration
             </h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div class="space-y-1 sm:col-span-2">
+                <label class="block font-bold text-slate-300 mb-1">Auto-Reply Message for New Project Requests</label>
+                <input type="text" id="set-auto-reply-text" placeholder="e.g. Thank you for your inquiry! Our team will review your requirements and reach out within 2 hours." class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs">
+              </div>
               <div class="space-y-1">
                 <label class="block font-bold text-slate-300">Categories List (Comma Separated)</label>
-                <input type="text" id="set-request-categories" value="E-commerce, SaaS Web App, Portfolio, Custom Web" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white">
+                <input type="text" id="set-request-categories" value="Business Website, E-commerce Website, Portfolio Website, Web App / SaaS, AI Website / Tools" class="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white">
               </div>
               <div class="space-y-1">
                 <label class="block font-bold text-slate-300">Default Status</label>

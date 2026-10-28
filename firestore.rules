@@ -73,10 +73,26 @@ service cloud.firestore {
       }
     }
 
-    // Project Requests Collection - Anyone Create (with validation), Admin Read/Update/Delete
+    // Project Requests Collection - Signed-in Users Create (validated), Owner/Admin Read, Admin Update/Delete
     match /projectRequests/{requestId} {
-      allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "new"
+        && request.resource.data.keys().hasOnly([
+          'requestId', 'name', 'mobile', 'email', 'budget', 'category', 'requirements',
+          'attachment', 'userId', 'userName', 'username', 'userEmail', 'userPhoto',
+          'status', 'seenByAdmin', 'adminNote', 'createdAt', 'updatedAt', 'language', 'source'
+        ])
+        && (request.resource.data.name is string && request.resource.data.name.size() <= 80)
+        && (request.resource.data.mobile is string && request.resource.data.mobile.size() <= 20)
+        && (request.resource.data.email == null || (request.resource.data.email is string && request.resource.data.email.size() <= 120))
+        && (request.resource.data.budget == null || (request.resource.data.budget is string && request.resource.data.budget.size() <= 60))
+        && (request.resource.data.category is string && request.resource.data.category.size() <= 80)
+        && (request.resource.data.requirements is string && request.resource.data.requirements.size() <= 3000)
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.blocked != true;
+
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
 
     // Site Configuration Document - Public Read, Admin Write Only
