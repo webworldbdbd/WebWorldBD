@@ -270,6 +270,37 @@
         </div>
       </div>
 
+      <!-- Executive Admin Panel Card (Conditional - rendered ONLY for Admin) -->
+      <div id="card-admin-settings" class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-purple-200 dark:border-purple-900/60 shadow-sm hidden bg-purple-50/20 dark:bg-purple-950/10">
+        <div class="flex items-center gap-3 pb-3 border-b border-purple-200 dark:border-purple-900/60">
+          <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base shrink-0">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-base text-purple-900 dark:text-purple-200">
+              Admin Executive Panel
+            </h2>
+            <p class="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
+              Authorized Executive Management Center
+            </p>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-600 dark:text-slate-300">
+          Manage live chat inbox, project requests, registered users, content editor, and system site controls.
+        </p>
+
+        <div>
+          <a
+            href="./admin.html"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all shadow-md"
+          >
+            <i class="fa-solid fa-gauge-high"></i>
+            <span>Open Admin Panel</span>
+          </a>
+        </div>
+      </div>
+
       <!-- 6. Data & Privacy Card -->
       <div class="glass-card p-5 md:p-6 rounded-3xl space-y-4 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-slate-800">
@@ -315,6 +346,7 @@
   <script type="module">
     import { getLanguage, setLanguage, t } from './js/i18n.js';
     import { subscribeAuthState, logOut, changeUserPassword, deleteUserAccount, sendEmailVerificationToUser } from './js/auth.js';
+    import { isAdminUser } from './js/admin-config.js';
     import { getOptimizedImageUrl } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
     import { db } from './js/firebase-config.js';
@@ -349,6 +381,7 @@
         renderAccountCard();
         renderSecurityCard();
         renderDangerZoneCard();
+          renderAdminCard();
       });
 
       // 3. Notification Toggles
@@ -553,6 +586,15 @@
             showToast(err.messageEn || 'Error changing password', 'error');
           }
         });
+      }
+    }
+
+    function renderAdminCard() {
+      const card = document.getElementById('card-admin-settings');
+      if (currentUser && isAdminUser(currentUser)) {
+        card?.classList.remove('hidden');
+      } else {
+        card?.classList.add('hidden');
       }
     }
 

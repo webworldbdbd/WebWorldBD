@@ -46,12 +46,35 @@ const DEFAULT_QUICK_REPLIES = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+  clearCachesAndServiceWorkers();
   initAdminGuard();
 });
 
+function clearCachesAndServiceWorkers() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    }).catch(() => {});
+  }
+  if ('caches' in window) {
+    caches.keys().then((names) => {
+      for (const name of names) {
+        caches.delete(name);
+      }
+    }).catch(() => {});
+  }
+}
+
 function initAdminGuard() {
   subscribeAuthState((user, userData) => {
-    if (!user || !isAdminUser(user)) {
+    if (!user) {
+      window.location.replace('./login.html?next=admin.html');
+      return;
+    }
+
+    if (!isAdminUser(user)) {
       window.location.replace('./index.html');
       return;
     }
