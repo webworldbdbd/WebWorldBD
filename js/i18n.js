@@ -264,8 +264,8 @@ const translations = {
   },
   bn: {
     // Header & Sidebar
-    brandName: 'ওয়েবওয়ার্ল্ড',
-    brandBD: 'বিডি',
+    brandName: 'WebWorld',
+    brandBD: 'BD',
     mainMenu: 'মূল মেনু',
     home: 'হোম',
     services: 'সার্ভিস',
@@ -290,33 +290,33 @@ const translations = {
     // Chat Page
     chatLoginTitle: "লাইভ চ্যাট শুরু করতে অনুগ্রহ করে লগ ইন করুন",
     chatLoginSub: "আপনার কাস্টম ওয়েব ও মোবাইল প্রজেক্ট আলোচনা করতে এবং ইনস্ট্যান্ট এস্টিমেট পেতে সরাসরি সাপোর্ট টিমের সাথে কানেক্ট হোন।",
-    chatDisabled: "এই অ্যাকাউন্টের জন্য চ্যাট সুবিধা নিষ্ক্রিয় রয়েছে।",
+    chatDisabled: "এই অ্যাকাউন্টের জন্য চ্যাট সুবিধা নিষ্ক্রিয় রয়েছে।",
     maxFileSizeError: "সর্বোচ্চ ৩০MB সাইজের ফাইল আপলোড করা যাবে।",
     executableBlockedError: "এক্সিকিউটেবল ফাইল (.exe, .apk, .bat, .js, .sh) আপলোড করা সম্পূর্ণ নিষেধ।",
 
     // Home Page Hero
-    heroGreeting: "হ্যালো! আমি শাফায়েত হোসেন সারিপ। আপনার চিন্তা থেকেই আমাদের কাজ শুরু হয়। আমরা আপনার পছন্দ, চাহিদা এবং দৃষ্টিভঙ্গিকে আধুনিক, আকর্ষণীয় ওয়েবসাইট, ওয়েব অ্যাপ এবং মোবাইল অ্যাপে রূপান্তরিত করি। আপনার আইডিয়া, আমাদের প্রযুক্তি—একত্রে আমরা তৈরি করি আপনার স্বপ্নের ওয়েবসাইট ও অ্যাপ্লিকেশন।",
-    viewAllProjects: "সব লাইভ প্রজেক্ট দেখুন",
+    heroGreeting: "হ্যালো! আমি সাফায়েত হোসেন ছারিফ। আপনার ভাবনা থেকেই শুরু আমাদের কাজ। আপনার পছন্দ, প্রয়োজন ও আইডিয়াকে আমরা রূপ দিই আধুনিক ও আকর্ষণীয় ওয়েবসাইট, ওয়েব অ্যাপ এবং মোবাইল অ্যাপে। আপনার আইডিয়া, আমাদের প্রযুক্তি—একসাথে তৈরি করি আপনার কাঙ্ক্ষিত ওয়েবসাইট & ওয়েবসাইট অ্যাপ্লিকেশন।",
+    viewAllProjects: "সকল লাইভ প্রজেক্ট দেখুন",
     projectsCompleted: "সম্পন্ন প্রজেক্ট",
     satisfiedClients: "সন্তুষ্ট ক্লায়েন্ট",
-    satisfactionRate: "সন্তুষ্টির হার",
+    satisfactionRate: "স্যাটিসফ্যাকশন রেট",
 
     // Who I Am Section
-    whoIAmBadge: "আমার পরিচয়",
-    authorName: "শাফায়েত হোসেন সারিপ",
-    authorSubtitle: "ওয়েব ও অ্যাপ ডেভেলপার | ডিজিটাল সলিউশন ক্রিয়েটর",
-    aboutMePill: "আমার সম্পর্কে",
-    aboutMeTitle: "আমার সম্পর্কে",
-    aboutMeContent: "আমি কুষ্টিয়া, খুলনা, বাংলাদেশের একজন ওয়েব ও অ্যাপ ডেভেলপার। আমি কুষ্টিয়া সরকারি পলিটেকনিক ইনস্টিটিউটে ইলেকট্রনিক্স টেকনোলজি বিভাগে অধ্যয়নরত এবং গত ১ বছরেরও বেশি সময় ধরে ওয়েব ডেভেলপমেন্ট নিয়ে কাজ করছি।",
-    myGoalPill: "আমার লক্ষ্য",
-    myGoalTitle: "আমার লক্ষ্য",
-    myGoalContent: "ক্ষুদ্র বিজনেস ওয়েবসাইট থেকে শুরু করে সম্পূর্ণ ই-কমার্স প্ল্যাটফর্ম, ওয়েব অ্যাপ্লিকেশন এবং কাস্টম ডিজিটাল সলিউশন দ্রুত, নির্ভরযোগ্য এবং উচ্চমানের সাথে তৈরি করা।",
-    skillsPill: "দক্ষতা ও অভিজ্ঞতা",
-    skillsTitle: "দক্ষতা ও অভিজ্ঞতা",
-    skillsContent: "আমি আধুনিক ওয়েবসাইট, ওয়েব অ্যাপ্লিকেশন, ই-কমার্স প্ল্যাটফর্ম, ব্যবসায়িক ওয়েবসাইট, শিক্ষা বিষয়ক প্ল্যাটফর্ম, এআই-চালিত ওয়েবসাইট এবং বিভিন্ন কাস্টম ডিজিটাল সলিউশন তৈরি করি।",
-    policyPill: "নীতিমালা",
-    policyTitle: "নীতিমালা",
-    policyContent: "আমি ইতিবাচক, পেশাদার এবং ব্যবসায়িক ওয়েবসাইট ও ডিজিটাল প্ল্যাটফর্ম তৈরিতে কাজ করি। আমি কোনো জুয়া বা বেটিং ওয়েবসাইট তৈরি করি না।",
+    whoIAmBadge: "আমার পরিচয়",
+    authorName: "সাফায়েত হোসেন ছারিফ",
+    authorSubtitle: "Web & App Developer | Digital Solutions Creator",
+    aboutMePill: "আমার পরিচয়",
+    aboutMeTitle: "আমার পরিচয়",
+    aboutMeContent: "আমি কুষ্টিয়া, খুলনা, বাংলাদেশের একজন <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Web & App Developer</span>। আমি কুষ্টিয়া সরকারি পলিটেকনিক ইনস্টিটিউটের <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Electronics Technology</span> বিভাগের একজন শিক্ষার্থী এবং এক বছরেরও বেশি সময় ধরে <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Web Development</span> নিয়ে কাজ করছি।",
+    myGoalPill: "আমাদের লক্ষ্য",
+    myGoalTitle: "আমাদের লক্ষ্য",
+    myGoalContent: "ছোট <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Business Website</span> থেকে শুরু করে সম্পূর্ণ <span class=\"text-sky-500 dark:text-sky-400 font-bold\">E-commerce Platform</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Web Application</span> এবং <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Custom Digital Solution</span> পর্যন্ত দ্রুত, নির্ভরযোগ্য ও মানসম্মত <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Digital Platform</span> তৈরি করা।",
+    skillsPill: "আমার দক্ষতা ও অভিজ্ঞতা",
+    skillsTitle: "আমার দক্ষতা ও অভিজ্ঞতা",
+    skillsContent: "আমি ক্লায়েন্টদের জন্য এবং নিজের বিভিন্ন উদ্যোগের জন্য আধুনিক <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Website</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Web Application</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">E-commerce Platform</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Business Website</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Educational Platform</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">AI-powered Website</span> এবং বিভিন্ন ধরনের <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Custom Digital Solution</span> তৈরি করি।",
+    policyPill: "আমাদের নীতি",
+    policyTitle: "আমাদের নীতি",
+    policyContent: "আমি <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Positive</span>, <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Professional</span> এবং <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Business-oriented Website</span> ও <span class=\"text-sky-500 dark:text-sky-400 font-bold\">Digital Platform</span> তৈরিতে কাজ করি। আমি <span class=\"text-red-500 font-bold\">Gambling বা Betting Website</span> তৈরি করি না।",
 
     // Tech Stack
     techStackBadge: "টেক স্ট্যাক",
@@ -328,7 +328,7 @@ const translations = {
     servicesSubtitle: "আপনার ব্যবসাকে এগিয়ে নিতে এবং স্কেল করার জন্য পেশাদার ওয়েব সলিউশন।",
     specializedCapHeading: "বিশেষায়িত ডেভেলপমেন্ট ক্ষমতা",
     ethicalPolicyTitle: "কঠোর নৈতিক অঙ্গীকার নীতি",
-    ethicalPolicyContent: "ওয়েবওয়ার্ল্ডবিডি কঠোরভাবে শুধুমাত্র ইতিবাচক, ব্যবসায়িক এবং বৈধ প্ল্যাটফর্ম তৈরি করে। কোনো জুয়া, বেটিং, অ্যাডাল্ট বা অবৈধ ওয়েবসাইট গ্রহণ করা হয় না।",
+    ethicalPolicyContent: "WebWorldBD কঠোরভাবে শুধুমাত্র ইতিবাচক, ব্যবসায়িক এবং বৈধ প্ল্যাটফর্ম তৈরি করে। কোনো জুয়া, বেটিং, অ্যাডাল্ট বা অবৈধ ওয়েবসাইট গ্রহণ করা হয় না।",
     ctaHeading: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",
     ctaText: "আপনার ব্যবসাকে অনলাইনে নিতে বা একটি নতুন প্রজেক্ট শুরু করতে প্রস্তুত? বিনামূল্যে পরামর্শের জন্য আজই যোগাযোগ করুন।",
 
@@ -348,12 +348,12 @@ const translations = {
     socialNetworks: "সোশ্যাল নেটওয়ার্ক",
 
     // Footer
-    footerDesc: "শাফায়েত হোসেন সারিপ — ওয়েবওয়ার্ল্ডবিডি। গুণমান এবং নৈতিকতার সাথে কোনো আপস না করে শক্তিশালী ডিজিটাল অভিজ্ঞতা, হাই-কনভার্টিং ওয়েবসাইট এবং আধুনিক অ্যাপ তৈরি করছি।",
+    footerDesc: "সাফায়েত হোসেন ছারিফ — WebWorldBD। গুণমান এবং নৈতিকতার সাথে কোনো আপস না করে শক্তিশালী ডিজিটাল অভিজ্ঞতা, হাই-কনভার্টিং ওয়েবসাইট এবং আধুনিক অ্যাপ তৈরি করছি।",
     quickLinks: "দ্রুত লিঙ্ক",
     popularServices: "জনপ্রিয় সার্ভিসসমূহ",
     contactInfo: "যোগাযোগের তথ্য",
     location: "কুষ্টিয়া, বাংলাদেশ",
-    copyright: "© ২০২৬ ওয়েবওয়ার্ল্ডবিডি। শাফায়েত হোসেন সারিপ কর্তৃক নিবেদিতভাবে নির্মিত। সর্বস্বত্ব সংরক্ষিত।",
+    copyright: "© ২০২৬ WebWorldBD। সাফায়েত হোসেন ছারিফ কর্তৃক নিবেদিতভাবে নির্মিত। সর্বস্বত্ব সংরক্ষিত।",
 
     // Auth & Profile
     logIn: "লগ ইন",
@@ -363,11 +363,11 @@ const translations = {
     confirmPasswordLabel: "পাসওয়ার্ড নিশ্চিত করুন",
     fullNameLabel: "পুরো নাম",
     sendResetLink: "রিসেট লিঙ্ক পাঠান",
-    googleContinue: "Google দিয়ে এগিয়ে যান",
+    googleContinue: "Google দিয়ে এগিয়ে যান",
     forgotPasswordLink: "পাসওয়ার্ড ভুলে গেছেন?",
     dontHaveAccount: "অ্যাকাউন্ট নেই?",
     alreadyHaveAccount: "আগে থেকেই অ্যাকাউন্ট আছে?",
-    backToLogin: "লগ ইন পৃষ্ঠায় ফিরে যান",
+    backToLogin: "লগ ইন পৃষ্ঠায় ফিরে যান",
     resetPasswordTitle: "পাসওয়ার্ড রিসেট",
     resetPasswordDesc: "আপনার ইমেইল অ্যাড্রেস দিন, আমরা একটি রিসেট লিঙ্ক পাঠাবো।",
     profileTitle: "ব্যবহারকারী প্রোফাইল",
@@ -375,7 +375,7 @@ const translations = {
     saveChanges: "পরিবর্তন সংরক্ষণ করুন",
     cancel: "বাতিল",
     usernameLabel: "ইউজারনেম",
-    bioLabel: "বায়ো (সর্বোচ্চ ১৬০ অক্ষর)",
+    bioLabel: "বায়ো (সর্বোচ্চ ১৬০ অক্ষর)",
     bioPlaceholder: "আপনার বা আপনার ব্যবসা সম্পর্কে লিখুন...",
     phoneLabel: "ফোন নম্বর (বাংলাদেশ ফরম্যাট)",
     photoUpload: "প্রোফাইল ছবি",
@@ -384,42 +384,42 @@ const translations = {
     copyUsername: "ইউজারনেম কপি করুন",
     copiedToast: "অনুলিপি করা হয়েছে!",
     available: "ব্যবহারযোগ্য",
-    alreadyTaken: "ইতিমধ্যে নেওয়া হয়েছে",
+    alreadyTaken: "ইতিমধ্যে নেওয়া হয়েছে",
     reservedUsername: "রিজার্ভড শব্দ ব্যবহার করা যাবে না",
     tooShort: "কমপক্ষে ৩ অক্ষর হতে হবে",
     tooLong: "সর্বোচ্চ ২০ অক্ষর",
     emailVerified: "যাচাইকৃত",
     verifyEmail: "ইমেইল যাচাই করুন",
-    verificationSent: "যাচাইকরণ ইমেইল পাঠানো হয়েছে! ইনবক্স পরীক্ষা করুন।",
-    memberSince: "সদস্যতার শুরুর সময়",
+    verificationSent: "যাচাইকরণ ইমেইল পাঠানো হয়েছে! ইনবক্স পরীক্ষা করুন।",
+    memberSince: "সদস্যতার শুরুর সময়",
     accountDetails: "অ্যাকাউন্ট বিবরণ",
     profileCompletion: "প্রোফাইল তথ্য পূর্ণতা",
-    addBioHint: "একটি বায়ো যুক্ত করুন",
+    addBioHint: "একটি বায়ো যুক্ত করুন",
     addPhoneHint: "একটি ফোন নম্বর যুক্ত করুন",
     verifyEmailHint: "আপনার ইমেইল যাচাই করুন",
     addPhotoHint: "প্রোফাইল ছবি আপলোড করুন",
-    quickActions: "দ্রুত একশন",
+    quickActions: "দ্রুত অ্যাকশন",
     myProjects: "আমার প্রজেক্ট",
-    changePassword: "পাসওয়ার্ড পরিবর্তন",
-    currentPassword: "বর্তমান পাসওয়ার্ড",
-    newPassword: "নতুন পাসওয়ার্ড",
+    changePassword: "পাসওয়ার্ড পরিবর্তন",
+    currentPassword: "বর্তমান পাসওয়ার্ড",
+    newPassword: "নতুন পাসওয়ার্ড",
     deleteAccount: "অ্যাকাউন্ট মুছে ফেলুন",
-    dangerZone: "বিপদজনক জোন",
+    dangerZone: "বিপজ্জনক জোন",
     typeDeleteConfirm: "নিশ্চিত করতে DELETE টাইপ করুন:",
     cropImageTitle: "ছবি ক্রপ করুন",
     zoomLabel: "জুম",
     applyCrop: "ক্রপ ও আপলোড করুন",
-    unsavedChangesWarning: "আপনার অসংরক্ষিত পরিবর্তন রয়েছে। আপনি কি সত্যি চলে যেতে চান?",
-    profileUpdatedSuccess: "প্রোফাইল সফলভাবে আপডেট করা হয়েছে!",
+    unsavedChangesWarning: "আপনার অসংরক্ষিত পরিবর্তন রয়েছে। আপনি কি সত্যি চলে যেতে চান?",
+    profileUpdatedSuccess: "প্রোফাইল সফলভাবে আপডেট করা হয়েছে!",
     aboutSectionHeading: "ব্যবহারকারী সম্পর্কে",
     contactSectionHeading: "যোগাযোগের তথ্য",
     accountInfoHeading: "অ্যাকাউন্ট বিবরণ",
     lastLogin: "সর্বশেষ লগইন",
     authProvider: "সাইন-ইন মাধ্যম",
-    googleProviderText: "Google দিয়ে সাইন ইন করা",
-    passwordProviderText: "ইমেইল ও পাসওয়ার্ড",
+    googleProviderText: "Google দিয়ে সাইন ইন করা",
+    passwordProviderText: "ইমেইল ও পাসওয়ার্ড",
     adminTitle: "এডমিন ম্যানেজমেন্ট ড্যাশবোর্ড",
-    accessDenied: "প্রবেশাধিকার সংরক্ষিত। এডমিন অনুমতি প্রয়োজন।",
+    accessDenied: "প্রবেশাধিকার সংরক্ষিত। এডমিন অনুমতি প্রয়োজন।",
     adminProfileSection: "এডমিন প্রোফাইল ও ক্রেডেনশিয়াল",
     appearanceSection: "অ্যাপিয়ারেন্স ও থিম অপশন",
     notificationSection: "নোটিফিকেশন ও অ্যালার্ট সাউন্ড",
@@ -433,7 +433,7 @@ const translations = {
 
     // Start Project Page
     startProjectTitle: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",
-    startProjectSubtitle: "আপনার কাস্টম প্রজেক্টের প্রয়োজনীয়তা, পছন্দনীয় ফিচার বা আইডিয়া বিশদভাবে বর্ণনা করুন...",
+    startProjectSubtitle: "আপনার কাস্টম প্রজেক্টের প্রয়োজনীয়তা, পছন্দনীয় ফিচার বা আইডিয়া বিশদভাবে বর্ণনা করুন...",
     fullName: "আপনার পুরো নাম",
     fullNamePlaceholder: "আপনার পূর্ণ নাম",
     secureLogin: "সুরক্ষিত লগইন",
@@ -465,7 +465,7 @@ const translations = {
     settingsHeading: "সিস্টেম সেটিংস",
     settingsSubtitle: "আপনার সাইট প্রেফারেন্স, অ্যাকাউন্ট ডিটেইলস, নোটিফিকেশন এবং প্রাইভেসি অপশন ম্যানেজ করুন।",
     backToHome: "← হোমে ফিরে যান",
-    preferencesPill: "ওয়েবওয়ার্ল্ডবিডি প্রেফারেন্সেস",
+    preferencesPill: "WebWorldBD প্রেফারেন্সেস",
     appearance: "অ্যাপিয়ারেন্স",
     themeMode: "থিম মোড",
     lightMode: "লাইট মোড",
@@ -491,7 +491,7 @@ const translations = {
     privacyTermsLink: "প্রাইভেসি পলিসি ও টার্মস অফ সার্ভিস",
 
     // Why Choose Me Page
-    whyChooseMeHeading: "কেন ব্যবসাগুলো ওয়েবওয়ার্ল্ডবিডি-কে বিশ্বাস করে",
+    whyChooseMeHeading: "কেন ব্যবসাগুলো WebWorldBD-কে বিশ্বাস করে",
     ethicalCodeTitle: "১০০% এথিক্যাল ও ক্লিন কোড",
     ethicalCodeDesc: "ইন্ডাস্ট্রি সেরা অনুশীলন এবং উচ্চ নিরাপত্তা মান মেনে হাতে তৈরি, হালকা কোড।",
     turnaroundTitle: "দ্রুত ডেলিভারি ও সাপোর্ট",
@@ -514,7 +514,7 @@ const translations = {
     // FAQ Page
     gotQuestionsBadge: "কোনো প্রশ্ন আছে?",
     faqHeading: "সাধারণ জিজ্ঞাসা (FAQ)",
-    faqQ1: "ওয়েবওয়ার্ল্ডবিডি কী কী সার্ভিস প্রদান করে?",
+    faqQ1: "WebWorldBD কী কী সার্ভিস প্রদান করে?",
     faqA1: "আমরা ব্যবসায়িক ওয়েবসাইট, ই-কমার্স স্টোর, পোর্টফোলিও সাইট, শিক্ষা/এআই টুলস, ওয়েব অ্যাপ, অ্যান্ড্রয়েড অ্যাপ তৈরি করি এবং বাগ ফিক্সিং, ইউআই/ইউএক্স ডিজাইন ও রিডিজাইন সার্ভিস দিই।",
     faqQ2: "জুয়া বা বেটিং সাইট নিয়ে আপনার ডেভেলপমেন্ট পলিসি কী?",
     faqA2: "আমরা কঠোরভাবে কোনো জুয়া, বেটিং, অ্যাডাল্ট বা অবৈধ ওয়েবসাইট তৈরি করি না। আমরা শুধুমাত্র ইতিবাচক, ব্যবসায়িক এবং বৈধ প্ল্যাটফর্ম তৈরি করি।",
@@ -534,6 +534,7 @@ export function getLanguage() {
 export function setLanguage(lang) {
   currentLang = lang;
   localStorage.setItem('webworldbd_lang', lang);
+  document.documentElement.setAttribute('lang', lang);
   applyTranslations();
   document.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
 }
@@ -547,12 +548,16 @@ export function t(key) {
 }
 
 export function applyTranslations() {
+  document.documentElement.setAttribute('lang', currentLang);
+
   const elements = document.querySelectorAll('[data-i18n]');
   elements.forEach((el) => {
     const key = el.getAttribute('data-i18n');
     const translatedText = t(key);
     if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'email' || el.type === 'password')) {
       el.placeholder = translatedText;
+    } else if (typeof translatedText === 'string' && translatedText.includes('<')) {
+      el.innerHTML = translatedText;
     } else {
       el.textContent = translatedText;
     }

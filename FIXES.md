@@ -1,5 +1,37 @@
 # WebWorldBD Fixes and Feature Implementations Log
 
+## Version 2.8.0 - Bengali Language Copy, Name Spelling, Brand Consistency & Layout Fixes
+
+### Root Cause Analysis
+1. **Name Spelling Inconsistency**:
+   - The developer's name in Bengali mode was spelled incorrectly in several places as "শাফায়েত হোসেন সারিপ" instead of the exact spelling "সাফায়েত হোসেন ছারিফ".
+2. **Brand Name Transliteration**:
+   - In Bengali mode, the brand name was transliterated as "ওয়েবওয়ার্ল্ড" / "ওয়েবওয়ার্ল্ডবিডি" across header, sidebar, footer, user cards, copyright, and toasts instead of maintaining the exact English branding "WebWorldBD" ("WebWorld" in dark text + "BD" in sky blue).
+3. **Home Page Bengali Copy & Card Highlights**:
+   - Home page hero paragraph, action buttons, stats labels, Who I Am section badge/heading/subheading, and the four card contents needed exact wording replacements matching client specifications, with technical terms kept in English letters and highlighted using bold sky-blue styling.
+4. **Who I Am Badge Alignment**:
+   - In Bengali mode, the "আমার পরিচয়" pill badge sat beside the author heading due to `inline-block` layout on certain screen widths.
+5. **Bengali Typography & Mobile Layout Scale**:
+   - Bengali conjuncts rendered with standard fallback fonts lacking line-height optimization, and setting document language attribute was missing when toggling languages.
+   - Background orb containers or long tab labels caused slight viewport width calculation issues on 360px screens.
+
+### Summary of Changes Implemented
+1. **Name Spelling Correction**:
+   - Updated all Bengali occurrences of the developer's name across `js/i18n.js`, `js/admin.js`, `js/main.js`, `js/auth.js`, and HTML files to `সাফায়েত হোসেন ছারিফ`.
+   - Preserved exact English name `SHAFAET HOSSEN SARIP` in English mode.
+2. **Brand Name Consistency ("WebWorldBD")**:
+   - Updated dictionary brand keys to `brandName: 'WebWorld'` and `brandBD: 'BD'` in both English and Bengali dictionaries.
+   - Replaced all Bengali brand transliterations ("ওয়েবওয়ার্ল্ডবিডি" / "ওয়েবওয়ার্ল্ড") with `WebWorldBD`.
+3. **Exact Home Page Bengali Copy & Card Formatting**:
+   - Updated hero paragraph, buttons ("সকল লাইভ প্রজেক্ট দেখুন", "লাইভ চ্যাট"), stat labels ("সম্পন্ন প্রজেক্ট", "সন্তুষ্ট ক্লায়েন্ট", "স্যাটিসফ্যাকশন রেট"), and Who I Am card contents word-for-word.
+   - Updated `applyTranslations()` in `js/i18n.js` to render inner HTML markup when HTML tags are present, preserving sky-blue/bold highlights on technical terms and red/bold highlights on "Gambling বা Betting Website".
+4. **Who I Am Layout Fix**:
+   - Restructured the Who I Am header container in `index.html` into a vertical flex stack (`flex flex-col items-center`), ensuring the "আমার পরিচয়" badge sits centered strictly ABOVE the author heading across all screen sizes and languages.
+5. **Typography & Layout Bug Fix**:
+   - Imported `Hind Siliguri` Google Font in `css/style.css` and added CSS rules for `html[lang="bn"]` with 1.7 line-height and crisp heading weight.
+   - Updated `setLanguage(lang)` and `applyTranslations()` to explicitly set `document.documentElement.setAttribute('lang', lang)`.
+   - Verified 100% scale without horizontal scroll or overflow across 360px, 390px, and 430px viewports in light and dark mode, confirming bottom navigation bar visibility and smooth language toggled switching without page reload.
+
 ## Version 2.7.0 - Admin Panel Public UI Isolation, Header Search & Dashboard Data Fixes
 
 ### Root Cause Analysis
@@ -14,7 +46,7 @@
 ### Summary of Changes Implemented
 1. **Public UI Isolation on `admin.html` & Dark 3D Admin Tab Bar**:
    - Updated `js/main.js` to detect `admin.html`, add `document.body.classList.add("admin-page")`, and skip injecting public header, sidebar, footer, floating buttons, and public bottom bar.
-   - Added safety net CSS rules in `css/style.css` (`body.admin-page .public-bottom-nav, body.admin-page #bottom-nav-bar, ... { display: none !important; }`) and set `padding-bottom: 0 !important;` on `body.admin-page`.
+   - Added safety net CSS rules in `css/style.css` (`body.admin-page .public-bottom-nav, body.admin-page #bottom-nav-bar, ... { display: none !important; }`) and set `padding-bottom: 0 !important;`) on `body.admin-page`.
    - Redesigned the admin panel's own bottom tab bar with a dark glass 3D look (`.admin-bottom-tab-bar`), 12px side margins, rounded 26px corners, glowing active tabs, live badges, safe-area insets, and auto-hide behavior when the admin menu drawer or on-screen keyboard is active.
 2. **Responsive Header Search Box**:
    - Refactored the search field container to `flex-1 min-width: 0 max-w-xs sm:max-w-sm md:max-w-md`.

@@ -98,7 +98,7 @@ function subscribeSiteConfigPublic() {
             </div>
             <h1 class="text-2xl font-black mb-2">Platform Under Maintenance</h1>
             <p class="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">
-              ${getLanguage() === 'en' ? 'WebWorldBD is currently undergoing scheduled upgrades. We will be back online shortly!' : 'ওয়েবওয়ার্ল্ডবিডি বর্তমানে আপডেট করা হচ্ছে। আমরা শীঘ্রই ফিরে আসব!'}
+              ${getLanguage() === 'en' ? 'WebWorldBD is currently undergoing scheduled upgrades. We will be back online shortly!' : 'WebWorldBD বর্তমানে আপডেট করা হচ্ছে। আমরা শীঘ্রই ফিরে আসব!'}
             </p>
             <a href="https://wa.me/8801342697743" target="_blank" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">Contact on WhatsApp</a>
           </div>

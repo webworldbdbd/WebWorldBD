@@ -37,12 +37,12 @@ let inactivityTimer = null;
 let warningTimer = null;
 
 const DEFAULT_QUICK_REPLIES = [
-  { id: 'q1', trigger: 'hello', textEn: 'Hello! Thank you for reaching out to WebWorldBD. How can I help you with your project today?', textBn: 'হ্যালো! ওয়েবওয়ার্ল্ডবিডি-তে যোগাযোগের জন্য ধন্যবাদ। কীভাবে আপনার প্রজেক্টে সাহায্য করতে পারি?' },
+  { id: 'q1', trigger: 'hello', textEn: 'Hello! Thank you for reaching out to WebWorldBD. How can I help you with your project today?', textBn: 'হ্যালো! WebWorldBD-তে যোগাযোগের জন্য ধন্যবাদ। কীভাবে আপনার প্রজেক্টে সাহায্য করতে পারি?' },
   { id: 'q2', trigger: 'price', textEn: 'Our custom website pricing starts from ৳5,000 / $50 depending on feature complexity and responsiveness.', textBn: 'আমাদের কাস্টম ওয়েবসাইট তৈরি শুরু হয় ৳৫,০০০ / $৫০ থেকে, যা আপনার রিকোয়ারমেন্টসের ওপর নির্ভর করে।' },
   { id: 'q3', trigger: 'time', textEn: 'Standard business websites take 3-5 days. Complex e-commerce or Web SaaS apps take 1-3 weeks.', textBn: 'সাধারণ ব্যবসায়িক ওয়েবসাইট ৩-৫ দিন এবং জটিল ই-কমার্স বা ওয়েব অ্যাপ ১-৩ সপ্তাহ সময় নেয়।' },
   { id: 'q4', trigger: 'payment', textEn: 'We accept payment via bKash, Nagad, Bank Transfer, and international payments via Fiverr.', textBn: 'আমরা বিকাশ, নগদ, ব্যাংক ট্রান্সফার এবং ফাইবারের মাধ্যমে পেমেন্ট গ্রহণ করি।' },
-  { id: 'q5', trigger: 'policy', textEn: 'WebWorldBD strictly builds positive and legal platforms. We do NOT build gambling, betting, or adult websites.', textBn: 'ওয়েবওয়ার্ল্ডবিডি কঠোরভাবে শুধুমাত্র বৈধ ওয়েবসাইট তৈরি করে। আমরা কোনো জুয়া বা বেটিং সাইট তৈরি করি না।' },
-  { id: 'q6', trigger: 'call', textEn: 'You can directly call our developer SHAFAET HOSSEN SARIP at +8801342697743 or +8809658183506.', textBn: 'আমাদের ডেভেলপার শাফায়েত হোসেন সারিপের সাথে সরাসরি কল করে কথা বলতে পারেন +8801342697743 নম্বরে।' }
+  { id: 'q5', trigger: 'policy', textEn: 'WebWorldBD strictly builds positive and legal platforms. We do NOT build gambling, betting, or adult websites.', textBn: 'WebWorldBD কঠোরভাবে শুধুমাত্র বৈধ ওয়েবসাইট তৈরি করে। আমরা কোনো জুয়া বা বেটিং সাইট তৈরি করি না।' },
+  { id: 'q6', trigger: 'call', textEn: 'You can directly call our developer SHAFAET HOSSEN SARIP at +8801342697743 or +8809658183506.', textBn: 'আমাদের ডেভেলপার সাফায়েত হোসেন ছারিফ-এর সাথে সরাসরি কল করে কথা বলতে পারেন +8801342697743 নম্বরে।' }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
