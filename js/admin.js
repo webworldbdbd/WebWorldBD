@@ -1308,7 +1308,9 @@ async function handleAdminSendMessage(e) {
 
     batch.set(newMsgRef, {
       sender: 'admin',
+      senderRole: 'admin',
       senderId: currentAdminUser.uid,
+      conversationId: activeChatUid,
       text: text,
       type: 'text',
       createdAt: serverTimestamp(),
