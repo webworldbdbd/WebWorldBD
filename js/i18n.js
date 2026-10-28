@@ -71,6 +71,11 @@ const translations = {
     ethicalPolicyContent: "WebWorldBD strictly builds positive, business-oriented, and legal platforms only. Absolutely NO Gambling, Betting, Adult, or illegal websites are accepted.",
     ctaHeading: "Let's Build Something Great Together!",
     ctaText: "Ready to take your business online or start a new project? Contact me today for a free consultation.",
+    serviceKeyFeatures: "Key Features & Deliverables",
+    serviceTechStack: "Technologies Included",
+    serviceDeliveryTime: "Estimated Timeline",
+    serviceStartingPrice: "Starting Price",
+    serviceOrderNow: "Order This Service",
 
     // Contact Page
     getInTouchBadge: "Get In Touch",
@@ -364,6 +369,11 @@ const translations = {
     ethicalPolicyContent: "WebWorldBD কঠোরভাবে শুধুমাত্র ইতিবাচক, ব্যবসায়িক এবং বৈধ প্ল্যাটফর্ম তৈরি করে। কোনো জুয়া, বেটিং, অ্যাডাল্ট বা অবৈধ ওয়েবসাইট গ্রহণ করা হয় না।",
     ctaHeading: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",
     ctaText: "আপনার ব্যবসাকে অনলাইনে নিতে বা একটি নতুন প্রজেক্ট শুরু করতে প্রস্তুত? বিনামূল্যে পরামর্শের জন্য আজই যোগাযোগ করুন।",
+    serviceKeyFeatures: "প্রধান ফিচারসমূহ ও ডেলিভারেবল",
+    serviceTechStack: "ব্যবহৃত টেকনোলজি",
+    serviceDeliveryTime: "আনুমানিক সময়সীমা",
+    serviceStartingPrice: "শুরুতেই আনুমানিক খরচ",
+    serviceOrderNow: "সার্ভিসটি অর্ডার করুন",
 
     // Contact Page
     getInTouchBadge: "যোগাযোগ করুন",
