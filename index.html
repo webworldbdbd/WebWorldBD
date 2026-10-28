@@ -430,9 +430,9 @@
   <!-- Entry Script -->
   <script type="module" src="./js/main.js"></script>
   <script type="module">
-    import { openModal } from './js/main.js';
+    import { openLiveChat } from './js/main.js';
     document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('hero-live-chat-btn')?.addEventListener('click', () => openModal('liveChat'));
+      document.getElementById('hero-live-chat-btn')?.addEventListener('click', () => openLiveChat());
     });
   </script>
 </body>

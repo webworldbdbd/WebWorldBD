@@ -1185,7 +1185,7 @@ function injectFloatingButtons() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp"
-      class="w-13 h-13 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-xl hover:scale-105 transition-all cursor-pointer ring-4 ring-emerald-500/20"
+      class="floating-whatsapp-glass cursor-pointer"
     >
       <i class="fa-brands fa-whatsapp text-2xl"></i>
     </a>
@@ -1248,6 +1248,26 @@ function injectModals() {
 
   document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
   document.getElementById('modal-backdrop')?.addEventListener('click', closeModal);
+}
+
+/* ================= LIVE CHAT WIDGET / NAVIGATION FUNCTION ================= */
+export function openLiveChat() {
+  const chatWidget = document.getElementById('chat-widget') ||
+                     document.querySelector('.chat-widget') ||
+                     document.getElementById('live-chat-container') ||
+                     document.querySelector('.live-chat-container');
+
+  if (chatWidget) {
+    chatWidget.classList.remove('hidden');
+    chatWidget.style.display = 'block';
+    chatWidget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    window.location.href = './livechat.html';
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.openLiveChat = openLiveChat;
 }
 
 export function openModal(modalType) {
