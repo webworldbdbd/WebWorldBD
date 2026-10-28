@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('admin-page');
   }
 
+  const isLiveChatPage = window.location.pathname.endsWith('livechat.html') || window.location.pathname.includes('/livechat.html');
+  if (isLiveChatPage) {
+    document.body.classList.add('livechat-page');
+  }
+
   initTheme();
   injectParticlesBg();
 
