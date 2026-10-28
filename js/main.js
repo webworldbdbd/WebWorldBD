@@ -178,7 +178,7 @@ function injectHeader() {
           <button
             id="btn-open-sidebar"
             aria-label="Open Navigation Menu"
-            class="btn-3d-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-flat-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <i class="fa-solid fa-bars text-lg"></i>
           </button>
@@ -253,7 +253,7 @@ function injectHeader() {
           <button
             id="btn-toggle-theme"
             aria-label="Toggle Light/Dark Theme"
-            class="btn-3d-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+            class="btn-flat-header-round w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
           >
             <i class="fa-solid fa-sun text-amber-500 theme-icon-sun" style="display:${isDark ? 'none' : 'inline-block'};"></i>
             <i class="fa-solid fa-moon text-sky-400 theme-icon-moon" style="display:${isDark ? 'inline-block' : 'none'};"></i>
@@ -262,7 +262,7 @@ function injectHeader() {
           <button
             id="btn-toggle-lang"
             aria-label="Toggle Language"
-            class="btn-3d-header-pill px-3.5 py-2 rounded-full flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
+            class="btn-flat-header-pill px-3.5 py-2 rounded-full flex items-center gap-1.5 font-semibold text-xs cursor-pointer"
           >
             <i class="fa-solid fa-globe text-sky-500"></i>
             <span class="lang-toggle-text">${getLanguage() === 'en' ? 'BN' : 'EN'}</span>
@@ -311,186 +311,181 @@ function injectSidebar() {
     <div id="sidebar-backdrop" class="fixed inset-0 sidebar-backdrop"></div>
 
     <!-- Drawer Panel Container -->
-    <div class="relative w-80 max-w-[85vw] h-full flex flex-col z-10 sidebar-panel-3d">
-      <!-- Ambient Glow Behind Panel -->
-      <div class="sidebar-ambient-glow"></div>
-
-      <!-- Subtle top-to-bottom light reflection -->
-      <div class="sidebar-top-reflection"></div>
+    <div class="relative h-full flex flex-col z-10 sidebar-panel-flat">
 
       <!-- Top Header -->
-      <div class="p-4 flex items-center justify-between border-b border-white/20 dark:border-white/10 sticky top-0 z-20 sidebar-header-glass">
+      <div class="sidebar-header-flat">
         <div class="flex items-center gap-2.5">
           <img
             src="./assets/logo.png?v=2"
             alt="WebWorldBD"
-            width="40"
-            height="40"
-            class="h-10 w-auto object-contain filter drop-shadow-xs"
+            width="36"
+            height="36"
+            class="h-9 w-auto object-contain"
             onerror="this.style.display='none';"
           />
           <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">
-            <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black" data-i18n="brandBD">${t('brandBD')}</span>
+            <span data-i18n="brandName">${t('brandName')}</span><span class="text-sky-400 font-black ml-0.5" data-i18n="brandBD">${t('brandBD')}</span>
           </span>
         </div>
 
         <button
           id="btn-close-sidebar"
           aria-label="Close Navigation"
-          class="btn-3d-close w-9 h-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 cursor-pointer"
+          class="btn-flat-close cursor-pointer"
         >
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- Content Body -->
-      <div class="p-4 space-y-6 overflow-y-auto flex-1 sidebar-content-scroll z-10">
+      <div class="sidebar-content-scroll z-10">
         <!-- User Card -->
-        <div id="sidebar-user-card" class="sidebar-user-card-3d p-3.5 rounded-2xl flex items-center gap-3 cursor-pointer">
+        <div id="sidebar-user-card" class="sidebar-user-card-flat cursor-pointer">
           <!-- Dynamically populated -->
         </div>
 
         <!-- MAIN MENU SECTION -->
         <div class="sidebar-section-block">
-          <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="mainMenu">
+          <h3 class="sidebar-section-title" data-i18n="mainMenu">
             ${t('mainMenu')}
           </h3>
-          <div class="space-y-2.5">
+          <div class="sidebar-nav-list">
             <!-- Home -->
             <a
               href="./index.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="index.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-house"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="home">${t('home')}</span>
+                <span class="sidebar-item-text" data-i18n="home">${t('home')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Services -->
             <a
               href="./services.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="services.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-briefcase"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="services">${t('services')}</span>
+                <span class="sidebar-item-text" data-i18n="services">${t('services')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- My Profile -->
             <button
               id="sidebar-my-profile"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
+              class="sidebar-nav-item sidebar-card-flat cursor-pointer"
               data-path="profile.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-profile w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-user"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="myProfile">${t('myProfile')}</span>
+                <span class="sidebar-item-text" data-i18n="myProfile">${t('myProfile')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </button>
 
             <!-- Start Project -->
             <a
               href="./start-project.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="start-project.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-project w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-rocket"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="startProject">${t('startProject')}</span>
+                <span class="sidebar-item-text" data-i18n="startProject">${t('startProject')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Live Chat (Opens livechat.html page) -->
             <a
               href="./livechat.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all relative"
+              class="sidebar-nav-item sidebar-card-flat relative"
               data-path="livechat.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-chat w-10 h-10 rounded-xl flex items-center justify-center text-emerald-500 shrink-0 relative">
+                <div class="sidebar-icon-tile relative">
                   <i class="fa-solid fa-comments"></i>
                   <span class="live-chat-red-dot hidden"></span>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="liveChat">${t('liveChat')}</span>
+                <span class="sidebar-item-text" data-i18n="liveChat">${t('liveChat')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Connect -->
             <a
               href="./contact.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="contact.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-paper-plane"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="connect">${t('connect')}</span>
+                <span class="sidebar-item-text" data-i18n="connect">${t('connect')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Settings -->
             <a
               href="./settings.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="settings.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-gear"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="settings">${t('settings')}</span>
+                <span class="sidebar-item-text" data-i18n="settings">${t('settings')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Admin Panel (Conditional - rendered ONLY for Executive Admin) -->
             <a
               id="sidebar-admin-link"
               href="./admin.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl items-center justify-between text-left transition-all hidden"
+              class="sidebar-nav-item sidebar-card-flat hidden"
               data-path="admin.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="adminPanel">${t('adminPanel')}</span>
+                <span class="sidebar-item-text" data-i18n="adminPanel">${t('adminPanel')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <!-- Theme Switcher Card -->
             <div
               id="sidebar-toggle-theme"
-              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all"
+              class="sidebar-card-flat cursor-pointer"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
-                  <i class="fa-solid fa-sun text-amber-300 theme-icon-sun"></i>
-                  <i class="fa-solid fa-moon text-sky-300 theme-icon-moon" style="display:none;"></i>
+                <div class="sidebar-icon-tile">
+                  <i class="fa-solid fa-sun theme-icon-sun"></i>
+                  <i class="fa-solid fa-moon theme-icon-moon" style="display:none;"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="theme">${t('theme')}</span>
+                <span class="sidebar-item-text" data-i18n="theme">${t('theme')}</span>
               </div>
-              <span class="badge-3d-pill theme-label-text">
+              <span class="sidebar-badge-pill theme-label-text">
                 ${document.body.classList.contains('dark') ? 'Dark' : 'Light'}
               </span>
             </div>
@@ -498,15 +493,15 @@ function injectSidebar() {
             <!-- Language Switcher Card -->
             <div
               id="sidebar-toggle-lang"
-              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all"
+              class="sidebar-card-flat cursor-pointer"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-main w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-globe"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="language">${t('language')}</span>
+                <span class="sidebar-item-text" data-i18n="language">${t('language')}</span>
               </div>
-              <span class="badge-3d-pill lang-toggle-text">
+              <span class="sidebar-badge-pill lang-toggle-text">
                 ${getLanguage() === 'en' ? 'EN' : 'BN'}
               </span>
             </div>
@@ -515,24 +510,24 @@ function injectSidebar() {
 
         <!-- LIVE PREVIEW SECTION -->
         <div class="sidebar-section-block">
-          <h3 class="sidebar-section-title mb-2.5 px-1">
+          <h3 class="sidebar-section-title">
             LIVE PREVIEW
           </h3>
-          <div class="space-y-2">
+          <div class="sidebar-live-list">
             ${LIVE_PROJECTS.map(proj => `
               <a
                 href="${proj.url}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="sidebar-live-link card-3d compact-live-card w-full p-2.5 rounded-xl flex items-center justify-between transition-all text-sm font-semibold text-slate-800 dark:text-slate-100"
+                class="sidebar-live-link sidebar-card-flat sidebar-card-live"
               >
                 <div class="flex items-center gap-2.5">
-                  <div class="icon-tile-mini icon-tile-preview w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs shrink-0">
+                  <div class="sidebar-icon-tile">
                     <i class="fa-solid ${proj.icon}"></i>
                   </div>
-                  <span class="text-xs font-semibold">${proj.name}</span>
+                  <span class="sidebar-item-text">${proj.name}</span>
                 </div>
-                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-sky-400/80"></i>
+                <i class="fa-solid fa-arrow-up-right-from-square text-xs text-sky-400"></i>
               </a>
             `).join('')}
           </div>
@@ -540,63 +535,63 @@ function injectSidebar() {
 
         <!-- OTHERS SECTION -->
         <div class="sidebar-section-block">
-          <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="others">
+          <h3 class="sidebar-section-title" data-i18n="others">
             ${t('others')}
           </h3>
-          <div class="space-y-2.5">
+          <div class="sidebar-nav-list">
             <a
               href="./why-choose-me.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="why-choose-me.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-circle-check"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
+                <span class="sidebar-item-text" data-i18n="whyChooseMe">${t('whyChooseMe')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <a
               href="./process.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="process.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-list-check"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="workProcess">${t('workProcess')}</span>
+                <span class="sidebar-item-text" data-i18n="workProcess">${t('workProcess')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <a
               href="./faq.html"
-              class="sidebar-nav-item card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all"
+              class="sidebar-nav-item sidebar-card-flat"
               data-path="faq.html"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-circle-question"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="faq">${t('faq')}</span>
+                <span class="sidebar-item-text" data-i18n="faq">${t('faq')}</span>
               </div>
-              <i class="fa-solid fa-angle-right text-xs text-slate-400 opacity-0 active-chevron transition-opacity"></i>
+              <i class="fa-solid fa-chevron-right text-xs text-sky-500 opacity-0 active-chevron transition-opacity"></i>
             </a>
 
             <a
               href="${PRIVACY_POLICY_URL}"
               target="_blank"
               rel="noopener noreferrer"
-              class="card-3d w-full p-2.5 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
+              class="sidebar-card-flat cursor-pointer"
             >
               <div class="flex items-center gap-3">
-                <div class="icon-tile-3d icon-tile-others w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <div class="sidebar-icon-tile">
                   <i class="fa-solid fa-file-contract"></i>
                 </div>
-                <span class="text-sm font-semibold text-slate-800 dark:text-slate-100" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
+                <span class="sidebar-item-text" data-i18n="privacyPolicy">${t('privacyPolicy')}</span>
               </div>
               <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400"></i>
             </a>
@@ -737,11 +732,11 @@ function updateAuthDependentUI() {
       };
 
       const avatarMarkup = photoURL
-        ? `<img src="${getOptimizedImageUrl(photoURL, 128, 128)}" alt="${name}" width="44" height="44" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">`
-        : `<div class="w-full h-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-sm">${name.charAt(0).toUpperCase()}</div>`;
+        ? `<img src="${getOptimizedImageUrl(photoURL, 128, 128)}" alt="${name}" width="40" height="40" class="absolute inset-0 w-full h-full object-cover object-top" onerror="this.src='./assets/logo.png?v=2'; this.className='absolute inset-0 w-full h-full object-contain p-1';">`
+        : `<div class="w-full h-full bg-sky-500 flex items-center justify-center text-white font-extrabold text-xs">${name.charAt(0).toUpperCase()}</div>`;
 
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center font-bold text-lg shrink-0 overflow-hidden relative">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden relative bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           ${avatarMarkup}
           <span class="online-status-dot"></span>
         </div>
@@ -750,8 +745,8 @@ function updateAuthDependentUI() {
           ${username ? `<span class="text-[11px] text-sky-500 font-semibold block truncate">${username}</span>` : ''}
           <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">${email}</span>
         </div>
-        <a href="./profile.html?edit=true" onclick="event.stopPropagation();" aria-label="Edit Profile" class="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950/80 hover:bg-sky-200 dark:hover:bg-sky-900 text-sky-600 dark:text-sky-300 flex items-center justify-center transition-colors shrink-0">
-          <i class="fa-solid fa-pencil text-xs"></i>
+        <a href="./profile.html?edit=true" onclick="event.stopPropagation();" aria-label="Edit Profile" class="w-7 h-7 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center transition-colors shrink-0">
+          <i class="fa-solid fa-pencil text-[10px]"></i>
         </a>
       `;
     }
@@ -764,8 +759,8 @@ function updateAuthDependentUI() {
         window.location.href = './login.html';
       };
       userCard.innerHTML = `
-        <div class="w-11 h-11 rounded-full avatar-double-ring flex items-center justify-center shrink-0 overflow-hidden relative">
-          <img src="./assets/logo.png?v=2" alt="Guest" width="44" height="44" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-sm text-sky-500\'>W</span>';">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden relative bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <img src="./assets/logo.png?v=2" alt="Guest" width="40" height="40" class="w-full h-full object-contain p-1" onerror="this.outerHTML='<span class=\'font-black text-xs text-sky-500\'>W</span>';">
           <span class="online-status-dot"></span>
         </div>
         <div class="overflow-hidden flex-1">
@@ -781,18 +776,18 @@ function updateAuthDependentUI() {
   if (authSection) {
     if (currentUser) {
       authSection.innerHTML = `
-        <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="createAccount">
+        <h3 class="sidebar-section-title" data-i18n="createAccount">
           ACCOUNT
         </h3>
         <button
           id="btn-sidebar-logout"
-          class="btn-3d-logout w-full p-3 rounded-2xl flex items-center justify-between text-left transition-all cursor-pointer"
+          class="sidebar-card-flat sidebar-card-logout cursor-pointer"
         >
           <div class="flex items-center gap-3">
-            <div class="icon-tile-3d icon-tile-logout w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0">
+            <div class="sidebar-icon-tile sidebar-icon-tile-logout">
               <i class="fa-solid fa-right-from-bracket"></i>
             </div>
-            <span class="text-sm font-bold" data-i18n="logOut">${t('logOut')}</span>
+            <span class="sidebar-item-text text-red-600 dark:text-red-400 font-bold" data-i18n="logOut">${t('logOut')}</span>
           </div>
         </button>
       `;
@@ -805,20 +800,20 @@ function updateAuthDependentUI() {
       });
     } else {
       authSection.innerHTML = `
-        <h3 class="sidebar-section-title mb-2.5 px-1" data-i18n="createAccount">
+        <h3 class="sidebar-section-title" data-i18n="createAccount">
           ${t('createAccount')}
         </h3>
-        <div class="grid grid-cols-2 gap-2.5">
+        <div class="grid grid-cols-2 gap-2">
           <a
             href="./login.html"
-            class="btn-3d-outlined p-2.5 rounded-2xl text-center text-xs font-bold transition-all block"
+            class="sidebar-btn-login block"
             data-i18n="logIn"
           >
             ${t('logIn')}
           </a>
           <a
             href="./signup.html"
-            class="btn-3d-gradient-shine p-2.5 rounded-2xl text-center text-xs font-bold transition-all block"
+            class="sidebar-btn-signup block"
             data-i18n="signUp"
           >
             ${t('signUp')}
