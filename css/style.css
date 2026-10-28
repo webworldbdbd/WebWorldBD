@@ -127,6 +127,13 @@ body.dark .particle {
   }
 }
 
+/* Header responsive text toggle below 420px screen width */
+@media (max-width: 419px) {
+  .header-brand-text {
+    display: none !important;
+  }
+}
+
 /* Glassmorphism Cards & Navigation */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);

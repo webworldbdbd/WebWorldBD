@@ -139,15 +139,9 @@
                 </button>
               </div>
 
-              <!-- Role Badge -->
+              <!-- Dynamic Role / Admin Badge -->
               <span id="profile-role-badge" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
-                User
-              </span>
-
-              <!-- Executive Admin Badge -->
-              <span id="badge-admin-badge" class="hidden inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-                <i class="fa-solid fa-shield-halved"></i>
-                Admin
+                USER
               </span>
 
               <!-- Joined Date Pill -->
@@ -161,12 +155,12 @@
           <!-- Primary Action Buttons -->
           <div class="flex items-center justify-center gap-2.5 pt-5 w-full max-w-md flex-wrap">
             <a
-              id="btn-profile-admin-panel"
+              id="btn-profile-admin-dashboard"
               href="./admin.html"
-              class="hidden w-full py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition-all cursor-pointer items-center justify-center gap-2"
+              class="hidden w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-500 hover:from-purple-700 hover:to-sky-600 text-white font-extrabold text-xs shadow-lg hover:shadow-xl transition-all cursor-pointer items-center justify-center gap-2"
             >
-              <i class="fa-solid fa-gauge-high"></i>
-              <span>Open Admin Panel</span>
+              <i class="fa-solid fa-shield-halved text-amber-300 text-sm"></i>
+              <span>Open Admin Dashboard</span>
             </a>
 
             <button
@@ -781,7 +775,6 @@
       const provider = userData?.provider === 'google' ? t('googleProviderText') : t('passwordProviderText');
       const createdDate = userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString(getLanguage() === 'en' ? 'en-US' : 'bn-BD', { month: 'short', year: 'numeric' }) : 'Recent';
       const lastLogin = userData?.lastLoginAt ? new Date(userData.lastLoginAt).toLocaleString() : 'Just now';
-      const role = userData?.role || 'user';
       const photoURL = userData?.photoURL || user.photoURL;
 
       document.getElementById('profile-name').textContent = displayName;
@@ -789,32 +782,29 @@
       document.getElementById('profile-email').textContent = email;
       document.getElementById('profile-member-since').textContent = createdDate;
 
-      // Badges
-      const roleBadge = document.getElementById('profile-role-badge');
-      if (roleBadge) {
-        roleBadge.textContent = role.toUpperCase();
-        if (role === 'admin') {
-          roleBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800";
-        }
-      }
-
+      // Role & Admin Check using isAdminUser(user)
       const isAdmin = isAdminUser(user);
-      const adminBadge = document.getElementById('badge-admin-badge');
-      const openAdminBtn = document.getElementById('btn-profile-admin-panel');
+      const roleBadge = document.getElementById('profile-role-badge');
+      const openAdminBtn = document.getElementById('btn-profile-admin-dashboard');
 
       if (isAdmin) {
-        if (adminBadge) adminBadge.classList.remove('hidden');
+        if (roleBadge) {
+          roleBadge.innerHTML = `<i class="fa-solid fa-crown text-amber-300"></i> ADMIN`;
+          roleBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 text-white shadow-md border border-amber-300/40";
+        }
         if (openAdminBtn) {
           openAdminBtn.classList.remove('hidden');
           openAdminBtn.classList.add('flex');
         }
       } else {
-        if (adminBadge) adminBadge.classList.add('hidden');
+        if (roleBadge) {
+          roleBadge.textContent = "USER";
+          roleBadge.className = "inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-black uppercase bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-800";
+        }
         if (openAdminBtn) {
           openAdminBtn.classList.add('hidden');
           openAdminBtn.classList.remove('flex');
         }
-        console.log("Account status: Standard User.");
       }
 
       const verifiedBadge = document.getElementById('badge-email-verified');

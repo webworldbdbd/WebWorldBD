@@ -26,9 +26,14 @@
 </head>
 <body class="min-h-screen bg-slate-900 text-slate-100 font-sans relative overflow-x-hidden">
 
-  <!-- Initial Fullscreen Blank Auth Loading Screen (Prevents layout leakage) -->
-  <div id="admin-auth-guard" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-4">
-    <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+  <!-- Initial Fullscreen Premium Auth Loading Screen -->
+  <div id="admin-auth-guard" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-sky-500 flex items-center justify-center text-white text-2xl mb-4 shadow-xl animate-pulse">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <h3 class="text-white font-black text-lg tracking-tight mb-1">Checking access...</h3>
+    <p class="text-xs text-slate-400 font-medium max-w-xs">Verifying executive admin privileges. Please wait...</p>
+    <div class="mt-6 w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
   </div>
 
   <!-- Entire Admin Interface (Hidden by default until client guard verifies credentials) -->
