@@ -56,12 +56,18 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if isOwner(uid) || isAdmin();
 
-        // User can create messages only if chat is not blocked, sender is user, senderId matches auth uid, and text length <= 2000
+        // User can create messages only if chat is not blocked, sender is user, senderId matches auth uid, text length <= 2000, and type is valid.
+        // For type "request", require that projectRequests/{requestId} has userId == request.auth.uid
         allow create: if (isOwner(uid)
           && get(/databases/$(database)/documents/chats/$(uid)).data.blocked != true
           && request.resource.data.sender == "user"
           && request.resource.data.senderId == request.auth.uid
+          && (request.resource.data.type in ["text", "image", "file", "video", "audio", "request"])
           && (request.resource.data.text == null || request.resource.data.text.size() <= 2000)
+          && (request.resource.data.type != "request" || (
+                request.resource.data.requestId is string
+                && getAfter(/databases/$(database)/documents/projectRequests/$(request.resource.data.requestId)).data.userId == request.auth.uid
+             ))
         ) || isAdmin();
 
         // User can only update readAt on admin messages

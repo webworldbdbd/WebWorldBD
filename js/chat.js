@@ -16,6 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { uploadToCloudinary, compressImageIfNeeded } from './cloudinary-config.js';
 import { showToast } from './main.js';
+import { renderRequestCardHtml } from './request-card.js';
 import { getLanguage, t } from './i18n.js';
 
 let currentUser = null;
@@ -380,6 +381,18 @@ function renderMessageContent(msg) {
   }
 
   let content = '';
+
+  if (msg.type === 'request') {
+    const reqData = msg.request || {
+      requestId: msg.requestId,
+      name: currentUserData?.name || currentUser?.displayName || 'Client',
+      mobile: currentUserData?.phone || '',
+      category: msg.text || 'Project Request',
+      requirements: msg.text || '',
+      status: 'New'
+    };
+    return renderRequestCardHtml(reqData, { isChatBubble: true, isAdmin: false });
+  }
 
   if (msg.type === 'image' && msg.fileUrl) {
     content += `

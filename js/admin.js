@@ -17,6 +17,7 @@ import {
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showToast, LIVE_PROJECTS } from './main.js';
+import { renderRequestCardHtml } from './request-card.js';
 
 let currentAdminUser = null;
 let activeSection = 'dashboard';
@@ -1271,6 +1272,25 @@ function renderAdminMessages(messages) {
     const isAdmin = msg.sender === 'admin';
     const timeStr = msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
+    if (msg.type === 'request') {
+      const reqData = msg.request || {
+        requestId: msg.requestId,
+        name: 'Client',
+        mobile: '',
+        category: msg.text || 'Project Request',
+        requirements: msg.text || '',
+        status: 'New'
+      };
+      return `
+        <div class="flex justify-${isAdmin ? 'end' : 'start'} my-2 w-full">
+          <div class="w-full max-w-xl">
+            ${renderRequestCardHtml(reqData, { isAdmin: true, isChatBubble: true })}
+            <p class="text-[9px] text-slate-500 text-${isAdmin ? 'right' : 'left'} px-1 mt-1">${timeStr}</p>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
         <div class="max-w-[80%] space-y-1">
@@ -1589,127 +1609,7 @@ window.openRequestDetail = async function(reqId) {
   const body = document.getElementById('request-detail-modal-body');
   if (!modal || !body) return;
 
-  const createdDate = parseDocDate(req.createdAt);
-  const clientUser = allUsersData.find(u => u.uid === req.userId || u.email === req.email || u.phone === req.mobile);
-  const otherReqs = allRequestsData.filter(r => r.id !== req.id && (r.userId === req.userId || r.email === req.email));
-
-  let attachmentHtml = `<span class="text-slate-500 italic">No attachment provided</span>`;
-  if (req.attachment && req.attachment.url) {
-    const url = req.attachment.url;
-    const name = req.attachment.name || 'Reference File';
-    const isImg = url.match(/\.(jpg|jpeg|png|webp)/i) || (req.attachment.type && req.attachment.type.startsWith('image/'));
-
-    if (isImg) {
-      attachmentHtml = `
-        <div class="space-y-2">
-          <div class="max-h-48 rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
-            <img src="${url}" class="w-full h-full object-contain">
-          </div>
-          <a href="${url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs hover:bg-sky-500/30">
-            <i class="fa-solid fa-download"></i> Download Image
-          </a>
-        </div>
-      `;
-    } else {
-      attachmentHtml = `
-        <div class="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-          <div class="flex items-center gap-2.5 overflow-hidden">
-            <i class="fa-solid fa-file-lines text-purple-400 text-xl shrink-0"></i>
-            <div class="overflow-hidden">
-              <p class="font-bold text-white truncate max-w-[200px]">${name}</p>
-              <p class="text-[10px] text-slate-400">${req.attachment.size ? Math.round(req.attachment.size / 1024) + ' KB' : 'Attachment'}</p>
-            </div>
-          </div>
-          <a href="${url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold hover:bg-sky-500/30 shrink-0">
-            <i class="fa-solid fa-download"></i>
-          </a>
-        </div>
-      `;
-    }
-  }
-
-  body.innerHTML = `
-    <!-- Top Identity Card -->
-    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-      <div class="flex items-center justify-between">
-        <span class="font-mono text-xs font-black text-sky-400 px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/20">${req.requestId || req.id}</span>
-        <select onchange="updateRequestStatus('${req.id}', this.value)" class="py-1 px-3 rounded-xl bg-slate-800 border border-slate-700 font-bold text-white focus:outline-hidden cursor-pointer">
-          <option value="New" ${(req.status || 'New') === 'New' ? 'selected' : ''}>New</option>
-          <option value="Contacted" ${req.status === 'Contacted' ? 'selected' : ''}>Contacted</option>
-          <option value="In Progress" ${req.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-          <option value="Completed" ${req.status === 'Completed' ? 'selected' : ''}>Completed</option>
-          <option value="Rejected" ${req.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
-        </select>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div><span class="text-slate-400">Category:</span> <p class="font-bold text-purple-300">${req.category || 'Custom'}</p></div>
-        <div><span class="text-slate-400">Budget:</span> <p class="font-bold text-emerald-400">${req.budget || 'Unspecified'}</p></div>
-        <div><span class="text-slate-400">Submitted:</span> <p class="font-medium text-slate-200">${createdDate ? createdDate.toLocaleString() : 'N/A'}</p></div>
-        <div><span class="text-slate-400">Language:</span> <p class="font-semibold text-sky-400 uppercase">${req.language || 'EN'}</p></div>
-      </div>
-    </div>
-
-    <!-- Requirements Card with Copy Button -->
-    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-      <div class="flex items-center justify-between">
-        <h4 class="font-bold text-white text-xs uppercase tracking-wider text-purple-400">Project Requirements</h4>
-        <button onclick="navigator.clipboard.writeText(\`${(req.requirements || '').replace(/`/g, '\\`')}\`); showToast('Requirements copied', 'success');" class="px-2 py-1 rounded bg-slate-800 text-sky-400 hover:bg-slate-700 text-[10px] font-bold">
-          <i class="fa-regular fa-copy mr-1"></i> Copy Text
-        </button>
-      </div>
-      <p class="whitespace-pre-wrap text-slate-200 text-xs leading-relaxed max-h-60 overflow-y-auto p-2 bg-slate-900 rounded-xl border border-slate-800/80">${req.requirements || 'No requirements text'}</p>
-    </div>
-
-    <!-- Attachment Section -->
-    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-      <h4 class="font-bold text-white text-xs uppercase tracking-wider text-sky-400">Attachment</h4>
-      ${attachmentHtml}
-    </div>
-
-    <!-- Client Profile Summary -->
-    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-      <h4 class="font-bold text-white text-xs uppercase tracking-wider text-amber-400">Client Profile</h4>
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-sky-400">
-          <img src="${req.userPhoto || clientUser?.photoURL || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
-        </div>
-        <div class="overflow-hidden">
-          <p class="font-bold text-white text-xs">${req.name || req.userName || 'Client'}</p>
-          <p class="text-[10px] text-sky-400 font-mono">@${req.username || clientUser?.username || 'user'}</p>
-          <p class="text-[10px] text-slate-400 truncate">${req.mobile || ''} ${req.email ? '• ' + req.email : ''}</p>
-        </div>
-      </div>
-
-      <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
-        <p><strong>Other Requests:</strong> ${otherReqs.length} previous requests</p>
-      </div>
-    </div>
-
-    <!-- Private Admin Note -->
-    <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-      <label class="block font-bold text-slate-300 text-xs">Private Admin Note</label>
-      <textarea id="input-request-admin-note" rows="2" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-hidden" placeholder="Add private note for team...">${req.adminNote || ''}</textarea>
-      <button onclick="saveRequestAdminNote('${req.id}')" class="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-700 font-bold text-xs text-white transition-colors">
-        Save Admin Note
-      </button>
-    </div>
-
-    <!-- Quick Action Buttons -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-      <button onclick="openAdminChat('${req.userId}'); closeRequestDetailModal();" class="py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
-        <i class="fa-solid fa-comments"></i> Chat
-      </button>
-      ${req.mobile ? `<a href="https://wa.me/880${req.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${req.name || 'Client'}, regarding your project request [${req.requestId || req.id}]...`)}" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : ''}
-      ${req.mobile ? `<a href="tel:${req.mobile}" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-phone"></i> Call</a>` : ''}
-      ${req.email ? `<a href="mailto:${req.email}?subject=WebWorldBD%20Project%20Request%20%5B${req.requestId || req.id}%5D" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-envelope"></i> Email</a>` : ''}
-    </div>
-
-    <button onclick="deleteProjectRequest('${req.id}'); closeRequestDetailModal();" class="w-full py-2.5 rounded-xl bg-red-500/20 text-red-400 font-bold text-xs hover:bg-red-500/30 transition-colors">
-      <i class="fa-solid fa-trash mr-1.5"></i> Delete Request
-    </button>
-  `;
-
+  body.innerHTML = renderRequestCardHtml(req, { isAdmin: true });
   modal.classList.remove('hidden');
 };
 

@@ -309,11 +309,12 @@
     import { uploadToCloudinary } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
-    import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { doc, getDoc, collection, serverTimestamp, writeBatch, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     let currentUser = null;
     let currentUserData = null;
     let selectedFile = null;
+    let uploadedAttachmentData = null;
     let cancelUploadFn = null;
     let isSubmitting = false;
     let lastSubmitTime = 0;
@@ -352,7 +353,6 @@
         currentUserData = userData;
 
         const loginPrompt = document.getElementById('login-prompt-card');
-        const sendBtn = document.getElementById('btn-send-message');
 
         if (!user) {
           loginPrompt?.classList.remove('hidden');
@@ -404,6 +404,7 @@
         }
 
         selectedFile = file;
+        uploadedAttachmentData = null;
         if (fileNameSpan) fileNameSpan.textContent = file.name;
         filePill?.classList.remove('hidden');
         filePill?.classList.add('flex');
@@ -411,6 +412,7 @@
 
       removeFileBtn?.addEventListener('click', () => {
         selectedFile = null;
+        uploadedAttachmentData = null;
         if (fileInput) fileInput.value = '';
         filePill?.classList.add('hidden');
         filePill?.classList.remove('flex');
@@ -534,6 +536,7 @@
               size: selectedFile.size,
               type: selectedFile.type || 'application/octet-stream'
             };
+            uploadedAttachmentData = attachmentData;
           } catch (uploadErr) {
             console.error('Attachment upload failed:', uploadErr);
             progressContainer?.classList.add('hidden');
@@ -560,6 +563,10 @@
 
         const requestId = generateRequestId();
         const nowIso = new Date().toISOString();
+        const userNameFinal = currentUserData?.name || currentUser.displayName || name;
+        const userEmailFinal = currentUser.email || email || '';
+        const userPhotoFinal = currentUserData?.photoURL || currentUser.photoURL || '';
+        const usernameFinal = currentUserData?.username || '';
 
         const requestDocData = {
           requestId: requestId,
@@ -571,10 +578,10 @@
           requirements: requirements,
           attachment: attachmentData,
           userId: currentUser.uid,
-          userName: currentUserData?.name || currentUser.displayName || name,
-          username: currentUserData?.username || '',
-          userEmail: currentUser.email || '',
-          userPhoto: currentUserData?.photoURL || currentUser.photoURL || '',
+          userName: userNameFinal,
+          username: usernameFinal,
+          userEmail: userEmailFinal,
+          userPhoto: userPhotoFinal,
           status: 'new',
           seenByAdmin: false,
           adminNote: '',
@@ -585,41 +592,88 @@
         };
 
         try {
-          // Write to projectRequests/{requestId}
-          const requestRef = doc(db, 'projectRequests', requestId);
-          await setDoc(requestRef, requestDocData);
+          // Atomic Firestore batch write
+          const batch = writeBatch(db);
 
-          // Ensure chats/{uid} stub document exists
-          try {
-            const chatRef = doc(db, 'chats', currentUser.uid);
-            const chatSnap = await getDoc(chatRef);
-            if (!chatSnap.exists()) {
-              await setDoc(chatRef, {
-                uid: currentUser.uid,
-                userName: currentUserData?.name || currentUser.displayName || name,
-                userEmail: currentUser.email || '',
-                userPhoto: currentUserData?.photoURL || currentUser.photoURL || '',
-                username: currentUserData?.username || '',
-                phone: mobile || currentUserData?.phone || '',
-                lastMessage: `[Project Request ${requestId}] ${category}`,
-                lastMessageAt: nowIso,
-                lastSender: 'user',
-                unreadForAdmin: 1,
-                unreadForUser: 0,
-                status: 'open',
-                pinned: false,
-                blocked: false,
-                userTyping: false,
-                adminTyping: false,
-                userLastSeen: nowIso,
-                createdAt: nowIso,
-                tags: ['project-request'],
-                adminNote: ''
-              });
-            }
-          } catch (chatErr) {
-            console.warn('Chat stub creation warning:', chatErr);
+          // 1. projectRequests/{requestId}
+          const requestRef = doc(db, 'projectRequests', requestId);
+          batch.set(requestRef, requestDocData);
+
+          // 2. chats/{uid}/messages/{messageId}
+          const messagesRef = collection(db, 'chats', currentUser.uid, 'messages');
+          const newMsgRef = doc(messagesRef);
+          batch.set(newMsgRef, {
+            sender: 'user',
+            senderId: currentUser.uid,
+            type: 'request',
+            requestId: requestId,
+            request: {
+              requestId: requestId,
+              name: name,
+              mobile: mobile,
+              email: email || null,
+              budget: budget || null,
+              category: category,
+              requirements: requirements,
+              attachment: attachmentData,
+              userId: currentUser.uid,
+              userName: userNameFinal,
+              username: usernameFinal,
+              userEmail: userEmailFinal,
+              userPhoto: userPhotoFinal,
+              status: 'new',
+              createdAt: nowIso,
+              language: getLanguage()
+            },
+            text: `📋 Project Request ${requestId} (${category})`,
+            createdAt: serverTimestamp(),
+            deliveredAt: nowIso,
+            readAt: null
+          });
+
+          // 3. Update chats/{uid}
+          const chatRef = doc(db, 'chats', currentUser.uid);
+          const chatSnap = await getDoc(chatRef);
+          if (!chatSnap.exists()) {
+            batch.set(chatRef, {
+              uid: currentUser.uid,
+              userName: userNameFinal,
+              userEmail: userEmailFinal,
+              userPhoto: userPhotoFinal,
+              username: usernameFinal,
+              phone: mobile || currentUserData?.phone || '',
+              lastMessage: `📋 Project Request ${requestId}`,
+              lastMessageAt: nowIso,
+              lastSender: 'user',
+              unreadForAdmin: 1,
+              unreadForUser: 0,
+              userTyping: false,
+              adminTyping: false,
+              userLastSeen: nowIso,
+              createdAt: nowIso,
+              status: 'open',
+              pinned: false,
+              blocked: false,
+              tags: ['project-request'],
+              adminNote: ''
+            });
+          } else {
+            batch.update(chatRef, {
+              userName: userNameFinal,
+              userEmail: userEmailFinal,
+              userPhoto: userPhotoFinal,
+              username: usernameFinal,
+              phone: mobile || chatSnap.data()?.phone || currentUserData?.phone || '',
+              lastMessage: `📋 Project Request ${requestId}`,
+              lastMessageAt: nowIso,
+              lastSender: 'user',
+              unreadForAdmin: increment(1),
+              userLastSeen: nowIso
+            });
           }
+
+          // Execute atomic batch
+          await batch.commit();
 
           lastSubmitTime = Date.now();
 
@@ -646,6 +700,7 @@
           // Clear form & prefill name/email/phone for next time
           form.reset();
           selectedFile = null;
+          uploadedAttachmentData = null;
           if (fileInput) fileInput.value = '';
           filePill?.classList.add('hidden');
           filePill?.classList.remove('flex');
@@ -685,14 +740,19 @@
         const budget = document.getElementById('input-budget')?.value.trim() || 'N/A';
         const category = document.getElementById('select-category')?.value || 'N/A';
         const requirements = document.getElementById('textarea-requirements')?.value.trim() || 'N/A';
+        const attachmentLink = uploadedAttachmentData?.url || (selectedFile ? selectedFile.name : 'None');
 
-        const messageText = `*New Project Request via WebWorldBD*\n\n` +
-          `• *Name:* ${name}\n` +
-          `• *Mobile:* ${mobile}\n` +
-          `• *Email:* ${email}\n` +
-          `• *Budget:* ${budget}\n` +
-          `• *Category:* ${category}\n` +
-          `• *Requirements:* ${requirements}`;
+        const messageText = `📋 *NEW PROJECT REQUEST* — WebWorldBD\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `👤 *Name:* ${name}\n` +
+          `📱 *Mobile:* ${mobile}\n` +
+          `✉️ *Email:* ${email}\n` +
+          `🗂 *Category:* ${category}\n` +
+          `💰 *Budget:* ${budget}\n` +
+          `📎 *Attachment:* ${attachmentLink}\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `📝 *Requirements:*\n` +
+          `${requirements}`;
 
         const waUrl = `https://wa.me/8801342697743?text=${encodeURIComponent(messageText)}`;
         window.open(waUrl, '_blank');
