@@ -417,7 +417,7 @@ function renderMessageContent(msg) {
     `;
   } else if (msg.type === 'file' && msg.fileUrl) {
     content += `
-      <a href="${msg.fileUrl}" target="_blank" download="${msg.fileName || 'file'}" class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/20 dark:bg-slate-900/40 hover:bg-white/30 border border-white/20 mb-1.5 transition-colors">
+      <a href="${msg.fileUrl}" target="_blank" rel="noopener noreferrer" download="${msg.fileName || 'file'}" class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/20 dark:bg-slate-900/40 hover:bg-white/30 border border-white/20 mb-1.5 transition-colors">
         <div class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center text-base shrink-0">
           <i class="fa-solid fa-file-arrow-down"></i>
         </div>

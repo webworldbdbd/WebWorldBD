@@ -94,15 +94,19 @@ export function compressImageIfNeeded(file, maxWidth = 2000, maxHeight = 2000, q
 export function uploadToCloudinary(file, options = {}) {
   return new Promise((resolve, reject) => {
     // 1. File Format Validation (Block Executables)
-    const blockedExts = ['.exe', '.apk', '.bat', '.js', '.sh'];
+    const blockedExts = [
+      '.exe', '.apk', '.bat', '.cmd', '.js', '.sh', '.vbs', '.msi',
+      '.php', '.py', '.pl', '.jar', '.com', '.scr', '.gadget', '.cpl',
+      '.wsf', '.pif', '.reg', '.vb', '.vbe', '.jse'
+    ];
     const fileName = file.name || '';
     const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
 
-    if (blockedExts.includes(ext)) {
+    if (blockedExts.includes(ext) || (file.type && (file.type.includes('x-executable') || file.type.includes('x-msdownload')))) {
       return reject(new Error('EXECUTABLE_BLOCKED'));
     }
 
-    const MAX_SIZE_BYTES = 30 * 1024 * 1024; // 30MB
+    const MAX_SIZE_BYTES = options.maxSizeBytes || (30 * 1024 * 1024); // Default 30MB
     if (file.size && file.size > MAX_SIZE_BYTES) {
       return reject(new Error('FILE_TOO_LARGE'));
     }

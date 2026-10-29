@@ -7,6 +7,47 @@ import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/fire
 
 export const PRIVACY_POLICY_URL = 'https://webworldbd-privacypolicy.pages.dev/';
 
+/* ================= SAFE DATE PARSING AND FORMATTING ================= */
+export function parseToDate(val) {
+  if (!val) return null;
+  if (typeof val.toDate === 'function') {
+    try { return val.toDate(); } catch (e) { return null; }
+  }
+  if (typeof val === 'object' && val.seconds !== undefined) {
+    return new Date(val.seconds * 1000);
+  }
+  if (typeof val === 'number') {
+    return new Date(val < 1e11 ? val * 1000 : val);
+  }
+  if (typeof val === 'string') {
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? null : val;
+  }
+  return null;
+}
+
+export function formatSafeDate(val, options = {}) {
+  const date = parseToDate(val);
+  if (!date) return options.fallback || 'Recently';
+  try {
+    if (options.relative) {
+      const now = new Date();
+      const diffSec = Math.floor((now - date) / 1000);
+      if (diffSec < 60) return 'Just now';
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)} min ago`;
+      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} hr ago`;
+      if (diffSec < 604800) return `${Math.floor(diffSec / 86400)} days ago`;
+    }
+    const locale = options.locale || (getLanguage() === 'bn' ? 'bn-BD' : 'en-US');
+    return date.toLocaleDateString(locale, options.dateStyle ? { dateStyle: options.dateStyle } : { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch (e) {
+    return options.fallback || 'Recently';
+  }
+}
+
 export const LIVE_PROJECTS = [
   {
     name: 'Market Koro',
@@ -66,7 +107,8 @@ function initApp() {
     document.body.classList.add('admin-page');
   }
 
-  const isLiveChatPage = window.location.pathname.endsWith('livechat.html') || window.location.pathname.includes('/livechat.html');
+  const cleanPath = window.location.pathname.replace(/\/$/, '').toLowerCase();
+  const isLiveChatPage = cleanPath === '/livechat' || cleanPath === '/livechat.html' || cleanPath.endsWith('/livechat') || cleanPath.endsWith('/livechat.html');
   if (isLiveChatPage && document.body) {
     document.body.classList.add('livechat-page');
   }
@@ -121,12 +163,14 @@ function subscribeSiteConfigPublic() {
             <p class="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">
               ${getLanguage() === 'en' ? 'WebWorldBD is currently undergoing scheduled upgrades. We will be back online shortly!' : 'WebWorldBD বর্তমানে আপডেট করা হচ্ছে। আমরা শীঘ্রই ফিরে আসব!'}
             </p>
-            <a href="https://wa.me/8801342697743" target="_blank" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">Contact on WhatsApp</a>
+            <a href="https://wa.me/8801342697743" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">Contact on WhatsApp</a>
           </div>
         `;
       }
     }
-  }, () => {});
+  }, (err) => {
+    console.warn("Firestore listener error on siteConfig collection:", err);
+  });
 }
 
 function subscribeUserChatUnreadStatus() {
@@ -148,7 +192,9 @@ function subscribeUserChatUnreadStatus() {
         }
       });
     }
-  }, () => {});
+  }, (err) => {
+    console.warn("Firestore listener error on chats collection:", err);
+  });
 }
 
 /* ================= THEME MANAGEMENT ================= */
@@ -689,10 +735,16 @@ function injectSidebar() {
 }
 
 function highlightActiveSidebarNav() {
-  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  let currentPath = window.location.pathname.split('/').pop() || 'index';
+  currentPath = currentPath.replace(/\.html$/, '').toLowerCase();
+  if (!currentPath) currentPath = 'index';
+
   document.querySelectorAll('.sidebar-nav-item').forEach(el => {
-    const targetPath = el.getAttribute('data-path');
-    if (targetPath === currentPath || (currentPath === '' && targetPath === 'index.html')) {
+    let targetPath = el.getAttribute('data-path') || '';
+    targetPath = targetPath.replace(/\.html$/, '').replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
+    if (!targetPath) targetPath = 'index';
+
+    if (targetPath === currentPath) {
       el.classList.add('active');
       const chevron = el.querySelector('.active-chevron');
       if (chevron) {

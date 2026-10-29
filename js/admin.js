@@ -353,6 +353,40 @@ function initAdminUI() {
 
   // Save Settings Suite Listener
   document.getElementById('btn-save-all-settings')?.addEventListener('click', saveExecutiveSettingsSuite);
+
+  // Permission Diagnostics Test Listener
+  document.getElementById('btn-run-permission-test')?.addEventListener('click', async () => {
+    showToast("Running Firestore permissions test...", "info");
+    const results = [];
+
+    if (currentAdminUser && isAdminUser(currentAdminUser)) {
+      results.push("✅ Admin Auth Token: Verified as " + currentAdminUser.email);
+    } else {
+      results.push("❌ Admin Auth Token: Not authenticated as verified admin");
+    }
+
+    try {
+      await getDoc(doc(db, "siteConfig", "main"));
+      results.push("✅ Firestore Read (siteConfig): Access Granted");
+    } catch (e) {
+      results.push("❌ Firestore Read (siteConfig): " + e.message);
+    }
+
+    try {
+      const logRef = doc(collection(db, "adminLogs"));
+      await setDoc(logRef, {
+        action: "PERMISSION_TEST",
+        timestamp: serverTimestamp(),
+        adminEmail: currentAdminUser?.email || "webworldbd.lmt@gmail.com"
+      });
+      results.push("✅ Firestore Write (adminLogs): Access Granted");
+    } catch (e) {
+      results.push("❌ Firestore Write (adminLogs): " + e.message);
+    }
+
+    showToast("Permission test completed!", "success");
+    alert("PERMISSION DIAGNOSTICS REPORT:\n\n" + results.join("\n"));
+  });
 }
 
 async function saveExecutiveSettingsSuite() {
@@ -1329,7 +1363,7 @@ function renderAdminMessages(messages) {
       <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
         <div class="max-w-[80%] space-y-1">
           <div class="p-3 rounded-2xl text-xs leading-relaxed ${isAdmin ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700'}">
-            ${msg.fileUrl ? `<div class="mb-1.5"><a href="${msg.fileUrl}" target="_blank" class="underline font-bold text-sky-200">📎 Attachment File</a></div>` : ''}
+            ${msg.fileUrl ? `<div class="mb-1.5"><a href="${msg.fileUrl}" target="_blank" rel="noopener noreferrer" class="underline font-bold text-sky-200">📎 Attachment File</a></div>` : ''}
             <p class="whitespace-pre-wrap">${msg.text || ''}</p>
           </div>
           <p class="text-[9px] text-slate-500 text-${isAdmin ? 'right' : 'left'} px-1">${timeStr}</p>
@@ -1621,7 +1655,7 @@ function renderRequestsTable() {
           <button onclick="openRequestDetail('${r.id}')" class="px-2.5 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 font-bold transition-colors" title="View Full Drawer">
             <i class="fa-solid fa-eye"></i> View
           </button>
-          ${r.mobile ? `<a href="https://wa.me/880${r.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${r.name || 'Client'}, regarding your project request [${r.requestId || r.id}]...`)}" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-colors" title="Message on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+          ${r.mobile ? `<a href="https://wa.me/880${r.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${r.name || 'Client'}, regarding your project request [${r.requestId || r.id}]...`)}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold transition-colors" title="Message on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
           <button onclick="deleteProjectRequest('${r.id}')" class="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-colors" title="Delete Request"><i class="fa-solid fa-trash"></i></button>
         </td>
       </tr>
@@ -1662,7 +1696,7 @@ window.openRequestDetail = async function(reqId) {
           <div class="max-h-48 rounded-xl overflow-hidden bg-slate-950 border border-slate-800">
             <img src="${url}" class="w-full h-full object-contain">
           </div>
-          <a href="${url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs hover:bg-sky-500/30">
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs hover:bg-sky-500/30">
             <i class="fa-solid fa-download"></i> Download Image
           </a>
         </div>
@@ -1677,7 +1711,7 @@ window.openRequestDetail = async function(reqId) {
               <p class="text-[10px] text-slate-400">${req.attachment.size ? Math.round(req.attachment.size / 1024) + ' KB' : 'Attachment'}</p>
             </div>
           </div>
-          <a href="${url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold hover:bg-sky-500/30 shrink-0">
+          <a href="${url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-sky-500/20 text-sky-400 font-bold hover:bg-sky-500/30 shrink-0">
             <i class="fa-solid fa-download"></i>
           </a>
         </div>
@@ -1757,7 +1791,7 @@ window.openRequestDetail = async function(reqId) {
       <button onclick="openAdminChat('${req.userId}'); closeRequestDetailModal();" class="py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md">
         <i class="fa-solid fa-comments"></i> Chat
       </button>
-      ${req.mobile ? `<a href="https://wa.me/880${req.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${req.name || 'Client'}, regarding your project request [${req.requestId || req.id}]...`)}" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : ''}
+      ${req.mobile ? `<a href="https://wa.me/880${req.mobile.replace(/^(?:\+880|880|0)/, '')}?text=${encodeURIComponent(`Hello ${req.name || 'Client'}, regarding your project request [${req.requestId || req.id}]...`)}" target="_blank" rel="noopener noreferrer" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : ''}
       ${req.mobile ? `<a href="tel:${req.mobile}" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-phone"></i> Call</a>` : ''}
       ${req.email ? `<a href="mailto:${req.email}?subject=WebWorldBD%20Project%20Request%20%5B${req.requestId || req.id}%5D" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-1.5"><i class="fa-solid fa-envelope"></i> Email</a>` : ''}
     </div>
@@ -1937,7 +1971,7 @@ window.viewUserDetail = function(uid) {
       <button onclick="openAdminChat('${u.uid}'); closeUserDetailModal();" class="py-2 px-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold flex items-center justify-center gap-2 shadow-md">
         <i class="fa-solid fa-paper-plane"></i> Send Message
       </button>
-      ${u.phone ? `<a href="https://wa.me/880${u.phone.replace(/^(?:\+880|880|0)/, '')}" target="_blank" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : `<button disabled class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-bold flex items-center justify-center gap-2 cursor-not-allowed"><i class="fa-brands fa-whatsapp"></i> No Phone</button>`}
+      ${u.phone ? `<a href="https://wa.me/880${u.phone.replace(/^(?:\+880|880|0)/, '')}" target="_blank" rel="noopener noreferrer" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-2 shadow-md"><i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp</a>` : `<button disabled class="py-2 px-3 rounded-xl bg-slate-800 text-slate-500 font-bold flex items-center justify-center gap-2 cursor-not-allowed"><i class="fa-brands fa-whatsapp"></i> No Phone</button>`}
     </div>
 
     <!-- User Profile Details Card -->

@@ -7,10 +7,10 @@
   <title>System Settings | WebWorldBD</title>
   <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
-  <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
-  <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
+  <meta property="og:image" content="https://webworldbd.pages.dev/assets/logo.png?v=2">
+  <meta name="twitter:image" content="https://webworldbd.pages.dev/assets/logo.png?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -486,7 +486,7 @@
         const photoURL = currentUserData?.photoURL || currentUser.photoURL;
 
         const avatarMarkup = photoURL
-          ? `<img src="${getOptimizedImageUrl(photoURL, 128, 128)}" alt="${name}" width="48" height="48" class="absolute inset-0 w-full h-full object-cover object-top">`
+          ? `<img loading="lazy" src="${getOptimizedImageUrl(photoURL, 128, 128)}" alt="${name}" width="48" height="48" class="absolute inset-0 w-full h-full object-cover object-top">`
           : `<div class="w-full h-full bg-gradient-to-tr from-sky-400 to-indigo-500 flex items-center justify-center text-white font-extrabold text-sm">${name.charAt(0).toUpperCase()}</div>`;
 
         container.innerHTML = `
