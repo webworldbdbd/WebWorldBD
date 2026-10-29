@@ -2484,3 +2484,45 @@ body.dark .trust-badge-pill {
     display: none;
   }
 }
+
+/* Mobile input zoom prevention & mobile layout fixes */
+@media (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Word break for long text and Bengali script overflow prevention */
+body, p, h1, h2, h3, h4, h5, h6, span, div, button, a {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Strict Admin Panel Hide Rules for Public Site Overlays */
+body.admin-page #main-header,
+body.admin-page #sidebar-drawer,
+body.admin-page #sidebar-backdrop,
+body.admin-page #footer-root,
+body.admin-page #bottom-nav-bar,
+body.admin-page #floating-buttons-root,
+body.admin-page .public-bottom-nav,
+body.admin-page .public-floating-btn {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Live Chat Page Mobile Composer Fixes */
+body.livechat-page {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+body.livechat-page #main-header,
+body.livechat-page #bottom-nav-bar,
+body.livechat-page #floating-buttons-root,
+body.livechat-page #footer-root {
+  display: none !important;
+}

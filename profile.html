@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('webworldbd_theme') || 'light';
+        if (t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="format-detection" content="email=no, telephone=no, address=no">
   <title>My Profile | WebWorldBD</title>
   <link rel="icon" type="image/png" href="./assets/logo.png?v=2">
   <link rel="apple-touch-icon" href="./assets/logo.png?v=2">
-  <meta property="og:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
-  <meta name="twitter:image" content="https://webworldbdbd.github.io/WebWorldBD/assets/logo.png?v=2">
+  <meta property="og:image" content="https://webworldbd.pages.dev/assets/logo.png?v=2">
+  <meta name="twitter:image" content="https://webworldbd.pages.dev/assets/logo.png?v=2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -87,7 +99,7 @@
           <div class="relative group">
             <div id="profile-avatar-ring" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-sky-400 via-indigo-500 to-pink-500 shadow-2xl ring-4 ring-white dark:ring-slate-900 overflow-hidden relative">
               <div class="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden relative">
-                <img id="profile-photo" class="w-full h-full object-cover hidden" alt="Profile">
+                <img loading="lazy" id="profile-photo" class="w-full h-full object-cover hidden" alt="Profile">
                 <span id="profile-initial" class="text-white font-black text-3xl sm:text-4xl">U</span>
               </div>
             </div>
@@ -350,7 +362,7 @@
             <div class="flex flex-col sm:flex-row items-center gap-4">
               <!-- Photo Circle -->
               <div class="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shrink-0 border-2 border-sky-400/80 ring-4 ring-sky-500/10 shadow-md">
-                <img id="edit-photo-preview" class="w-full h-full object-cover hidden" alt="Preview">
+                <img loading="lazy" id="edit-photo-preview" class="w-full h-full object-cover hidden" alt="Preview">
                 <span id="edit-photo-initial" class="w-full h-full flex items-center justify-center text-slate-700 dark:text-slate-200 font-extrabold text-2xl sm:text-3xl">U</span>
               </div>
 
@@ -544,7 +556,7 @@
     import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
     import { isAdminUser } from './js/admin-config.js';
     import { uploadToCloudinary, getOptimizedImageUrl } from './js/cloudinary-config.js';
-    import { showToast } from './js/main.js';
+    import { showToast, formatSafeDate } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
     import { collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -873,7 +885,7 @@
       }
 
       container.innerHTML = requests.map(req => {
-        const createdDate = req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString() : (req.createdAt ? new Date(req.createdAt).toLocaleDateString() : 'N/A');
+        const createdDate = formatSafeDate(req.createdAt, { fallback: 'N/A' });
         const statusKey = (req.status || 'new').toLowerCase().replace(' ', '');
 
         let statusText = req.status || 'New';
@@ -917,7 +929,7 @@
 
             <div class="flex items-center justify-between text-xs pt-1">
               <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">${statusDesc}</p>
-              ${req.attachment?.url ? `<a href="${req.attachment.url}" target="_blank" class="px-3 py-1 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 font-bold hover:underline flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-paperclip"></i> View File</a>` : ''}
+              ${req.attachment?.url ? `<a href="${req.attachment.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-300 font-bold hover:underline flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-paperclip"></i> View File</a>` : ''}
             </div>
           </div>
         `;
@@ -935,8 +947,8 @@
       const bio = userData?.bio || 'No bio added yet.';
       const phone = userData?.phone || 'Not added';
       const provider = userData?.provider === 'google' ? t('googleProviderText') : t('passwordProviderText');
-      const createdDate = userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString(getLanguage() === 'en' ? 'en-US' : 'bn-BD', { month: 'short', year: 'numeric' }) : 'Recent';
-      const lastLogin = userData?.lastLoginAt ? new Date(userData.lastLoginAt).toLocaleString() : 'Just now';
+      const createdDate = formatSafeDate(userData?.createdAt, { fallback: 'Recent' });
+      const lastLogin = formatSafeDate(userData?.lastLoginAt, { relative: true, fallback: 'Just now' });
       const photoURL = userData?.photoURL || user.photoURL;
 
       document.getElementById('profile-name').textContent = displayName;
