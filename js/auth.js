@@ -573,3 +573,170 @@ function parseAuthError(error) {
 
   return { code, messageEn: msgEn, messageBn: msgBn, originalError: error };
 }
+
+/* ================= REDIRECT LOOP GUARD & NAVIGATION UTILITIES ================= */
+
+export function cleanPageName(urlStr) {
+  if (!urlStr) return '';
+  try {
+    let path = urlStr.split('?')[0].split('#')[0];
+    if (path.includes('://')) {
+      path = new URL(path).pathname;
+    }
+    path = path.replace(/\/+$/, '');
+    let segment = path.split('/').pop() || 'index';
+    if (segment.endsWith('.html')) {
+      segment = segment.slice(0, -5);
+    }
+    return segment.toLowerCase();
+  } catch (e) {
+    return '';
+  }
+}
+
+function showRedirectLoopFallbackUI() {
+  if (document.getElementById('redirect-loop-guard-ui')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'redirect-loop-guard-ui';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background-color:#0f172a;color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;text-align:center;font-family:sans-serif;';
+  overlay.innerHTML = `
+    <div style="max-width:400px;background:#1e293b;padding:2rem;border-radius:1rem;border:1px solid #334155;box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div style="width:3rem;height:3rem;border-radius:50%;background:rgba(239,68,68,0.2);color:#f87171;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1rem auto;">⚠️</div>
+      <h2 style="font-size:1.25rem;font-weight:800;margin-bottom:0.5rem;color:#ffffff;">Too Many Redirects Detected</h2>
+      <p style="font-size:0.875rem;color:#94a3b8;margin-bottom:1.5rem;line-height:1.5;">We stopped an automatic redirect loop to protect your session. Please return to the main site.</p>
+      <button id="btn-loop-guard-home" style="width:100%;padding:0.75rem 1rem;border-radius:0.75rem;background:#38bdf8;color:#0f172a;font-weight:700;font-size:0.875rem;border:none;cursor:pointer;transition:all 0.2s;">
+        Back to Main Site
+      </button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-loop-guard-home')?.addEventListener('click', () => {
+    sessionStorage.removeItem('wwbd_redirect_count');
+    sessionStorage.removeItem('wwbd_redirect_time');
+    window.location.replace('./index.html');
+  });
+}
+
+export function checkRedirectLoopGuard() {
+  try {
+    const countStr = sessionStorage.getItem('wwbd_redirect_count');
+    const timeStr = sessionStorage.getItem('wwbd_redirect_time');
+    const now = Date.now();
+
+    if (countStr && timeStr) {
+      const count = parseInt(countStr, 10);
+      const time = parseInt(timeStr, 10);
+
+      if (now - time < 10000 && count >= 2) {
+        console.warn("Redirect loop guard triggered. Stopping automatic redirect.");
+        showRedirectLoopFallbackUI();
+        return true;
+      } else if (now - time >= 10000) {
+        sessionStorage.removeItem('wwbd_redirect_count');
+        sessionStorage.removeItem('wwbd_redirect_time');
+      }
+    }
+
+    setTimeout(() => {
+      sessionStorage.removeItem('wwbd_redirect_count');
+      sessionStorage.removeItem('wwbd_redirect_time');
+    }, 3000);
+  } catch (e) {
+    console.warn("SessionStorage redirect guard error:", e);
+  }
+  return false;
+}
+
+export function safeRedirect(targetUrl) {
+  if (!targetUrl) return false;
+
+  const currentKey = cleanPageName(window.location.pathname);
+  const targetKey = cleanPageName(targetUrl);
+
+  if (currentKey && targetKey && currentKey === targetKey) {
+    console.log(`Already on page '${currentKey}'. Skipping self-redirect to '${targetUrl}'.`);
+    return false;
+  }
+
+  if (window.__hasRedirected) {
+    console.warn("Redirect already executed for this page load. Skipping duplicate redirect to:", targetUrl);
+    return false;
+  }
+
+  let count = 0;
+  try {
+    const countStr = sessionStorage.getItem('wwbd_redirect_count');
+    const timeStr = sessionStorage.getItem('wwbd_redirect_time');
+    const now = Date.now();
+    if (countStr && timeStr && (now - parseInt(timeStr, 10)) < 10000) {
+      count = parseInt(countStr, 10);
+    }
+  } catch (e) {}
+
+  if (count >= 2) {
+    console.warn("Redirect limit reached (2 redirects in a row). Stopping loop.");
+    showRedirectLoopFallbackUI();
+    return false;
+  }
+
+  window.__hasRedirected = true;
+
+  try {
+    sessionStorage.setItem('wwbd_redirect_count', (count + 1).toString());
+    sessionStorage.setItem('wwbd_redirect_time', Date.now().toString());
+  } catch (e) {}
+
+  window.location.replace(targetUrl);
+  return true;
+}
+
+export function normalizeNextParam(nextStr) {
+  if (!nextStr) return '';
+  let cleaned = nextStr.trim();
+  cleaned = cleaned.replace(/^[\.\/]+/, '');
+  cleaned = cleaned.split('?')[0].split('#')[0];
+  return cleaned;
+}
+
+export function getPostAuthRedirectTarget(user) {
+  const urlParams = new URLSearchParams(window.location.search);
+  let rawNext = urlParams.get('next');
+
+  if (rawNext) {
+    const normalized = normalizeNextParam(rawNext);
+    const pageKey = cleanPageName(normalized);
+
+    const isSameSiteRelative = !rawNext.includes('://') && !rawNext.startsWith('//');
+
+    if (isSameSiteRelative && pageKey) {
+      if (pageKey === 'admin') {
+        if (isAdminUser(user)) {
+          return './admin.html';
+        } else {
+          return './index.html';
+        }
+      }
+      return normalized.endsWith('.html') ? `./${normalized}` : `./${normalized}.html`;
+    }
+  }
+
+  if (isAdminUser(user) && window.location.search.includes('next=')) {
+    return './admin.html';
+  }
+
+  if (isAdminUser(user)) {
+    return './admin.html';
+  }
+
+  return './profile.html';
+}
+
+if (typeof window !== 'undefined') {
+  window.cleanPageName = cleanPageName;
+  window.checkRedirectLoopGuard = checkRedirectLoopGuard;
+  window.safeRedirect = safeRedirect;
+  window.normalizeNextParam = normalizeNextParam;
+  window.getPostAuthRedirectTarget = getPostAuthRedirectTarget;
+  checkRedirectLoopGuard();
+}
