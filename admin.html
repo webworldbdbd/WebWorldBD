@@ -425,11 +425,48 @@
                 <!-- Quick replies populated via JS -->
               </div>
 
+              <!-- ATTACHMENT PREVIEW CHIPS CONTAINER -->
+              <div id="admin-attachment-chips" class="hidden px-3 py-2 bg-slate-900 border-t border-slate-800 flex flex-wrap gap-2 shrink-0 max-h-32 overflow-y-auto">
+                <!-- Attachment preview chips injected via JS -->
+              </div>
+
+              <!-- EMOJI PICKER DRAWER -->
+              <div id="admin-emoji-picker-drawer" class="hidden p-3 bg-slate-900 border-t border-slate-800 grid grid-cols-8 sm:grid-cols-10 gap-2 max-h-36 overflow-y-auto shrink-0 z-20">
+                <!-- Emoji buttons injected via JS -->
+              </div>
+
+              <!-- ATTACHMENT ACTION SHEET / POPUP SHEET -->
+              <div id="admin-attach-sheet" class="hidden p-3 bg-slate-900 border-t border-slate-800 flex items-center gap-3 shrink-0 z-20">
+                <label for="admin-file-photo" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors">
+                  <i class="fa-solid fa-image text-emerald-400"></i>
+                  <span>Photo</span>
+                  <input type="file" id="admin-file-photo" class="hidden" accept="image/*" multiple>
+                </label>
+                <label for="admin-file-doc" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors">
+                  <i class="fa-solid fa-file text-sky-400"></i>
+                  <span>File</span>
+                  <input type="file" id="admin-file-doc" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,image/*,video/*,audio/*" multiple>
+                </label>
+                <label for="admin-file-camera" class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors sm:hidden">
+                  <i class="fa-solid fa-camera text-purple-400"></i>
+                  <span>Camera</span>
+                  <input type="file" id="admin-file-camera" class="hidden" accept="image/*" capture="environment">
+                </label>
+              </div>
+
               <!-- Admin Composer Input Bar -->
               <form id="admin-chat-composer" class="p-3 bg-slate-900 border-t border-slate-800 flex items-end gap-2 shrink-0">
-                <textarea id="admin-chat-textarea" rows="1" placeholder="Type reply (or '/' for quick replies)..." class="flex-1 py-2.5 px-3.5 rounded-2xl bg-slate-800 border border-transparent focus:border-sky-500 text-white text-xs focus:outline-hidden resize-none max-h-32"></textarea>
+                <button type="button" id="btn-admin-attach" aria-label="Attach File" title="Attach media or document" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-sky-400 flex items-center justify-center text-lg transition-transform active:scale-95 shrink-0 cursor-pointer">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
 
-                <button type="submit" id="btn-admin-send" class="w-10 h-10 rounded-xl bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center text-base transition-colors shrink-0 cursor-pointer">
+                <button type="button" id="btn-admin-emoji" aria-label="Emoji Picker" title="Choose Emoji" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 flex items-center justify-center text-lg transition-transform active:scale-95 shrink-0 cursor-pointer">
+                  <i class="fa-solid fa-face-smile"></i>
+                </button>
+
+                <textarea id="admin-chat-textarea" rows="1" placeholder="Type reply (or '/' for quick replies)..." style="font-size: 16px;" class="flex-1 py-2.5 px-3.5 rounded-2xl bg-slate-800 border border-transparent focus:border-sky-500 text-white focus:outline-hidden resize-none max-h-32 leading-normal"></textarea>
+
+                <button type="submit" id="btn-admin-send" class="w-10 h-10 rounded-xl bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center text-base transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                   <i class="fa-solid fa-paper-plane"></i>
                 </button>
               </form>
@@ -892,8 +929,26 @@
       </main>
     </div>
 
-    <!-- MOBILE BOTTOM NAVIGATION TAB BAR (Admin Dark 3D Glass) -->
-    <nav class="md:hidden admin-bottom-tab-bar">
+  <!-- FULLSCREEN MEDIA VIEWER MODAL FOR ADMIN -->
+  <div id="admin-media-viewer-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex-col items-center justify-between p-4">
+    <div class="w-full flex items-center justify-between text-white z-10">
+      <span id="admin-media-viewer-title" class="text-xs font-semibold truncate">Image Preview</span>
+      <div class="flex items-center gap-3">
+        <a id="admin-btn-download-media" href="#" download target="_blank" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-sm transition-colors">
+          <i class="fa-solid fa-download"></i>
+        </a>
+        <button id="admin-btn-close-media-viewer" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-sm transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div class="flex-1 w-full flex items-center justify-center overflow-hidden p-2">
+      <img id="admin-media-viewer-img" src="" alt="Full view" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-200">
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION TAB BAR (Admin Dark 3D Glass) -->
+  <nav class="md:hidden admin-bottom-tab-bar">
       <button data-section="dashboard" class="admin-tab-btn mobile-admin-tab active">
         <div class="admin-tab-active-glow"></div>
         <i class="fa-solid fa-chart-pie"></i>

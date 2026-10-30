@@ -396,41 +396,97 @@ function renderMessageContent(msg) {
   }
 
   let content = '';
+  let fileUrl = msg.fileUrl || '';
+  let fileName = msg.fileName || '';
+  let fileSize = msg.fileSize || 0;
+  let type = msg.type;
 
-  if (msg.type === 'image' && msg.fileUrl) {
+  // Detect type for old messages or url-only messages
+  if (!fileUrl && msg.text) {
+    const trimmedText = msg.text.trim();
+    if (trimmedText.match(/^https?:\/\/[^\s]+$/i)) {
+      const urlClean = trimmedText.split('?')[0];
+      const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+      if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'image';
+      } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'video';
+      } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'audio';
+      } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.zip', '.rar'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'file';
+        fileName = fileName || urlClean.split('/').pop() || 'Attachment File';
+      }
+    }
+  } else if (fileUrl && (!type || type === 'text')) {
+    const urlClean = fileUrl.split('?')[0];
+    const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+      type = 'image';
+    } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+      type = 'video';
+    } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+      type = 'audio';
+    } else {
+      type = 'file';
+    }
+  }
+
+  if (type === 'image' && fileUrl) {
     content += `
-      <div class="overflow-hidden rounded-2xl mb-1.5 cursor-pointer media-thumbnail" data-src="${msg.fileUrl}">
-        <img src="${msg.fileUrl}" alt="${msg.fileName || 'Image'}" class="w-full max-h-60 object-cover hover:scale-105 transition-transform duration-200">
+      <div class="overflow-hidden rounded-2xl mb-1.5 cursor-pointer media-thumbnail max-w-[240px]" data-src="${fileUrl}">
+        <img src="${fileUrl}" alt="${escapeHTML(fileName || 'Photo')}" loading="lazy" class="w-full max-h-[240px] object-cover hover:scale-105 transition-transform duration-200 rounded-2xl">
       </div>
     `;
-  } else if (msg.type === 'video' && msg.fileUrl) {
+  } else if (type === 'video' && fileUrl) {
     content += `
-      <div class="overflow-hidden rounded-2xl mb-1.5 bg-black">
-        <video src="${msg.fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
+      <div class="overflow-hidden rounded-2xl mb-1.5 bg-black max-w-[280px]">
+        <video src="${fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
       </div>
     `;
-  } else if (msg.type === 'audio' && msg.fileUrl) {
+  } else if (type === 'audio' && fileUrl) {
     content += `
-      <div class="p-2 bg-slate-100 dark:bg-slate-900/60 rounded-2xl mb-1.5">
-        <audio src="${msg.fileUrl}" controls class="w-full h-8"></audio>
+      <div class="p-2 bg-slate-100 dark:bg-slate-900/60 rounded-2xl mb-1.5 max-w-[280px]">
+        <audio src="${fileUrl}" controls class="w-full h-8"></audio>
       </div>
     `;
-  } else if (msg.type === 'file' && msg.fileUrl) {
+  } else if (type === 'file' && fileUrl) {
+    const cleanExt = (fileName || fileUrl).split('?')[0].split('.').pop().toLowerCase();
+    let iconClass = 'fa-file text-sky-400';
+    if (cleanExt === 'pdf') iconClass = 'fa-file-pdf text-red-500';
+    else if (['doc', 'docx'].includes(cleanExt)) iconClass = 'fa-file-word text-blue-500';
+    else if (['xls', 'xlsx'].includes(cleanExt)) iconClass = 'fa-file-excel text-emerald-500';
+    else if (['zip', 'rar', '7z'].includes(cleanExt)) iconClass = 'fa-file-zipper text-amber-500';
+    else if (cleanExt === 'txt') iconClass = 'fa-file-lines text-slate-400';
+
     content += `
-      <a href="${msg.fileUrl}" target="_blank" download="${msg.fileName || 'file'}" class="flex items-center gap-3 p-2.5 rounded-2xl bg-white/20 dark:bg-slate-900/40 hover:bg-white/30 border border-white/20 mb-1.5 transition-colors">
-        <div class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center text-base shrink-0">
-          <i class="fa-solid fa-file-arrow-down"></i>
+      <div class="p-3 rounded-2xl bg-white/20 dark:bg-slate-900/50 border border-white/20 dark:border-slate-700/60 mb-1.5 space-y-2 max-w-[280px]">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-lg shrink-0">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+          <div class="overflow-hidden flex-1 min-w-0">
+            <p class="font-bold text-xs truncate">${escapeHTML(fileName || 'Attachment')}</p>
+            <p class="text-[10px] opacity-80">${fileSize ? formatBytes(fileSize) : 'File'}</p>
+          </div>
         </div>
-        <div class="overflow-hidden flex-1">
-          <p class="font-bold text-xs truncate">${escapeHTML(msg.fileName || 'Attachment')}</p>
-          <p class="text-[10px] opacity-80">${formatBytes(msg.fileSize || 0)}</p>
+        <div class="flex items-center gap-2 pt-1 border-t border-white/10 dark:border-slate-800">
+          <a href="${fileUrl}" target="_blank" download="${escapeHTML(fileName || 'file')}" class="flex-1 py-1 px-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-download mr-1"></i> Download
+          </a>
+          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-up-right-from-square mr-1"></i> Open
+          </a>
         </div>
-        <i class="fa-solid fa-download text-xs opacity-80"></i>
-      </a>
+      </div>
     `;
   }
 
-  if (msg.text) {
+  if (msg.text && (type !== 'image' && type !== 'video' && type !== 'audio' && type !== 'file' || msg.text !== fileUrl)) {
     content += `<p class="whitespace-pre-wrap break-words">${autolinkText(escapeHTML(msg.text))}</p>`;
   }
 
