@@ -1,0 +1,36 @@
+# Cache configuration for Cloudflare Pages
+
+# HTML pages - no cache to ensure latest deployment is always served immediately
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+/admin
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# Static JavaScript and CSS assets - short max-age with revalidation
+/*.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+/js/*.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+/*.css
+  Cache-Control: public, max-age=300, must-revalidate
+
+/css/*.css
+  Cache-Control: public, max-age=300, must-revalidate
+
+# Security headers for all routes
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

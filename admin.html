@@ -22,7 +22,45 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/style.css?v=3.5">
+  <script>
+    window.showAuthGuardError = function(reason) {
+      const guard = document.getElementById('admin-auth-guard');
+      if (!guard) return;
+      if (!guard.classList.contains('hidden')) {
+        const readableReason = typeof reason === 'string' ? reason : (reason?.message || 'Script or network error occurred while verifying access.');
+        guard.innerHTML = `
+          <div class="w-16 h-16 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 text-2xl mb-4 shadow-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3 class="text-white font-black text-lg tracking-tight mb-1">Could not verify access</h3>
+          <p class="text-xs text-red-400 font-medium max-w-xs mb-6 break-words">${readableReason.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+          <div class="flex items-center gap-3">
+            <button onclick="window.location.reload()" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-lg transition-all cursor-pointer">
+              <i class="fa-solid fa-rotate-right mr-1.5"></i> Retry
+            </button>
+            <a href="./index.html" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors">
+              ← Back to Main Site
+            </a>
+          </div>
+        `;
+      }
+    };
+
+    window.addEventListener('error', function(e) {
+      console.error('Global window error on admin page:', e);
+      if (window.showAuthGuardError) {
+        window.showAuthGuardError(e.message || 'An unexpected script error occurred.');
+      }
+    });
+
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Global unhandledrejection on admin page:', e);
+      if (window.showAuthGuardError) {
+        window.showAuthGuardError(e.reason?.message || e.reason || 'An unhandled promise rejection occurred.');
+      }
+    });
+  </script>
 </head>
 <body data-page="admin" class="min-h-screen bg-slate-900 text-slate-100 font-sans relative overflow-x-hidden">
 
@@ -980,7 +1018,7 @@
 
   </div>
 
-  <script type="module" src="./js/main.js?v=3"></script>
-  <script type="module" src="./js/admin.js?v=3"></script>
+  <script type="module" src="./js/main.js?v=3.5"></script>
+  <script type="module" src="./js/admin.js?v=3.5"></script>
 </body>
 </html>
