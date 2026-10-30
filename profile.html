@@ -541,7 +541,7 @@
   <script type="module" src="./js/main.js"></script>
   <script type="module">
     import { db } from './js/firebase-config.js';
-    import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser } from './js/auth.js';
+    import { subscribeAuthState, logOut, checkUsernameAvailability, updateUserProfileData, sanitizeUsernameInput, sendEmailVerificationToUser, safeRedirect } from './js/auth.js';
     import { isAdminUser } from './js/admin-config.js';
     import { uploadToCloudinary, getOptimizedImageUrl } from './js/cloudinary-config.js';
     import { showToast } from './js/main.js';
@@ -577,7 +577,7 @@
         try {
           if (!user) {
             showToast(getLanguage() === 'en' ? "Please log in to view your profile." : "প্রোফাইল দেখতে লগ ইন করুন।", "info");
-            window.location.href = './login.html';
+            safeRedirect('./login.html');
             return;
           }
 
@@ -624,7 +624,7 @@
       document.getElementById('btn-profile-logout-top')?.addEventListener('click', async () => {
         await logOut();
         showToast(getLanguage() === 'en' ? "Logged out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
-        window.location.href = './index.html';
+        safeRedirect('./index.html');
       });
 
       document.getElementById('btn-copy-username')?.addEventListener('click', () => {

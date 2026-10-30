@@ -1,5 +1,5 @@
 import { getLanguage, toggleLanguage, t, applyTranslations } from './i18n.js';
-import { subscribeAuthState, logOut } from './auth.js';
+import { subscribeAuthState, logOut, safeRedirect } from './auth.js';
 import { ADMIN_CONFIG, isAdminUser } from './admin-config.js';
 import { getOptimizedImageUrl } from './cloudinary-config.js';
 import { db } from './firebase-config.js';
@@ -334,7 +334,7 @@ function injectHeader() {
     dropdown?.classList.add('hidden');
     await logOut();
     showToast(getLanguage() === 'en' ? "Signed out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
-    window.location.href = './index.html';
+    safeRedirect('./index.html');
   });
 
   // Scroll height shrink listener
@@ -679,9 +679,9 @@ function injectSidebar() {
   document.getElementById('sidebar-my-profile')?.addEventListener('click', () => {
     closeSidebar();
     if (!currentUser) {
-      window.location.href = './login.html';
+      safeRedirect('./login.html');
     } else {
-      window.location.href = './profile.html';
+      safeRedirect('./profile.html');
     }
   });
 
@@ -779,7 +779,7 @@ function updateAuthDependentUI() {
     if (userCard) {
       userCard.onclick = () => {
         closeSidebar();
-        window.location.href = './profile.html';
+        safeRedirect('./profile.html');
       };
 
       const avatarMarkup = photoURL
@@ -807,7 +807,7 @@ function updateAuthDependentUI() {
     if (userCard) {
       userCard.onclick = () => {
         closeSidebar();
-        window.location.href = './login.html';
+        safeRedirect('./login.html');
       };
       userCard.innerHTML = `
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden relative bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -847,7 +847,7 @@ function updateAuthDependentUI() {
         closeSidebar();
         await logOut();
         showToast(getLanguage() === 'en' ? "Signed out successfully." : "সফলভাবে লগ আউট হয়েছে।", "success");
-        window.location.href = './index.html';
+        safeRedirect('./index.html');
       });
     } else {
       authSection.innerHTML = `

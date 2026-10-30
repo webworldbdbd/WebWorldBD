@@ -1,4 +1,4 @@
-import { subscribeAuthState, logOut } from './auth.js';
+import { subscribeAuthState, logOut, safeRedirect } from './auth.js';
 import { db } from './firebase-config.js';
 import { ADMIN_CONFIG, isAdminUser } from './admin-config.js';
 import {
@@ -102,12 +102,12 @@ function initAdminGuard() {
 
       try {
         if (!user) {
-          window.location.replace('./login.html?next=admin.html');
+          safeRedirect('./login.html?next=admin.html');
           return;
         }
 
         if (!isAdminUser(user)) {
-          window.location.replace('./index.html');
+          safeRedirect('./index.html');
           return;
         }
 

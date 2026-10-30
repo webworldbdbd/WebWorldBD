@@ -193,37 +193,10 @@
 
   <script type="module" src="./js/main.js"></script>
   <script type="module">
-    import { logIn, logInWithGoogle } from './js/auth.js';
+    import { logIn, logInWithGoogle, getPostAuthRedirectTarget, safeRedirect } from './js/auth.js';
     import { isAdminUser } from './js/admin-config.js';
     import { showToast } from './js/main.js';
     import { getLanguage, t } from './js/i18n.js';
-
-    function getPostAuthRedirectTarget(user) {
-      const urlParams = new URLSearchParams(window.location.search);
-      let next = urlParams.get('next');
-
-      if (next) {
-        next = next.trim();
-        const isSameSiteRelative = !next.includes('://') && !next.startsWith('//') && /^(?:\.\/|\/[^\/]|[a-zA-Z0-9_\-\.]+(?:\.html)?(?:[\?#].*)?$)/.test(next);
-
-        if (isSameSiteRelative) {
-          if (next.includes('admin')) {
-            if (isAdminUser(user)) {
-              return './admin.html';
-            } else {
-              return './index.html';
-            }
-          }
-          return next.startsWith('./') || next.startsWith('/') ? next : `./${next}`;
-        }
-      }
-
-      if (isAdminUser(user) && window.location.search.includes('next=')) {
-        return './admin.html';
-      }
-
-      return './profile.html';
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
       // Preserve ?next= in link to signup page if present
@@ -305,7 +278,7 @@
         try {
           const res = await logIn(email, password);
           showToast(getLanguage() === 'en' ? "Logged in successfully!" : "সফলভাবে লগ ইন করা হয়েছে!", "success");
-          window.location.href = getPostAuthRedirectTarget(res?.user);
+          safeRedirect(getPostAuthRedirectTarget(res?.user));
         } catch (err) {
           const msg = getLanguage() === 'bn' ? err.messageBn : err.messageEn;
           showToast(msg || "Login failed.", "error");
@@ -320,7 +293,7 @@
         try {
           const res = await logInWithGoogle();
           showToast(getLanguage() === 'en' ? "Signed in with Google!" : "Google দিয়ে সফলভাবে লগ ইন হয়েছে!", "success");
-          window.location.href = getPostAuthRedirectTarget(res?.user);
+          safeRedirect(getPostAuthRedirectTarget(res?.user));
         } catch (err) {
           const msg = getLanguage() === 'bn' ? err.messageBn : err.messageEn;
           showToast(msg || "Google Sign-in failed.", "error");
