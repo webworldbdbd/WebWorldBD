@@ -5,6 +5,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   updateDoc,
   deleteDoc,
   collection,
@@ -81,49 +82,70 @@ function clearCachesAndServiceWorkers() {
 }
 
 function initAdminGuard() {
-  const handleAuthReady = (e) => {
-    const { user, isAdmin } = e.detail || {};
+  let authCheckFinished = false;
 
-    if (!user) {
-      window.location.replace('./login.html?next=admin.html');
-      return;
+  // 8-second safety timeout
+  const guardTimeout = setTimeout(() => {
+    if (!authCheckFinished) {
+      authCheckFinished = true;
+      if (window.showAuthGuardError) {
+        window.showAuthGuardError("Verification timed out after 8 seconds. Please check your network connection.");
+      }
     }
+  }, 8000);
 
-    if (!isAdmin || !isAdminUser(user)) {
-      window.location.replace('./index.html');
-      return;
+  try {
+    subscribeAuthState((user, userData) => {
+      if (authCheckFinished) return;
+      authCheckFinished = true;
+      clearTimeout(guardTimeout);
+
+      try {
+        if (!user) {
+          window.location.replace('./login.html?next=admin.html');
+          return;
+        }
+
+        if (!isAdminUser(user)) {
+          window.location.replace('./index.html');
+          return;
+        }
+
+        // Verified Executive Admin
+        currentAdminUser = user;
+
+        // Request browser notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+
+        setupInactivityTimers();
+        initAdminUI();
+        subscribeAdminSettings();
+        subscribeDashboardData();
+        subscribeSiteConfig();
+        subscribeAdminLogs();
+        runOneTimeChatsBackfill();
+      } catch (err) {
+        console.error("Admin verification error:", err);
+        if (window.showAuthGuardError) {
+          window.showAuthGuardError(err.message || "Failed to verify executive admin privileges.");
+        }
+      } finally {
+        // Remove loader and display admin interface if verified admin
+        if (currentAdminUser && isAdminUser(currentAdminUser)) {
+          document.getElementById('admin-auth-guard')?.classList.add('hidden');
+          document.getElementById('admin-app')?.classList.remove('hidden');
+        }
+      }
+    });
+  } catch (err) {
+    clearTimeout(guardTimeout);
+    console.error("Failed to subscribe auth state:", err);
+    if (window.showAuthGuardError) {
+      window.showAuthGuardError(err.message || "Failed to initialize authentication service.");
     }
-
-    currentAdminUser = user;
-    document.getElementById('admin-auth-guard')?.classList.add('hidden');
-    document.getElementById('admin-app')?.classList.remove('hidden');
-
-    // Request browser notification permission
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-
-    setupInactivityTimers();
-    initAdminUI();
-    subscribeAdminSettings();
-    subscribeDashboardData();
-    subscribeSiteConfig();
-    subscribeAdminLogs();
-
-    // One-time safe backfill of missing chats/{uid} docs for existing users
-    runOneTimeChatsBackfill();
-  };
-
-  document.addEventListener('auth-ready', handleAuthReady, { once: true });
-
-  // Backup trigger if auth state changed before listener attached
-  subscribeAuthState((user, userData) => {
-    if (user && !isAdminUser(user)) {
-      window.location.replace('./index.html');
-    } else if (!user) {
-      window.location.replace('./login.html?next=admin.html');
-    }
-  });
+  }
 }
 
 function setupInactivityTimers() {
@@ -285,12 +307,6 @@ function initAdminUI() {
   const adminTextarea = document.getElementById('admin-chat-textarea');
   adminTextarea?.addEventListener('input', (e) => {
     autoResizeAdminTextarea(e.target);
-    if (e.target.value.startsWith('/')) {
-      renderQuickReplyDrawer();
-    } else {
-      document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
-    }
-  });
     if (e.target.value.startsWith('/')) {
       renderQuickReplyDrawer();
     } else {
@@ -1675,15 +1691,44 @@ function formatDateSeparator(date) {
   }
 }
 
+function renderAdminStatusTicks(msg, chatData = {}) {
+  if (msg.readAt) {
+    return `<i class="fa-solid fa-check-double text-sky-400 text-[10px]" title="Read"></i>`;
+  } else if (msg.deliveredAt) {
+    return `<i class="fa-solid fa-check-double text-slate-400 text-[10px]" title="Delivered"></i>`;
+  } else {
+    return `<i class="fa-solid fa-check text-slate-400 text-[10px]" title="Sent"></i>`;
+  }
+}
+
+function cancelQuotedReply() {
+  quotedMessage = null;
+  const bar = document.getElementById('admin-quoted-reply-bar');
+  if (bar) bar.classList.add('hidden');
+}
+
+window.openBubbleMenu = function(e, msgId, text) {
+  if (e) e.stopPropagation();
+  quotedMessage = { id: msgId, text: text, sender: 'User' };
+  const bar = document.getElementById('admin-quoted-reply-bar');
+  const textEl = document.getElementById('admin-quoted-reply-text');
+  if (textEl) textEl.textContent = text || 'Attachment';
+  if (bar) bar.classList.remove('hidden');
+};
+
 function renderMessageBubblePayload(msg) {
   if (msg.deleted) {
     return `<span class="italic text-slate-400 text-xs"><i class="fa-solid fa-ban mr-1"></i> This message was deleted</span>`;
   }
 
   let content = '';
+  let fileUrl = msg.fileUrl || '';
+  let fileName = msg.fileName || '';
+  let fileSize = msg.fileSize || 0;
+  let type = msg.type;
 
   // Project Request Card (Type "request")
-  if (msg.type === 'request' || msg.requestId) {
+  if (type === 'request' || msg.requestId) {
     return `
       <div class="chat-request-card text-left space-y-2">
         <div class="flex items-center justify-between border-b border-purple-500/20 pb-2">
@@ -1702,6 +1747,93 @@ function renderMessageBubblePayload(msg) {
     `;
   }
 
+  // Detect type for old messages or url-only messages
+  if (!fileUrl && msg.text) {
+    const trimmedText = msg.text.trim();
+    if (trimmedText.match(/^https?:\/\/[^\s]+$/i)) {
+      const urlClean = trimmedText.split('?')[0];
+      const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+      if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'image';
+      } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'video';
+      } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'audio';
+      } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.zip', '.rar'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'file';
+        fileName = fileName || urlClean.split('/').pop() || 'Attachment File';
+      }
+    }
+  } else if (fileUrl && (!type || type === 'text')) {
+    const urlClean = fileUrl.split('?')[0];
+    const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+      type = 'image';
+    } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+      type = 'video';
+    } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+      type = 'audio';
+    } else {
+      type = 'file';
+    }
+  }
+
+  if (type === 'image' && fileUrl) {
+    content += `
+      <div class="overflow-hidden rounded-2xl mb-1.5 cursor-pointer admin-media-thumbnail max-w-[240px]" data-src="${fileUrl}">
+        <img src="${fileUrl}" alt="${escapeHTML(fileName || 'Photo')}" loading="lazy" class="w-full max-h-[240px] object-cover hover:scale-105 transition-transform duration-200 rounded-2xl">
+      </div>
+    `;
+  } else if (type === 'video' && fileUrl) {
+    content += `
+      <div class="overflow-hidden rounded-2xl mb-1.5 bg-black max-w-[280px]">
+        <video src="${fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
+      </div>
+    `;
+  } else if (type === 'audio' && fileUrl) {
+    content += `
+      <div class="p-2 bg-slate-900/60 rounded-2xl mb-1.5 max-w-[280px]">
+        <audio src="${fileUrl}" controls class="w-full h-8"></audio>
+      </div>
+    `;
+  } else if (type === 'file' && fileUrl) {
+    const cleanExt = (fileName || fileUrl).split('?')[0].split('.').pop().toLowerCase();
+    let iconClass = 'fa-file text-sky-400';
+    if (cleanExt === 'pdf') iconClass = 'fa-file-pdf text-red-500';
+    else if (['doc', 'docx'].includes(cleanExt)) iconClass = 'fa-file-word text-blue-500';
+    else if (['xls', 'xlsx'].includes(cleanExt)) iconClass = 'fa-file-excel text-emerald-500';
+    else if (['zip', 'rar', '7z'].includes(cleanExt)) iconClass = 'fa-file-zipper text-amber-500';
+    else if (cleanExt === 'txt') iconClass = 'fa-file-lines text-slate-400';
+
+    content += `
+      <div class="p-3 rounded-2xl bg-slate-900/50 border border-slate-700/60 mb-1.5 space-y-2 max-w-[280px]">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-lg shrink-0">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+          <div class="overflow-hidden flex-1 min-w-0">
+            <p class="font-bold text-xs truncate">${escapeHTML(fileName || 'Attachment')}</p>
+            <p class="text-[10px] opacity-80">${fileSize ? formatBytes(fileSize) : 'File'}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
+          <a href="${fileUrl}" target="_blank" download="${escapeHTML(fileName || 'file')}" onclick="event.stopPropagation();" class="flex-1 py-1 px-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-download mr-1"></i> Download
+          </a>
+          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-up-right-from-square mr-1"></i> Open
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  if (msg.text && (type !== 'image' && type !== 'video' && type !== 'audio' && type !== 'file' || msg.text !== fileUrl)) {
+    content += `<p class="whitespace-pre-wrap break-words">${autolinkText(escapeHTML(msg.text))}</p>`;
   }
 
   return content;
@@ -1960,15 +2092,13 @@ function renderAdminAttachmentChips() {
         </button>
       </div>
     `;
-  }
+  }).join('');
 }
 
 window.cancelPendingAdminFile = function() {
   pendingAdminFile = null;
   document.getElementById('admin-pending-attachments-bar')?.classList.add('hidden');
-
-  }).join('');
-}
+};
 
 window.retryAdminUpload = function(id) {
   const att = pendingAdminAttachments.find(a => a.id === id);
