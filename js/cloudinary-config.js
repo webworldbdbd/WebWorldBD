@@ -94,7 +94,7 @@ export function compressImageIfNeeded(file, maxWidth = 2000, maxHeight = 2000, q
 export function uploadToCloudinary(file, options = {}) {
   return new Promise((resolve, reject) => {
     // 1. File Format Validation (Block Executables)
-    const blockedExts = ['.exe', '.apk', '.bat', '.js', '.sh'];
+    const blockedExts = ['.exe', '.apk', '.bat', '.js', '.sh', '.msi'];
     const fileName = file.name || '';
     const ext = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
 

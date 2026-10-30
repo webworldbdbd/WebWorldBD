@@ -16,6 +16,8 @@ import {
   serverTimestamp,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { uploadToCloudinary, compressImageIfNeeded } from './cloudinary-config.js';
+import { getLanguage, t } from './i18n.js';
 import { showToast, LIVE_PROJECTS } from './main.js';
 
 let currentAdminUser = null;
@@ -37,6 +39,9 @@ let currentAdminSettings = { soundEnabled: true };
 
 let initialRequestsLoaded = false;
 let requestDisplayLimit = 15;
+
+let pendingAdminAttachments = [];
+const ADMIN_EMOJI_LIST = ['😊', '😂', '👍', '❤️', '🔥', '🎉', '🙏', '😍', '👋', '🚀', '💯', '✨', '👌', '🤝', '💼', '📱', '💻', '⭐', '⚡', '✅'];
 
 // Inactivity timeout tracking (30 minutes timeout with 28 minute warning)
 let inactivityTimer = null;
@@ -265,16 +270,27 @@ function initAdminUI() {
     document.getElementById('admin-new-chat-modal')?.classList.add('hidden');
   });
 
+  // Chat Attach & Emoji Buttons
+  initAdminComposerUI();
+
   // Chat Composer Send
   document.getElementById('admin-chat-composer')?.addEventListener('submit', handleAdminSendMessage);
 
   // Quick Reply trigger on '/'
   const adminTextarea = document.getElementById('admin-chat-textarea');
   adminTextarea?.addEventListener('input', (e) => {
+    autoResizeAdminTextarea(e.target);
     if (e.target.value.startsWith('/')) {
       renderQuickReplyDrawer();
     } else {
       document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
+    }
+  });
+
+  adminTextarea?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && window.innerWidth >= 768) {
+      e.preventDefault();
+      document.getElementById('admin-chat-composer')?.requestSubmit();
     }
   });
 
@@ -1329,8 +1345,7 @@ function renderAdminMessages(messages) {
       <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
         <div class="max-w-[80%] space-y-1">
           <div class="p-3 rounded-2xl text-xs leading-relaxed ${isAdmin ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700'}">
-            ${msg.fileUrl ? `<div class="mb-1.5"><a href="${msg.fileUrl}" target="_blank" class="underline font-bold text-sky-200">📎 Attachment File</a></div>` : ''}
-            <p class="whitespace-pre-wrap">${msg.text || ''}</p>
+            ${renderAdminMessageContent(msg)}
           </div>
           <p class="text-[9px] text-slate-500 text-${isAdmin ? 'right' : 'left'} px-1">${timeStr}</p>
         </div>
@@ -1339,15 +1354,413 @@ function renderAdminMessages(messages) {
   }).join('');
 
   container.scrollTop = container.scrollHeight;
+  attachAdminMediaClickHandlers();
 }
+
+function renderAdminMessageContent(msg) {
+  if (msg.deleted) {
+    return `<span class="italic text-slate-400"><i class="fa-solid fa-ban text-[10px] mr-1"></i> This message was deleted</span>`;
+  }
+
+  let content = '';
+  let fileUrl = msg.fileUrl || '';
+  let fileName = msg.fileName || '';
+  let fileSize = msg.fileSize || 0;
+  let type = msg.type;
+
+  // Auto detect type for older url-only messages
+  if (!fileUrl && msg.text) {
+    const trimmedText = msg.text.trim();
+    if (trimmedText.match(/^https?:\/\/[^\s]+$/i)) {
+      const urlClean = trimmedText.split('?')[0];
+      const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+      if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'image';
+      } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'video';
+      } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'audio';
+      } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.zip', '.rar'].includes(urlExt)) {
+        fileUrl = trimmedText;
+        type = 'file';
+        fileName = fileName || urlClean.split('/').pop() || 'Attachment File';
+      }
+    }
+  } else if (fileUrl && (!type || type === 'text')) {
+    const urlClean = fileUrl.split('?')[0];
+    const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
+      type = 'image';
+    } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
+      type = 'video';
+    } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
+      type = 'audio';
+    } else {
+      type = 'file';
+    }
+  }
+
+  if (type === 'image' && fileUrl) {
+    content += `
+      <div class="overflow-hidden rounded-2xl mb-1.5 cursor-pointer admin-media-thumbnail max-w-[240px]" data-src="${fileUrl}">
+        <img src="${fileUrl}" alt="${escapeHTML(fileName || 'Photo')}" loading="lazy" class="w-full max-h-[240px] object-cover hover:scale-105 transition-transform duration-200 rounded-2xl">
+      </div>
+    `;
+  } else if (type === 'video' && fileUrl) {
+    content += `
+      <div class="overflow-hidden rounded-2xl mb-1.5 bg-black max-w-[280px]">
+        <video src="${fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
+      </div>
+    `;
+  } else if (type === 'audio' && fileUrl) {
+    content += `
+      <div class="p-2 bg-slate-900/60 rounded-2xl mb-1.5 max-w-[280px]">
+        <audio src="${fileUrl}" controls class="w-full h-8"></audio>
+      </div>
+    `;
+  } else if (type === 'file' && fileUrl) {
+    const cleanExt = (fileName || fileUrl).split('?')[0].split('.').pop().toLowerCase();
+    let iconClass = 'fa-file text-sky-400';
+    if (cleanExt === 'pdf') iconClass = 'fa-file-pdf text-red-500';
+    else if (['doc', 'docx'].includes(cleanExt)) iconClass = 'fa-file-word text-blue-500';
+    else if (['xls', 'xlsx'].includes(cleanExt)) iconClass = 'fa-file-excel text-emerald-500';
+    else if (['zip', 'rar', '7z'].includes(cleanExt)) iconClass = 'fa-file-zipper text-amber-500';
+    else if (cleanExt === 'txt') iconClass = 'fa-file-lines text-slate-400';
+
+    content += `
+      <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-700/60 mb-1.5 space-y-2 max-w-[280px]">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-lg shrink-0">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+          <div class="overflow-hidden flex-1 min-w-0">
+            <p class="font-bold text-xs truncate">${escapeHTML(fileName || 'Attachment')}</p>
+            <p class="text-[10px] opacity-80">${fileSize ? formatBytes(fileSize) : 'File'}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
+          <a href="${fileUrl}" target="_blank" download="${escapeHTML(fileName || 'file')}" class="flex-1 py-1 px-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-download mr-1"></i> Download
+          </a>
+          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] text-center transition-colors">
+            <i class="fa-solid fa-up-right-from-square mr-1"></i> Open
+          </a>
+        </div>
+      </div>
+    `;
+  }
+
+  if (msg.text && (type !== 'image' && type !== 'video' && type !== 'audio' && type !== 'file' || msg.text !== fileUrl)) {
+    content += `<p class="whitespace-pre-wrap break-words">${autolinkText(escapeHTML(msg.text))}</p>`;
+  }
+
+  return content;
+}
+
+function attachAdminMediaClickHandlers() {
+  document.querySelectorAll('.admin-media-thumbnail').forEach(el => {
+    el.onclick = (e) => {
+      const src = e.currentTarget.getAttribute('data-src');
+      if (!src) return;
+
+      const modal = document.getElementById('admin-media-viewer-modal');
+      const img = document.getElementById('admin-media-viewer-img');
+      const downloadBtn = document.getElementById('admin-btn-download-media');
+
+      if (img) img.src = src;
+      if (downloadBtn) downloadBtn.href = src;
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+    };
+  });
+}
+
+function initAdminComposerUI() {
+  // 1. Emoji Picker
+  const emojiDrawer = document.getElementById('admin-emoji-picker-drawer');
+  if (emojiDrawer) {
+    emojiDrawer.innerHTML = ADMIN_EMOJI_LIST.map(emoji => `
+      <button type="button" class="btn-admin-emoji-item hover:scale-125 text-xl p-1 transition-transform cursor-pointer" data-emoji="${emoji}">
+        ${emoji}
+      </button>
+    `).join('');
+
+    emojiDrawer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-admin-emoji-item');
+      if (btn) {
+        const emoji = btn.getAttribute('data-emoji');
+        const textarea = document.getElementById('admin-chat-textarea');
+        if (textarea) {
+          textarea.value += emoji;
+          textarea.focus();
+          autoResizeAdminTextarea(textarea);
+        }
+      }
+    });
+  }
+
+  document.getElementById('btn-admin-emoji')?.addEventListener('click', () => {
+    document.getElementById('admin-attach-sheet')?.classList.add('hidden');
+    emojiDrawer?.classList.toggle('hidden');
+  });
+
+  // 2. Attach Sheet Toggle
+  document.getElementById('btn-admin-attach')?.addEventListener('click', () => {
+    emojiDrawer?.classList.add('hidden');
+    document.getElementById('admin-attach-sheet')?.classList.toggle('hidden');
+  });
+
+  // 3. File Input Change Listeners
+  ['admin-file-photo', 'admin-file-doc', 'admin-file-camera'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', (e) => {
+      if (e.target.files?.length) {
+        handleAdminFileSelect(Array.from(e.target.files));
+        e.target.value = '';
+        document.getElementById('admin-attach-sheet')?.classList.add('hidden');
+      }
+    });
+  });
+
+  // 4. Drag & Drop and Clipboard Paste on Chat View Panel
+  const chatViewPanel = document.getElementById('admin-chat-view-panel');
+  if (chatViewPanel) {
+    chatViewPanel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    chatViewPanel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer?.files?.length) {
+        handleAdminFileSelect(Array.from(e.dataTransfer.files));
+      }
+    });
+
+    chatViewPanel.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (!items) return;
+      const files = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file') {
+          const file = items[i].getAsFile();
+          if (file) files.push(file);
+        }
+      }
+      if (files.length) {
+        handleAdminFileSelect(files);
+      }
+    });
+  }
+
+  // 5. Close Media Viewer
+  document.getElementById('admin-btn-close-media-viewer')?.addEventListener('click', () => {
+    const modal = document.getElementById('admin-media-viewer-modal');
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+}
+
+function autoResizeAdminTextarea(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  const maxHeight = 120;
+  el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+}
+
+function handleAdminFileSelect(files) {
+  if (!files || files.length === 0) return;
+
+  const currentChat = allChatsData.find(c => c.uid === activeChatUid);
+  if (currentChat?.blocked || currentChat?.status === 'closed') {
+    showToast(getLanguage() === 'en' ? 'Chat is blocked or closed.' : 'চ্যাট বন্ধ বা ব্লক করা আছে।', 'error');
+    return;
+  }
+
+  if (pendingAdminAttachments.length + files.length > 5) {
+    showToast(getLanguage() === 'en' ? 'Maximum 5 attachments allowed at once.' : 'একসাথে সর্বোচ্চ ৫টি ফাইল অ্যাটাচ করা যাবে।', 'error');
+    return;
+  }
+
+  files.forEach(file => {
+    const blockedExts = ['.exe', '.apk', '.bat', '.js', '.sh', '.msi'];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+    if (blockedExts.includes(ext)) {
+      showToast(t('executableBlockedError'), 'error');
+      return;
+    }
+
+    const MAX_SIZE = 30 * 1024 * 1024; // 30MB
+    if (file.size > MAX_SIZE) {
+      showToast(t('maxFileSizeError'), 'error');
+      return;
+    }
+
+    const item = {
+      id: 'att_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      file: file,
+      status: 'pending', // 'pending', 'uploading', 'done', 'error'
+      progress: 0,
+      uploadedFile: null,
+      cancelFn: null
+    };
+
+    pendingAdminAttachments.push(item);
+    startAdminFileUpload(item);
+  });
+
+  renderAdminAttachmentChips();
+}
+
+async function startAdminFileUpload(item) {
+  let uploadFile = item.file;
+
+  if (uploadFile.type.startsWith('image/')) {
+    try {
+      uploadFile = await compressImageIfNeeded(uploadFile, 2000, 2000, 0.85);
+    } catch (e) {
+      console.warn('Image compression skipped:', e);
+    }
+  }
+
+  item.status = 'uploading';
+  item.progress = 0;
+  renderAdminAttachmentChips();
+
+  try {
+    const result = await uploadToCloudinary(uploadFile, {
+      folder: 'webworldbd_uploads/chat',
+      onProgress: (percent) => {
+        item.progress = percent;
+        updateChipProgress(item.id, percent);
+      },
+      registerCancel: (cancelFn) => {
+        item.cancelFn = cancelFn;
+      }
+    });
+
+    item.status = 'done';
+    item.uploadedFile = result;
+    item.progress = 100;
+  } catch (err) {
+    console.error('Admin file upload error:', err);
+    item.status = 'error';
+  } finally {
+    item.cancelFn = null;
+    renderAdminAttachmentChips();
+  }
+}
+
+function updateChipProgress(itemId, percent) {
+  const bar = document.getElementById(`chip-bar-${itemId}`);
+  const text = document.getElementById(`chip-text-${itemId}`);
+  if (bar) bar.style.width = `${percent}%`;
+  if (text) text.textContent = `${percent}%`;
+}
+
+function renderAdminAttachmentChips() {
+  const container = document.getElementById('admin-attachment-chips');
+  if (!container) return;
+
+  if (pendingAdminAttachments.length === 0) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+
+  container.innerHTML = pendingAdminAttachments.map(att => {
+    const isImg = att.file.type.startsWith('image/');
+    const thumbUrl = isImg ? URL.createObjectURL(att.file) : '';
+
+    let iconClass = 'fa-file text-sky-400';
+    if (att.file.type.startsWith('image/')) iconClass = 'fa-file-image text-emerald-400';
+    else if (att.file.type.startsWith('video/')) iconClass = 'fa-file-video text-purple-400';
+    else if (att.file.type.startsWith('audio/')) iconClass = 'fa-file-audio text-amber-400';
+    else if (att.file.type.includes('pdf')) iconClass = 'fa-file-pdf text-red-400';
+
+    return `
+      <div class="p-2 rounded-2xl bg-slate-800 border border-slate-700 flex items-center gap-2.5 max-w-[220px] relative shrink-0">
+        ${isImg ? `
+          <img src="${thumbUrl}" class="w-9 h-9 object-cover rounded-xl shrink-0">
+        ` : `
+          <div class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+        `}
+        <div class="overflow-hidden flex-1 min-w-0">
+          <p class="font-bold text-xs text-white truncate">${escapeHTML(att.file.name)}</p>
+          <div class="flex items-center justify-between text-[9px] text-slate-400 mt-0.5">
+            <span>${formatBytes(att.file.size)}</span>
+            <span id="chip-text-${att.id}">${att.status === 'uploading' ? att.progress + '%' : (att.status === 'done' ? 'Ready' : (att.status === 'error' ? 'Error' : 'Pending'))}</span>
+          </div>
+          ${att.status === 'uploading' ? `
+            <div class="w-full h-1 bg-slate-900 rounded-full overflow-hidden mt-1">
+              <div id="chip-bar-${att.id}" class="h-full bg-sky-400 transition-all duration-150" style="width: ${att.progress}%;"></div>
+            </div>
+          ` : ''}
+        </div>
+        ${att.status === 'error' ? `
+          <button type="button" onclick="retryAdminUpload('${att.id}')" class="px-2 py-1 rounded-lg bg-amber-500/20 text-amber-400 font-bold text-[10px] hover:bg-amber-500/30">Retry</button>
+        ` : ''}
+        <button type="button" onclick="removeAdminAttachment('${att.id}')" class="w-6 h-6 rounded-full bg-slate-900 hover:bg-red-500 text-slate-400 hover:text-white flex items-center justify-center text-[10px] transition-colors shrink-0">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+window.retryAdminUpload = function(id) {
+  const att = pendingAdminAttachments.find(a => a.id === id);
+  if (att) {
+    startAdminFileUpload(att);
+  }
+};
+
+window.removeAdminAttachment = function(id) {
+  const idx = pendingAdminAttachments.findIndex(a => a.id === id);
+  if (idx !== -1) {
+    const att = pendingAdminAttachments[idx];
+    if (att.cancelFn) {
+      try { att.cancelFn(); } catch (e) {}
+    }
+    pendingAdminAttachments.splice(idx, 1);
+    renderAdminAttachmentChips();
+  }
+};
 
 async function handleAdminSendMessage(e) {
   e.preventDefault();
   if (!activeChatUid || !currentAdminUser) return;
 
+  const currentChat = allChatsData.find(c => c.uid === activeChatUid);
+  if (currentChat?.blocked || currentChat?.status === 'closed') {
+    showToast(getLanguage() === 'en' ? 'Chat is blocked or closed.' : 'চ্যাট বন্ধ বা ব্লক করা আছে।', 'error');
+    return;
+  }
+
   const textarea = document.getElementById('admin-chat-textarea');
   const text = textarea?.value.trim() || '';
-  if (!text) return;
+
+  // Check if any attachments are currently uploading
+  if (pendingAdminAttachments.some(a => a.status === 'uploading')) {
+    showToast(getLanguage() === 'en' ? 'Please wait for file uploads to finish.' : 'ফাইল আপলোড শেষ হওয়া পর্যন্ত অপেক্ষা করুন।', 'info');
+    return;
+  }
+
+  // Check if any attachments failed
+  if (pendingAdminAttachments.some(a => a.status === 'error')) {
+    showToast(getLanguage() === 'en' ? 'Some uploads failed. Please retry or remove them.' : 'কিছু ফাইল আপলোড ব্যর্থ হয়েছে। পুনরায় চেষ্টা করুন বা সরিয়ে ফেলুন।', 'error');
+    return;
+  }
+
+  if (!text && pendingAdminAttachments.length === 0) return;
 
   const sendBtn = document.getElementById('btn-admin-send');
   if (sendBtn) sendBtn.disabled = true;
@@ -1358,23 +1771,61 @@ async function handleAdminSendMessage(e) {
 
   try {
     const batch = writeBatch(db);
-    const newMsgRef = doc(messagesRef);
+    let lastMsgPreview = text;
 
-    batch.set(newMsgRef, {
-      sender: 'admin',
-      senderRole: 'admin',
-      senderId: currentAdminUser.uid,
-      conversationId: activeChatUid,
-      text: text,
-      type: 'text',
-      createdAt: serverTimestamp(),
-      deliveredAt: isoTime,
-      readAt: null
+    // 1. Text message sent first if typed together with attachments
+    if (text) {
+      const textMsgRef = doc(messagesRef);
+      batch.set(textMsgRef, {
+        sender: 'admin',
+        senderRole: 'admin',
+        senderId: currentAdminUser.uid,
+        conversationId: activeChatUid,
+        text: text,
+        type: 'text',
+        createdAt: serverTimestamp(),
+        deliveredAt: isoTime,
+        readAt: null,
+        deleted: false,
+        edited: false
+      });
+    }
+
+    // 2. Attachments sent in order
+    pendingAdminAttachments.forEach(att => {
+      if (att.status === 'done' && att.uploadedFile) {
+        let type = 'file';
+        if (att.file.type.startsWith('image/')) type = 'image';
+        else if (att.file.type.startsWith('video/')) type = 'video';
+        else if (att.file.type.startsWith('audio/')) type = 'audio';
+
+        const previewText = type === 'image' ? '📷 Photo' : (type === 'video' ? '🎥 Video' : (type === 'audio' ? '🎵 Audio' : `📎 ${att.file.name}`));
+        lastMsgPreview = previewText;
+
+        const fileMsgRef = doc(messagesRef);
+        batch.set(fileMsgRef, {
+          sender: 'admin',
+          senderRole: 'admin',
+          senderId: currentAdminUser.uid,
+          conversationId: activeChatUid,
+          text: '',
+          type: type,
+          fileUrl: att.uploadedFile.secure_url,
+          fileName: att.file.name,
+          fileSize: att.file.size,
+          mimeType: att.file.type,
+          createdAt: serverTimestamp(),
+          deliveredAt: isoTime,
+          readAt: null,
+          deleted: false,
+          edited: false
+        });
+      }
     });
 
     const targetChat = allChatsData.find(c => c.uid === activeChatUid);
     batch.update(chatRef, {
-      lastMessage: text,
+      lastMessage: lastMsgPreview || 'Attachment',
       lastMessageAt: isoTime,
       lastSender: 'admin',
       unreadForUser: (targetChat?.unreadForUser || 0) + 1,
@@ -1383,9 +1834,17 @@ async function handleAdminSendMessage(e) {
 
     await batch.commit();
 
-    if (textarea) textarea.value = '';
+    if (textarea) {
+      textarea.value = '';
+      autoResizeAdminTextarea(textarea);
+    }
+    pendingAdminAttachments = [];
+    renderAdminAttachmentChips();
     document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
-    logAdminAction("SEND_CHAT_REPLY", activeChatUid, `Replied: ${text.slice(0, 30)}...`);
+    document.getElementById('admin-emoji-picker-drawer')?.classList.add('hidden');
+    document.getElementById('admin-attach-sheet')?.classList.add('hidden');
+
+    logAdminAction("SEND_CHAT_REPLY", activeChatUid, `Replied to chat with ${lastMsgPreview.slice(0, 30)}...`);
   } catch (err) {
     console.error('Error sending admin message:', err);
     showToast('Failed to send admin message.', 'error');
@@ -2006,6 +2465,25 @@ function exportUsersCSV() {
 
   downloadCSV(csv, 'webworldbd_users.csv');
   logAdminAction("EXPORT_CSV", "users", "Exported full users CSV");
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+function autolinkText(text) {
+  if (!text) return '';
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline hover:text-sky-300 break-all">${url}</a>`);
 }
 
 function downloadCSV(csvContent, filename) {
