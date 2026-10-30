@@ -43,6 +43,8 @@ let requestDisplayLimit = 15;
 let pendingAdminAttachments = [];
 const ADMIN_EMOJI_LIST = ['😊', '😂', '👍', '❤️', '🔥', '🎉', '🙏', '😍', '👋', '🚀', '💯', '✨', '👌', '🤝', '💼', '📱', '💻', '⭐', '⚡', '✅'];
 
+let quotedMessage = null;
+let pendingAdminFile = null;
 // Inactivity timeout tracking (30 minutes timeout with 28 minute warning)
 let inactivityTimer = null;
 let warningTimer = null;
@@ -270,16 +272,25 @@ function initAdminUI() {
     document.getElementById('admin-new-chat-modal')?.classList.add('hidden');
   });
 
-  // Chat Attach & Emoji Buttons
+  // Chat Attach & Emoji Buttons & Composer UI
   initAdminComposerUI();
 
   // Chat Composer Send
   document.getElementById('admin-chat-composer')?.addEventListener('submit', handleAdminSendMessage);
 
+  // Hash route change listener
+  window.addEventListener('hashchange', handleHashRouting);
+
   // Quick Reply trigger on '/'
   const adminTextarea = document.getElementById('admin-chat-textarea');
   adminTextarea?.addEventListener('input', (e) => {
     autoResizeAdminTextarea(e.target);
+    if (e.target.value.startsWith('/')) {
+      renderQuickReplyDrawer();
+    } else {
+      document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
+    }
+  });
     if (e.target.value.startsWith('/')) {
       renderQuickReplyDrawer();
     } else {
@@ -294,10 +305,90 @@ function initAdminUI() {
     }
   });
 
+  // Header Dropdown Menu Toggle
+  document.getElementById('btn-chat-header-menu')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('chat-header-menu-dropdown')?.classList.toggle('hidden');
+  });
+
+  // Header Actions
+  document.getElementById('menu-act-pin')?.addEventListener('click', () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    togglePinChat(activeChatUid, !chat?.pinned);
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-unread')?.addEventListener('click', async () => {
+    if (!activeChatUid) return;
+    try {
+      const chatRef = doc(db, 'chats', activeChatUid);
+      await updateDoc(chatRef, { unreadForAdmin: 1 });
+      showToast('Marked conversation as unread', 'info');
+      if (window.innerWidth < 900) closeAdminChatView();
+    } catch (e) {}
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-close')?.addEventListener('click', async () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    const newStatus = chat?.status === 'closed' ? 'open' : 'closed';
+    try {
+      const chatRef = doc(db, 'chats', activeChatUid);
+      await updateDoc(chatRef, { status: newStatus });
+      showToast(`Conversation marked as ${newStatus}`, 'success');
+      renderUserInfoDrawer(allChatsData.find(c => c.uid === activeChatUid) || {});
+    } catch (e) {}
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-block')?.addEventListener('click', () => {
+    if (!activeChatUid) return;
+    const chat = allChatsData.find(c => c.uid === activeChatUid);
+    toggleBlockUser(activeChatUid, !chat?.blocked);
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-export')?.addEventListener('click', exportActiveChatHistory);
+  document.getElementById('menu-act-clear')?.addEventListener('click', () => {
+    const msgContainer = document.getElementById('admin-chat-messages');
+    if (msgContainer) msgContainer.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">View cleared for this session.</div>';
+    showToast('Chat view cleared.', 'info');
+    document.getElementById('chat-header-menu-dropdown')?.classList.add('hidden');
+  });
+
+  document.getElementById('menu-act-delete')?.addEventListener('click', deleteActiveConversation);
+
+  // Scroll to Latest Button
+  const msgContainer = document.getElementById('admin-chat-messages');
+  msgContainer?.addEventListener('scroll', () => {
+    if (!msgContainer) return;
+    const distFromBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight;
+    const scrollBtn = document.getElementById('btn-admin-scroll-latest');
+    if (distFromBottom > 150) {
+      scrollBtn?.classList.remove('hidden');
+    } else {
+      scrollBtn?.classList.add('hidden');
+      document.getElementById('admin-unread-scroll-badge')?.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('btn-admin-scroll-latest')?.addEventListener('click', () => {
+    if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
+  });
+
+  // Cancel Quoted Reply
+  document.getElementById('btn-cancel-quoted-reply')?.addEventListener('click', cancelQuotedReply);
+
+  // Media Viewer Close
+  document.getElementById('btn-close-media-viewer')?.addEventListener('click', () => {
+    document.getElementById('admin-media-viewer-modal')?.classList.add('hidden');
+  });
+
   // Back button for mobile messenger
   document.getElementById('btn-back-chat-list')?.addEventListener('click', () => {
-    document.getElementById('admin-chat-list-panel')?.classList.remove('hidden');
-    document.getElementById('admin-chat-view-panel')?.classList.add('hidden');
+    closeAdminChatView();
   });
 
   // Toggle User Info Drawer
@@ -1289,23 +1380,139 @@ function renderChatConversationsList() {
   }).join('');
 }
 
-window.openAdminChat = function(uid) {
+
+const EMOJI_LIST = ['😊', '😂', '👍', '❤️', '🔥', '🎉', '🙏', '😍', '👋', '🚀', '💯', '✨', '👌', '🤝', '💼', '📱', '💻', '⭐', '⚡', '✅'];
+
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  const maxHeight = 120;
+  el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+}
+
+function initEmojiPicker() {
+  const drawer = document.getElementById('composer-emoji-picker-drawer');
+  if (!drawer) return;
+
+  drawer.innerHTML = EMOJI_LIST.map(emoji => `
+    <button type="button" class="btn-emoji hover:scale-125 p-1.5 transition-transform cursor-pointer" data-emoji="${emoji}">
+      ${emoji}
+    </button>
+  `).join('');
+
+  drawer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-emoji');
+    if (btn) {
+      const emoji = btn.getAttribute('data-emoji');
+      const textarea = document.getElementById('admin-chat-textarea');
+      if (textarea && emoji) {
+        textarea.value += emoji;
+        textarea.focus();
+        autoResizeTextarea(textarea);
+      }
+    }
+  });
+
+  document.getElementById('btn-composer-emoji')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    drawer.classList.toggle('hidden');
+  });
+}
+
+function handleHashRouting() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#chat/')) {
+    const uid = hash.substring(6).trim();
+    if (uid && uid.length > 2) {
+      openAdminChat(uid, false);
+    }
+  } else if (activeSection === 'chat' && activeChatUid) {
+    closeAdminChatView(false);
+  }
+}
+
+window.openAdminChat = function(uid, updateHash = true) {
   activeChatUid = uid;
   switchSection('chat');
 
-  if (window.innerWidth < 768) {
-    document.getElementById('admin-chat-list-panel')?.classList.add('hidden');
-    document.getElementById('admin-chat-view-panel')?.classList.remove('hidden');
+  if (updateHash && window.location.hash !== `#chat/${uid}`) {
+    history.pushState(null, '', `#chat/${uid}`);
+  }
+
+  const chatViewPanel = document.getElementById('admin-chat-view-panel');
+  const chatListPanel = document.getElementById('admin-chat-list-panel');
+
+  if (window.innerWidth < 900) {
+    document.body.classList.add('admin-chat-open');
+    chatViewPanel?.classList.add('mobile-fullscreen');
+    chatListPanel?.classList.add('hidden');
+    chatViewPanel?.classList.remove('hidden');
+  } else {
+    chatViewPanel?.classList.remove('hidden');
+    chatListPanel?.classList.remove('hidden');
   }
 
   renderChatConversationsList();
 
-  const chat = allChatsData.find(c => c.uid === uid);
-  if (!chat) return;
+  const chat = allChatsData.find(c => c.uid === uid) || { uid: uid, userName: 'User' };
 
+  // Set Chat Header Meta
   document.getElementById('admin-active-user-name').textContent = chat.userName || 'User';
-  document.getElementById('admin-active-user-email').textContent = chat.userEmail || '@' + chat.username;
   document.getElementById('admin-active-user-avatar').src = chat.userPhoto || './assets/logo.png?v=2';
+
+  const handleEl = document.getElementById('admin-active-user-handle');
+  if (handleEl) handleEl.textContent = chat.username ? `@${chat.username}` : '';
+
+  const onlineDot = document.getElementById('admin-active-online-dot');
+  if (onlineDot) onlineDot.style.display = chat.online !== false ? 'block' : 'none';
+
+  const statusText = document.getElementById('admin-active-status-text');
+  if (statusText) {
+    if (chat.userTyping) {
+      statusText.innerHTML = '<span class="text-sky-400 font-bold animate-pulse">Typing...</span>';
+    } else if (chat.online !== false) {
+      statusText.textContent = 'Online';
+    } else {
+      statusText.textContent = chat.userLastSeen ? `Last seen ${formatChatTime(chat.userLastSeen)}` : 'Offline';
+    }
+  }
+
+  // Header WhatsApp button
+  const waBtn = document.getElementById('btn-chat-header-whatsapp');
+  if (waBtn) {
+    if (chat.phone) {
+      waBtn.href = `https://wa.me/880${chat.phone.replace(/^(?:\+880|880|0)/, '')}`;
+      waBtn.classList.remove('hidden');
+    } else {
+      waBtn.classList.add('hidden');
+    }
+  }
+
+  // Blocked or closed banner
+  const blockedBanner = document.getElementById('admin-chat-blocked-banner');
+  const bannerText = document.getElementById('chat-blocked-banner-text');
+  const bannerBtn = document.getElementById('btn-banner-unblock-reopen');
+
+  if (chat.blocked) {
+    blockedBanner?.classList.remove('hidden');
+    if (bannerText) bannerText.textContent = 'This user is blocked from live chat.';
+    if (bannerBtn) {
+      bannerBtn.textContent = 'Unblock User';
+      bannerBtn.onclick = () => toggleBlockUser(uid, false);
+    }
+  } else if (chat.status === 'closed') {
+    blockedBanner?.classList.remove('hidden');
+    if (bannerText) bannerText.textContent = 'This conversation is closed.';
+    if (bannerBtn) {
+      bannerBtn.textContent = 'Reopen Chat';
+      bannerBtn.onclick = async () => {
+        await updateDoc(doc(db, 'chats', uid), { status: 'open' });
+        showToast('Chat reopened', 'success');
+      };
+    }
+  } else {
+    blockedBanner?.classList.add('hidden');
+  }
 
   if (chat.unreadForAdmin > 0) {
     const chatRef = doc(db, 'chats', uid);
@@ -1324,137 +1531,177 @@ window.openAdminChat = function(uid) {
     snapshot.forEach(docSnap => {
       messages.push({ id: docSnap.id, ...docSnap.data() });
     });
-    renderAdminMessages(messages);
+    renderAdminMessages(messages, chat);
   });
 };
 
-function renderAdminMessages(messages) {
+function closeAdminChatView(updateHash = true) {
+  activeChatUid = null;
+  document.body.classList.remove('admin-chat-open');
+
+  const chatViewPanel = document.getElementById('admin-chat-view-panel');
+  const chatListPanel = document.getElementById('admin-chat-list-panel');
+
+  if (window.innerWidth < 900) {
+    chatViewPanel?.classList.add('hidden');
+    chatListPanel?.classList.remove('hidden');
+  }
+
+  if (updateHash && window.location.hash.startsWith('#chat/')) {
+    history.pushState(null, '', 'admin.html#chat');
+  }
+
+  renderChatConversationsList();
+}
+
+function renderAdminMessages(messages, chatData = {}) {
   const container = document.getElementById('admin-chat-messages');
   if (!container) return;
 
   if (messages.length === 0) {
-    container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs">No messages yet in this conversation.</div>`;
+    const userName = chatData.userName || 'User';
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full text-center p-6 space-y-3 my-auto">
+        <div class="w-14 h-14 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-sky-400 text-xl">
+          <i class="fa-solid fa-hand-wave"></i>
+        </div>
+        <h3 class="font-bold text-sm text-white">No messages yet. Say hello to ${userName}!</h3>
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <button onclick="insertQuickStartChip('Hello! How can I help you today?')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            Greeting
+          </button>
+          <button onclick="insertQuickStartChip('How can I help you with your project?')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            "How can I help you?"
+          </button>
+          <button onclick="insertQuickStartChip('Please share your project requirements.')" class="px-3 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-medium text-xs transition-colors">
+            "Please share your requirements"
+          </button>
+        </div>
+      </div>
+    `;
     return;
   }
 
-  container.innerHTML = messages.map(msg => {
+  let html = '';
+  let lastDateStr = '';
+
+  messages.forEach((msg, idx) => {
+    const msgDate = parseToDate(msg.createdAt, msg.deliveredAt) || new Date();
+    const dateStr = formatDateSeparator(msgDate);
+
+    if (dateStr !== lastDateStr) {
+      html += `
+        <div class="flex justify-center my-3">
+          <span class="chat-date-separator">
+            ${dateStr}
+          </span>
+        </div>
+      `;
+      lastDateStr = dateStr;
+    }
+
     const isAdmin = msg.sender === 'admin';
+    const isNextSameSender = messages[idx + 1] && messages[idx + 1].sender === msg.sender;
+    const isGroupEnd = !isNextSameSender;
     const timeStr = formatChatTime(msg.createdAt, msg.deliveredAt);
 
-    return `
-      <div class="flex justify-${isAdmin ? 'end' : 'start'} my-1">
-        <div class="max-w-[80%] space-y-1">
-          <div class="p-3 rounded-2xl text-xs leading-relaxed ${isAdmin ? 'bg-sky-600 text-white rounded-br-xs' : 'bg-slate-800 text-slate-100 rounded-bl-xs border border-slate-700'}">
-            ${renderAdminMessageContent(msg)}
+    const textOnly = (msg.text || '').trim();
+    const isEmojiOnly = isOnlyEmojis(textOnly);
+
+    html += `
+      <div class="flex items-end gap-2 my-0.5 group ${isAdmin ? 'justify-end' : 'justify-start'}">
+        ${!isAdmin && isGroupEnd ? `
+          <div class="w-6 h-6 rounded-full bg-slate-800 overflow-hidden shrink-0 ring-1 ring-slate-700">
+            <img src="${chatData.userPhoto || './assets/logo.png?v=2'}" class="w-full h-full object-cover">
           </div>
-          <p class="text-[9px] text-slate-500 text-${isAdmin ? 'right' : 'left'} px-1">${timeStr}</p>
+        ` : (!isAdmin ? '<div class="w-6 shrink-0"></div>' : '')}
+
+        <div class="max-w-[80%] space-y-0.5 relative">
+          <!-- Quoted preview if replying -->
+          ${msg.replyTo ? `
+            <div class="px-3 py-1.5 rounded-xl bg-slate-900/80 border-l-2 border-sky-400 text-[11px] text-slate-300 mb-1 truncate">
+              <span class="font-bold text-sky-400 block">${msg.replyTo.sender || 'Reply'}</span>
+              ${msg.replyTo.text || 'Attachment'}
+            </div>
+          ` : ''}
+
+          <!-- Bubble Content -->
+          <div data-msg-id="${msg.id}" onclick="openBubbleMenu(event, '${msg.id}', \`${(msg.text || '').replace(/`/g, '\\`')}\`)" class="chat-bubble ${isAdmin ? 'chat-bubble-admin' : 'chat-bubble-user'} ${isNextSameSender ? (isAdmin ? 'chat-bubble-admin-grouped' : 'chat-bubble-user-grouped') : ''} ${isEmojiOnly ? 'chat-bubble-emoji-only' : ''} cursor-pointer">
+            ${renderMessageBubblePayload(msg)}
+          </div>
+
+          <!-- Status / Time Footer -->
+          ${isGroupEnd ? `
+            <div class="flex items-center gap-1 text-[10px] text-slate-400 px-1 ${isAdmin ? 'justify-end' : 'justify-start'}">
+              <span>${timeStr}</span>
+              ${isAdmin ? renderAdminStatusTicks(msg, chatData) : ''}
+            </div>
+          ` : ''}
         </div>
       </div>
     `;
-  }).join('');
+  });
 
+  container.innerHTML = html;
   container.scrollTop = container.scrollHeight;
-  attachAdminMediaClickHandlers();
 }
 
-function renderAdminMessageContent(msg) {
+window.insertQuickStartChip = function(text) {
+  const textarea = document.getElementById('admin-chat-textarea');
+  if (textarea) {
+    textarea.value = text;
+    textarea.focus();
+    autoResizeTextarea(textarea);
+  }
+};
+
+function isOnlyEmojis(str) {
+  if (!str) return false;
+  const regex = /^(\p{Extended_Pictographic}|\p{Emoji_Component}|\s)+$/u;
+  return str.length <= 12 && regex.test(str);
+}
+
+function formatDateSeparator(date) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today';
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+}
+
+function renderMessageBubblePayload(msg) {
   if (msg.deleted) {
-    return `<span class="italic text-slate-400"><i class="fa-solid fa-ban text-[10px] mr-1"></i> This message was deleted</span>`;
+    return `<span class="italic text-slate-400 text-xs"><i class="fa-solid fa-ban mr-1"></i> This message was deleted</span>`;
   }
 
   let content = '';
-  let fileUrl = msg.fileUrl || '';
-  let fileName = msg.fileName || '';
-  let fileSize = msg.fileSize || 0;
-  let type = msg.type;
 
-  // Auto detect type for older url-only messages
-  if (!fileUrl && msg.text) {
-    const trimmedText = msg.text.trim();
-    if (trimmedText.match(/^https?:\/\/[^\s]+$/i)) {
-      const urlClean = trimmedText.split('?')[0];
-      const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
-      if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
-        fileUrl = trimmedText;
-        type = 'image';
-      } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
-        fileUrl = trimmedText;
-        type = 'video';
-      } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
-        fileUrl = trimmedText;
-        type = 'audio';
-      } else if (['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.zip', '.rar'].includes(urlExt)) {
-        fileUrl = trimmedText;
-        type = 'file';
-        fileName = fileName || urlClean.split('/').pop() || 'Attachment File';
-      }
-    }
-  } else if (fileUrl && (!type || type === 'text')) {
-    const urlClean = fileUrl.split('?')[0];
-    const urlExt = urlClean.substring(urlClean.lastIndexOf('.')).toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'].includes(urlExt)) {
-      type = 'image';
-    } else if (['.mp4', '.webm', '.mov', '.m4v'].includes(urlExt)) {
-      type = 'video';
-    } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(urlExt)) {
-      type = 'audio';
-    } else {
-      type = 'file';
-    }
-  }
-
-  if (type === 'image' && fileUrl) {
-    content += `
-      <div class="overflow-hidden rounded-2xl mb-1.5 cursor-pointer admin-media-thumbnail max-w-[240px]" data-src="${fileUrl}">
-        <img src="${fileUrl}" alt="${escapeHTML(fileName || 'Photo')}" loading="lazy" class="w-full max-h-[240px] object-cover hover:scale-105 transition-transform duration-200 rounded-2xl">
-      </div>
-    `;
-  } else if (type === 'video' && fileUrl) {
-    content += `
-      <div class="overflow-hidden rounded-2xl mb-1.5 bg-black max-w-[280px]">
-        <video src="${fileUrl}" controls class="w-full max-h-60 rounded-2xl"></video>
-      </div>
-    `;
-  } else if (type === 'audio' && fileUrl) {
-    content += `
-      <div class="p-2 bg-slate-900/60 rounded-2xl mb-1.5 max-w-[280px]">
-        <audio src="${fileUrl}" controls class="w-full h-8"></audio>
-      </div>
-    `;
-  } else if (type === 'file' && fileUrl) {
-    const cleanExt = (fileName || fileUrl).split('?')[0].split('.').pop().toLowerCase();
-    let iconClass = 'fa-file text-sky-400';
-    if (cleanExt === 'pdf') iconClass = 'fa-file-pdf text-red-500';
-    else if (['doc', 'docx'].includes(cleanExt)) iconClass = 'fa-file-word text-blue-500';
-    else if (['xls', 'xlsx'].includes(cleanExt)) iconClass = 'fa-file-excel text-emerald-500';
-    else if (['zip', 'rar', '7z'].includes(cleanExt)) iconClass = 'fa-file-zipper text-amber-500';
-    else if (cleanExt === 'txt') iconClass = 'fa-file-lines text-slate-400';
-
-    content += `
-      <div class="p-3 rounded-2xl bg-slate-900/60 border border-slate-700/60 mb-1.5 space-y-2 max-w-[280px]">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-lg shrink-0">
-            <i class="fa-solid ${iconClass}"></i>
-          </div>
-          <div class="overflow-hidden flex-1 min-w-0">
-            <p class="font-bold text-xs truncate">${escapeHTML(fileName || 'Attachment')}</p>
-            <p class="text-[10px] opacity-80">${fileSize ? formatBytes(fileSize) : 'File'}</p>
-          </div>
+  // Project Request Card (Type "request")
+  if (msg.type === 'request' || msg.requestId) {
+    return `
+      <div class="chat-request-card text-left space-y-2">
+        <div class="flex items-center justify-between border-b border-purple-500/20 pb-2">
+          <span class="font-mono text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-md">${msg.requestId || 'REQUEST'}</span>
+          <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${getReqStatusBadgeClass(msg.requestStatus)}">${msg.requestStatus || 'New'}</span>
         </div>
+        <p class="font-bold text-xs text-purple-300">${msg.category || 'Project Request'}</p>
+        <p class="text-xs text-slate-200 line-clamp-3">${msg.requirements || msg.text || ''}</p>
+        ${msg.budget ? `<p class="text-[11px] font-mono text-emerald-400 font-bold">Budget: ${msg.budget}</p>` : ''}
         <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
-          <a href="${fileUrl}" target="_blank" download="${escapeHTML(fileName || 'file')}" class="flex-1 py-1 px-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-[11px] text-center transition-colors">
-            <i class="fa-solid fa-download mr-1"></i> Download
-          </a>
-          <a href="${fileUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 py-1 px-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-[11px] text-center transition-colors">
-            <i class="fa-solid fa-up-right-from-square mr-1"></i> Open
-          </a>
+          <button onclick="event.stopPropagation(); openRequestDetail('${msg.requestId || msg.id}')" class="px-2.5 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-bold text-[10px]">
+            View Details
+          </button>
         </div>
       </div>
     `;
   }
 
-  if (msg.text && (type !== 'image' && type !== 'video' && type !== 'audio' && type !== 'file' || msg.text !== fileUrl)) {
-    content += `<p class="whitespace-pre-wrap break-words">${autolinkText(escapeHTML(msg.text))}</p>`;
   }
 
   return content;
@@ -1713,6 +1960,13 @@ function renderAdminAttachmentChips() {
         </button>
       </div>
     `;
+  }
+}
+
+window.cancelPendingAdminFile = function() {
+  pendingAdminFile = null;
+  document.getElementById('admin-pending-attachments-bar')?.classList.add('hidden');
+
   }).join('');
 }
 
@@ -1765,6 +2019,20 @@ async function handleAdminSendMessage(e) {
   const sendBtn = document.getElementById('btn-admin-send');
   if (sendBtn) sendBtn.disabled = true;
 
+  let uploadedFile = null;
+
+  if (pendingAdminFile) {
+    try {
+      uploadedFile = await uploadToCloudinary(pendingAdminFile, {
+        folder: 'webworldbd_uploads/chat'
+      });
+    } catch (err) {
+      showToast('File upload failed', 'error');
+      if (sendBtn) sendBtn.disabled = false;
+      return;
+    }
+  }
+
   const messagesRef = collection(db, 'chats', activeChatUid, 'messages');
   const chatRef = doc(db, 'chats', activeChatUid);
   const isoTime = new Date().toISOString();
@@ -1773,10 +2041,9 @@ async function handleAdminSendMessage(e) {
     const batch = writeBatch(db);
     let lastMsgPreview = text;
 
-    // 1. Text message sent first if typed together with attachments
     if (text) {
       const textMsgRef = doc(messagesRef);
-      batch.set(textMsgRef, {
+      const msgData = {
         sender: 'admin',
         senderRole: 'admin',
         senderId: currentAdminUser.uid,
@@ -1788,10 +2055,40 @@ async function handleAdminSendMessage(e) {
         readAt: null,
         deleted: false,
         edited: false
-      });
+      };
+      if (quotedMessage) {
+        msgData.replyTo = quotedMessage;
+      }
+      batch.set(textMsgRef, msgData);
     }
 
-    // 2. Attachments sent in order
+    if (uploadedFile && pendingAdminFile) {
+      let msgType = 'file';
+      if (pendingAdminFile.type.startsWith('image/')) msgType = 'image';
+      else if (pendingAdminFile.type.startsWith('video/')) msgType = 'video';
+      else if (pendingAdminFile.type.startsWith('audio/')) msgType = 'audio';
+
+      const fileMsgRef = doc(messagesRef);
+      batch.set(fileMsgRef, {
+        sender: 'admin',
+        senderRole: 'admin',
+        senderId: currentAdminUser.uid,
+        conversationId: activeChatUid,
+        text: '',
+        type: msgType,
+        fileUrl: uploadedFile.secure_url,
+        fileName: pendingAdminFile.name,
+        fileSize: pendingAdminFile.size,
+        mimeType: pendingAdminFile.type,
+        createdAt: serverTimestamp(),
+        deliveredAt: isoTime,
+        readAt: null,
+        deleted: false,
+        edited: false
+      });
+      lastMsgPreview = `📎 ${pendingAdminFile.name}`;
+    }
+
     pendingAdminAttachments.forEach(att => {
       if (att.status === 'done' && att.uploadedFile) {
         let type = 'file';
@@ -1839,6 +2136,8 @@ async function handleAdminSendMessage(e) {
       autoResizeAdminTextarea(textarea);
     }
     pendingAdminAttachments = [];
+    cancelPendingAdminFile();
+    cancelQuotedReply();
     renderAdminAttachmentChips();
     document.getElementById('admin-quick-reply-drawer')?.classList.add('hidden');
     document.getElementById('admin-emoji-picker-drawer')?.classList.add('hidden');
@@ -1851,6 +2150,73 @@ async function handleAdminSendMessage(e) {
   } finally {
     if (sendBtn) sendBtn.disabled = false;
   }
+}
+
+async function exportActiveChatHistory() {
+  if (!activeChatUid) return;
+  try {
+    const messagesRef = collection(db, 'chats', activeChatUid, 'messages');
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
+    const snap = await getDocs(q);
+
+    let txt = `WebWorldBD Chat Export - ${activeChatUid}\nDate: ${new Date().toLocaleString()}\n\n`;
+    snap.forEach(docSnap => {
+      const m = docSnap.data();
+      const sender = m.sender === 'admin' ? 'SHAFAET (Admin)' : 'User';
+      const time = formatChatTime(m.createdAt, m.deliveredAt);
+      txt += `[${time}] ${sender}: ${m.text || m.fileUrl || ''}\n`;
+    });
+
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chat_export_${activeChatUid}.txt`;
+    link.click();
+    showToast('Chat history exported', 'success');
+  } catch (e) {
+    showToast('Export failed', 'error');
+  }
+}
+
+async function deleteActiveConversation() {
+  if (!activeChatUid) return;
+  if (!confirm('Permanently delete this entire conversation and all messages?')) return;
+
+  try {
+    await deleteDoc(doc(db, 'chats', activeChatUid));
+    showToast('Conversation deleted.', 'success');
+    closeAdminChatView();
+  } catch (e) {
+    showToast('Failed to delete conversation.', 'error');
+  }
+}
+
+function autolinkText(text) {
+  if (!text) return '';
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="underline font-medium hover:text-sky-300 break-all">${url}</a>`);
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>'"]/g,
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
 function renderQuickReplyDrawer() {
@@ -2467,24 +2833,7 @@ function exportUsersCSV() {
   logAdminAction("EXPORT_CSV", "users", "Exported full users CSV");
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>'"]/g,
-    tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
-}
 
-function autolinkText(text) {
-  if (!text) return '';
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return text.replace(urlRegex, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline hover:text-sky-300 break-all">${url}</a>`);
-}
 
 function downloadCSV(csvContent, filename) {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
