@@ -110,21 +110,7 @@ function subscribeSiteConfigPublic() {
   onSnapshot(configRef, (snap) => {
     if (snap.exists()) {
       const config = snap.data();
-      // Check maintenance mode for non-admin users
-      if (config.maintenanceMode && !isAdminUser(currentUser) && !window.location.pathname.includes('admin.html')) {
-        document.body.innerHTML = `
-          <div class="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center font-sans">
-            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-3xl mb-4">
-              <i class="fa-solid fa-screwdriver-wrench animate-bounce"></i>
-            </div>
-            <h1 class="text-2xl font-black mb-2">Platform Under Maintenance</h1>
-            <p class="text-xs text-slate-400 max-w-sm mb-6 leading-relaxed">
-              ${getLanguage() === 'en' ? 'WebWorldBD is currently undergoing scheduled upgrades. We will be back online shortly!' : 'WebWorldBD বর্তমানে আপডেট করা হচ্ছে। আমরা শীঘ্রই ফিরে আসব!'}
-            </p>
-            <a href="https://wa.me/8801342697743" target="_blank" class="px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs">Contact on WhatsApp</a>
-          </div>
-        `;
-      }
+      // Maintenance mode check disabled to restore normal website state
     }
   }, () => {});
 }
