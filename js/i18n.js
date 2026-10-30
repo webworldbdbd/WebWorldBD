@@ -176,6 +176,16 @@ const translations = {
     securitySection: "Security Controls",
     dataBackupSection: "Data Backup & Export",
     systemInfoSection: "System Information",
+    pinConversation: "Pin Conversation",
+    unpinConversation: "Unpin Conversation",
+    closeConversation: "Close Conversation",
+    reopenConversation: "Reopen Conversation",
+    blockUser: "Block User",
+    unblockUser: "Unblock User",
+    markUnread: "Mark as Unread",
+    exportChat: "Export Chat (.txt)",
+    clearView: "Clear View",
+    deleteConversation: "Delete Conversation",
 
     // Start Project & Requests
     startProjectTitle: "Let's Build Something Great Together!",
@@ -474,6 +484,16 @@ const translations = {
     securitySection: "সিকিউরিটি কন্ট্রোলস",
     dataBackupSection: "ডাটা ব্যাকআপ ও এক্সপোর্ট",
     systemInfoSection: "সিস্টেম তথ্য",
+    pinConversation: "কনভারসেশন পিন করুন",
+    unpinConversation: "পিন সরান",
+    closeConversation: "কনভারসেশন বন্ধ করুন",
+    reopenConversation: "পুনরায় চালু করুন",
+    blockUser: "ইউজার ব্লক করুন",
+    unblockUser: "আনব্লক করুন",
+    markUnread: "আনরিড হিসাবে মার্ক করুন",
+    exportChat: "চ্যাট এক্সপোর্ট করুন (.txt)",
+    clearView: "ভিউ ক্লিয়ার করুন",
+    deleteConversation: "কনভারসেশন ডিলিট করুন",
 
     // Start Project & Requests
     startProjectTitle: "চলুন একসাথে অসাধারণ কিছু তৈরি করি!",
